@@ -121,7 +121,7 @@
   </div>
 
   <script type="module">
-    import { getCurrentUser, logOut, getUserLanguage, getUserPrefs } from './auth.js';
+    import { getCurrentUser, logOut, getUserLanguage, getUserPrefs, ADMIN_EMAIL } from './auth.js';
 
     // ============================================
     // Translations
@@ -418,6 +418,11 @@
       const prefs = await getUserPrefs();
       currentLang = prefs.language || 'en';
 
+      // Show import link only for admin
+      if (user.email === ADMIN_EMAIL) {
+        document.getElementById('navImport').classList.remove('hidden');
+      }
+
       applyTranslations();
       setupEventListeners();
     }
@@ -686,8 +691,6 @@
       currentView = 'settings';
       showContent();
 
-      const ADMIN_PASSWORD = "Concours17072003@@";
-
       let html = `<h2 class="mb-3">${t('settings')}</h2>`;
       html += `
         <div class="card">
@@ -715,8 +718,7 @@
     };
 
     window.checkAdminPwd = function() {
-      const pwd = document.getElementById('adminPwd').value;
-      const ADMIN_PASSWORD = "Concours17072003@@";
+      const pwd = document.getElementById('adminPwd').value';
 
       if (pwd === ADMIN_PASSWORD) {
         document.getElementById('langSection').classList.remove('hidden');
@@ -741,5 +743,6 @@
     // ============================================
     init();
   </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1aaa2680ec1ae2d',t:'MTc4Mzk3MDMxNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>

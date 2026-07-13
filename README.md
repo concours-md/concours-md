@@ -88,6 +88,12 @@ rm -rf dist && mkdir -p dist /mnt/code && cp -f index.html signup.html dashboard
 | email | String | 255 |
 | createdAt | String | 50 |
 
+## Admin Access
+
+- **Admin Email**: `admin.concours.md@gmail.com`
+- **Admin Password** (for language switching): `Concours17072003@@`
+- Only the admin email can access the Import page
+
 ## Features
 
 - Bilingual (English/French)
