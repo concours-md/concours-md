@@ -40,7 +40,7 @@
     <!-- Category Grid -->
     <div class="category-grid" id="categoryGrid">
       <!-- Biology -->
-      <div class="category-card biology" onclick="openCategory('biology')">
+      <div class="category-card biology" data-category="biology">
         <div class="category-icon">🧬</div>
         <div>
           <div class="card-title" id="catBio">Biology</div>
@@ -49,7 +49,7 @@
       </div>
 
       <!-- Chemistry -->
-      <div class="category-card chemistry" onclick="openCategory('chemistry')">
+      <div class="category-card chemistry" data-category="chemistry">
         <div class="category-icon">⚗️</div>
         <div>
           <div class="card-title" id="catChem">Chemistry</div>
@@ -58,7 +58,7 @@
       </div>
 
       <!-- Physics -->
-      <div class="category-card physics" onclick="openCategory('physics')">
+      <div class="category-card physics" data-category="physics">
         <div class="category-icon">⚡</div>
         <div>
           <div class="card-title" id="catPhys">Physics</div>
@@ -67,7 +67,7 @@
       </div>
 
       <!-- Maths -->
-      <div class="category-card maths" onclick="openCategory('maths')">
+      <div class="category-card maths" data-category="maths">
         <div class="category-icon">📐</div>
         <div>
           <div class="card-title" id="catMath">Maths</div>
@@ -76,7 +76,7 @@
       </div>
 
       <!-- Concours Exam -->
-      <div class="category-card concours" onclick="openConcours()">
+      <div class="category-card concours" data-category="concours">
         <div class="category-icon">🎓</div>
         <div>
           <div class="card-title" id="catConcours">Concours Exam</div>
@@ -85,7 +85,7 @@
       </div>
 
       <!-- Notebook -->
-      <div class="category-card" onclick="openNotebook()" style="border-color: var(--text-secondary);">
+      <div class="category-card" data-category="notebook" style="border-color: var(--text-secondary);">
         <div class="category-icon">📓</div>
         <div>
           <div class="card-title" id="catNotebook">Notebook</div>
@@ -94,7 +94,7 @@
       </div>
 
       <!-- Previous Tests -->
-      <div class="category-card" onclick="openPreviousTests()" style="border-color: var(--info);">
+      <div class="category-card" data-category="prevtests" style="border-color: var(--info);">
         <div class="category-icon">📊</div>
         <div>
           <div class="card-title" id="catPrevTests">Previous Tests</div>
@@ -103,7 +103,7 @@
       </div>
 
       <!-- Settings -->
-      <div class="category-card" onclick="openSettings()" style="border-color: var(--text-secondary);">
+      <div class="category-card" data-category="settings" style="border-color: var(--text-secondary);">
         <div class="category-icon">⚙️</div>
         <div>
           <div class="card-title" id="catSettings">Settings</div>
@@ -121,7 +121,7 @@
   </div>
 
   <script type="module">
-    import { getCurrentUser, logOut, getUserLanguage, getUserPrefs, ADMIN_EMAIL } from './auth.js';
+    import { getCurrentUser, logOut, getUserLanguage, getUserPrefs, updateUserPrefs, ADMIN_EMAIL, ADMIN_PASSWORD } from './auth.js';
 
     // ============================================
     // Translations
@@ -459,6 +459,18 @@
         await logOut();
         window.location.href = 'index.html';
       });
+
+      // Category card clicks
+      document.querySelectorAll('.category-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const category = card.dataset.category;
+          if (category === 'concours') openConcours();
+          else if (category === 'notebook') openNotebook();
+          else if (category === 'prevtests') openPreviousTests();
+          else if (category === 'settings') openSettings();
+          else openCategory(category);
+        });
+      });
     }
 
     // ============================================
@@ -469,13 +481,13 @@
       document.getElementById('contentArea').classList.remove('hidden');
     }
 
-    function goBack() {
+    window.goBack = function() {
       document.getElementById('categoryGrid').classList.remove('hidden');
       document.getElementById('contentArea').classList.add('hidden');
       document.getElementById('contentBody').innerHTML = '';
       currentView = 'dashboard';
       currentCategory = null;
-    }
+    };
 
     // ============================================
     // Category Pages
@@ -728,14 +740,19 @@
       }
     };
 
-    window.saveLanguage = function() {
+    window.saveLanguage = async function() {
       const newLang = document.getElementById('langSelect').value;
       currentLang = newLang;
-      // In production, save to user prefs
-      // await updateUserPrefs({ language: newLang });
-      alert(t('languageChanged'));
-      applyTranslations();
-      openSettings();
+      
+      // Save to Appwrite user preferences
+      try {
+        await updateUserPrefs({ language: newLang });
+        alert(t('languageChanged'));
+        applyTranslations();
+        openSettings();
+      } catch (err) {
+        alert('Error saving language: ' + err.message);
+      }
     };
 
     // ============================================
@@ -743,6 +760,6 @@
     // ============================================
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1aaa2680ec1ae2d',t:'MTc4Mzk3MDMxNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-</body>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1aab1e9cd1ce30b',t:'MTc4Mzk3MDk1MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
