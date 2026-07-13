@@ -5,294 +5,108 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Concours.md - Dashboard</title>
   <link rel="stylesheet" href="style.css">
-  <!-- MathJax for equations -->
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script>
     window.MathJax = {
       tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
       svg: { fontCache: 'global' }
     };
   </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
-  <!-- Navigation -->
   <nav class="navbar">
     <div class="container">
       <div class="navbar-brand">Concours<span>.md</span></div>
       <div class="navbar-links">
-        <a href="dashboard.html" id="navDashboard">Dashboard</a>
+        <a href="dashboard.html">Dashboard</a>
         <a href="import.html" id="navImport" class="hidden">Import</a>
         <a href="#" id="logoutBtn">Logout</a>
       </div>
     </div>
   </nav>
 
-  <!-- Main Content -->
   <div class="container" style="padding-top: 30px; padding-bottom: 60px;">
-    
-    <!-- Welcome Section -->
     <div class="dashboard-header">
       <h1 id="welcomeMsg">Welcome back!</h1>
       <p id="welcomeSub">Choose a category to start practicing</p>
     </div>
 
-    <!-- Category Grid -->
     <div class="category-grid" id="categoryGrid">
-      <!-- Biology -->
-      <div class="category-card biology" data-category="biology">
+      <div class="category-card biology" data-action="biology">
         <div class="category-icon">🧬</div>
         <div>
-          <div class="card-title" id="catBio">Biology</div>
-          <div class="card-desc" id="catBioDesc">11 courses available</div>
+          <div class="card-title">Biology</div>
+          <div class="card-desc">11 courses</div>
         </div>
       </div>
 
-      <!-- Chemistry -->
-      <div class="category-card chemistry" data-category="chemistry">
+      <div class="category-card chemistry" data-action="chemistry">
         <div class="category-icon">⚗️</div>
         <div>
-          <div class="card-title" id="catChem">Chemistry</div>
-          <div class="card-desc" id="catChemDesc">3 courses available</div>
+          <div class="card-title">Chemistry</div>
+          <div class="card-desc">3 courses</div>
         </div>
       </div>
 
-      <!-- Physics -->
-      <div class="category-card physics" data-category="physics">
+      <div class="category-card physics" data-action="physics">
         <div class="category-icon">⚡</div>
         <div>
-          <div class="card-title" id="catPhys">Physics</div>
-          <div class="card-desc" id="catPhysDesc">2 courses available</div>
+          <div class="card-title">Physics</div>
+          <div class="card-desc">2 courses</div>
         </div>
       </div>
 
-      <!-- Maths -->
-      <div class="category-card maths" data-category="maths">
+      <div class="category-card maths" data-action="maths">
         <div class="category-icon">📐</div>
         <div>
-          <div class="card-title" id="catMath">Maths</div>
-          <div class="card-desc" id="catMathDesc">3 courses available</div>
+          <div class="card-title">Maths</div>
+          <div class="card-desc">3 courses</div>
         </div>
       </div>
 
-      <!-- Concours Exam -->
-      <div class="category-card concours" data-category="concours">
+      <div class="category-card concours" data-action="concours">
         <div class="category-icon">🎓</div>
         <div>
-          <div class="card-title" id="catConcours">Concours Exam</div>
-          <div class="card-desc" id="catConcoursDesc">Simulate the real exam</div>
+          <div class="card-title">Concours Exam</div>
+          <div class="card-desc">Simulate the real exam</div>
         </div>
       </div>
 
-      <!-- Notebook -->
-      <div class="category-card" data-category="notebook" style="border-color: var(--text-secondary);">
+      <div class="category-card" data-action="notebook" style="border-color: var(--text-secondary);">
         <div class="category-icon">📓</div>
         <div>
-          <div class="card-title" id="catNotebook">Notebook</div>
-          <div class="card-desc" id="catNotebookDesc">Your saved notes</div>
+          <div class="card-title">Notebook</div>
+          <div class="card-desc">Your saved notes</div>
         </div>
       </div>
 
-      <!-- Previous Tests -->
-      <div class="category-card" data-category="prevtests" style="border-color: var(--info);">
+      <div class="category-card" data-action="prevtests" style="border-color: var(--info);">
         <div class="category-icon">📊</div>
         <div>
-          <div class="card-title" id="catPrevTests">Previous Tests</div>
-          <div class="card-desc" id="catPrevTestsDesc">Review your history</div>
+          <div class="card-title">Previous Tests</div>
+          <div class="card-desc">Review your history</div>
         </div>
       </div>
 
-      <!-- Settings -->
-      <div class="category-card" data-category="settings" style="border-color: var(--text-secondary);">
+      <div class="category-card" data-action="settings" style="border-color: var(--text-secondary);">
         <div class="category-icon">⚙️</div>
         <div>
-          <div class="card-title" id="catSettings">Settings</div>
-          <div class="card-desc" id="catSettingsDesc">Preferences & language</div>
+          <div class="card-title">Settings</div>
+          <div class="card-desc">Preferences & language</div>
         </div>
       </div>
     </div>
 
-    <!-- Dynamic Content Area (hidden by default) -->
     <div id="contentArea" class="hidden" style="margin-top: 30px;">
-      <button class="btn btn-outline btn-sm mb-3" onclick="goBack()">← Back to Dashboard</button>
+      <button class="btn btn-outline btn-sm mb-3" id="backBtn">← Back to Dashboard</button>
       <div id="contentBody"></div>
     </div>
-
   </div>
 
   <script type="module">
-    import { getCurrentUser, logOut, getUserLanguage, getUserPrefs, updateUserPrefs, ADMIN_EMAIL, ADMIN_PASSWORD } from './auth.js';
+    import { getCurrentUser, logOut, getUserPrefs, updateUserPrefs, ADMIN_EMAIL, ADMIN_PASSWORD } from './auth.js';
+    import { databases, DB_ID, COLLECTIONS, Query } from './appwrite.js';
 
-    // ============================================
-    // Translations
-    // ============================================
-    const translations = {
-      en: {
-        welcome: 'Welcome back!',
-        welcomeSub: 'Choose a category to start practicing',
-        biology: 'Biology',
-        biologyDesc: '11 courses available',
-        chemistry: 'Chemistry',
-        chemistryDesc: '3 courses available',
-        physics: 'Physics',
-        physicsDesc: '2 courses available',
-        maths: 'Maths',
-        mathsDesc: '3 courses available',
-        concours: 'Concours Exam',
-        concoursDesc: 'Simulate the real exam',
-        notebook: 'Notebook',
-        notebookDesc: 'Your saved notes',
-        prevTests: 'Previous Tests',
-        prevTestsDesc: 'Review your history',
-        settings: 'Settings',
-        settingsDesc: 'Preferences & language',
-        selectCourse: 'Select a Course',
-        createTest: 'Create Test',
-        reviewTests: 'Review Previous Tests',
-        performance: 'Performance',
-        questionPool: 'Question Pool',
-        all: 'All',
-        unused: 'Unused',
-        incorrectOmitted: 'Incorrect/Omitted',
-        marked: 'Marked',
-        numQuestions: 'Number of Questions',
-        tutorMode: 'Tutor Mode',
-        tutorOn: 'ON (continue after time)',
-        tutorOff: 'OFF (auto-submit)',
-        startTest: 'Start Test',
-        concoursMed: 'Concours de Médecine et Dentisterie',
-        concoursPharma: 'Concours de Pharmacie',
-        selectType: 'Select Exam Type',
-        selectCategory: 'Select Category',
-        generateExam: 'Generate Exam',
-        notEnough: 'Not enough questions available',
-        language: 'Language',
-        changeLanguage: 'Change Language',
-        adminPassword: 'Admin Password',
-        save: 'Save',
-        cancel: 'Cancel',
-        incorrectPassword: 'Incorrect admin password',
-        languageChanged: 'Language changed successfully',
-        notebook: 'Notebook',
-        noNotes: 'No notes saved yet',
-        addNote: 'Add Note',
-        objective: 'Objective',
-        explanation: 'Explanation',
-        saveNote: 'Save Note',
-        deleteNote: 'Delete',
-        testHistory: 'Test History',
-        noTests: 'No tests completed yet',
-        score: 'Score',
-        date: 'Date',
-        duration: 'Duration',
-        review: 'Review',
-        back: 'Back to Dashboard',
-        suspend: 'Suspend',
-        submit: 'Submit',
-        resume: 'Resume',
-        question: 'Question',
-        of: 'of',
-        timeRemaining: 'Time Remaining',
-        markedQuestions: 'Marked',
-        finish: 'Finish & Submit',
-        correct: 'Correct',
-        incorrect: 'Incorrect',
-        omitted: 'Omitted',
-        yourAnswer: 'Your Answer',
-        correctAnswer: 'Correct Answer',
-        rationale: 'Rationale',
-        whyWrong: 'Why Others Are Wrong',
-        timeUsed: 'Time Used',
-        targetTime: 'Target Time',
-        seconds: 'seconds',
-        minutes: 'minutes',
-        hours: 'hours',
-      },
-      fr: {
-        welcome: 'Bonjour !',
-        welcomeSub: 'Choisissez une catégorie pour commencer',
-        biology: 'Biologie',
-        biologyDesc: '11 cours disponibles',
-        chemistry: 'Chimie',
-        chemistryDesc: '3 cours disponibles',
-        physics: 'Physique',
-        physicsDesc: '2 cours disponibles',
-        maths: 'Maths',
-        mathsDesc: '3 cours disponibles',
-        concours: 'Examen Concours',
-        concoursDesc: 'Simuler le vrai examen',
-        notebook: 'Carnet',
-        notebookDesc: 'Vos notes sauvegardées',
-        prevTests: 'Tests Précédents',
-        prevTestsDesc: 'Revoir votre historique',
-        settings: 'Paramètres',
-        settingsDesc: 'Préférences et langue',
-        selectCourse: 'Sélectionner un Cours',
-        createTest: 'Créer un Test',
-        reviewTests: 'Revoir les Tests Précédents',
-        performance: 'Performance',
-        questionPool: 'Banque de Questions',
-        all: 'Tout',
-        unused: 'Inutilisées',
-        incorrectOmitted: 'Incorrectes/Ommises',
-        marked: 'Marquées',
-        numQuestions: 'Nombre de Questions',
-        tutorMode: 'Mode Tuteur',
-        tutorOn: 'ON (continuer après le temps)',
-        tutorOff: 'OFF (soumission auto)',
-        startTest: 'Commencer le Test',
-        concoursMed: 'Concours de Médecine et Dentisterie',
-        concoursPharma: 'Concours de Pharmacie',
-        selectType: 'Sélectionner le Type',
-        selectCategory: 'Sélectionner la Catégorie',
-        generateExam: 'Générer l\'Examen',
-        notEnough: 'Pas assez de questions disponibles',
-        language: 'Langue',
-        changeLanguage: 'Changer la Langue',
-        adminPassword: 'Mot de passe admin',
-        save: 'Enregistrer',
-        cancel: 'Annuler',
-        incorrectPassword: 'Mot de passe admin incorrect',
-        languageChanged: 'Langue changée avec succès',
-        notebook: 'Carnet',
-        noNotes: 'Aucune note sauvegardée',
-        addNote: 'Ajouter une Note',
-        objective: 'Objectif',
-        explanation: 'Explication',
-        saveNote: 'Enregistrer',
-        deleteNote: 'Supprimer',
-        testHistory: 'Historique des Tests',
-        noTests: 'Aucun test complété',
-        score: 'Score',
-        date: 'Date',
-        duration: 'Durée',
-        review: 'Revoir',
-        back: 'Retour au Tableau de Bord',
-        suspend: 'Suspendre',
-        submit: 'Soumettre',
-        resume: 'Reprendre',
-        question: 'Question',
-        of: 'sur',
-        timeRemaining: 'Temps Restant',
-        markedQuestions: 'Marquées',
-        finish: 'Terminer & Soumettre',
-        correct: 'Correct',
-        incorrect: 'Incorrect',
-        omitted: 'Omis',
-        yourAnswer: 'Votre Réponse',
-        correctAnswer: 'Bonne Réponse',
-        rationale: 'Raisonnement',
-        whyWrong: 'Pourquoi les Autres sont Faux',
-        timeUsed: 'Temps Utilisé',
-        targetTime: 'Temps Cible',
-        seconds: 'secondes',
-        minutes: 'minutes',
-        hours: 'heures',
-      }
-    };
-
-    // ============================================
-    // Course Data
-    // ============================================
     const courses = {
       biology: [
         { fr: 'Cytologie', en: 'Cytology' },
@@ -305,266 +119,130 @@
         { fr: 'Reproduction végétale', en: 'Plant Reproduction' },
         { fr: 'Embryologie', en: 'Embryology' },
         { fr: 'Géologie', en: 'Geology' },
-        { fr: 'Écologie', en: 'Ecology' },
+        { fr: 'Écologie', en: 'Ecology' }
       ],
       chemistry: [
         { fr: 'Chimie générale', en: 'General Chemistry' },
         { fr: 'Chimie organique', en: 'Organic Chemistry' },
-        { fr: 'Chimie de solution', en: 'Chemistry of Solution' },
+        { fr: 'Chimie de solution', en: 'Chemistry of Solution' }
       ],
       physics: [
         { fr: 'Physique 1', en: 'Physics 1' },
-        { fr: 'Physique 2', en: 'Physics 2' },
+        { fr: 'Physique 2', en: 'Physics 2' }
       ],
       maths: [
         { fr: 'Analyse', en: 'Analysis' },
         { fr: 'Statistique', en: 'Statistics' },
-        { fr: 'Algèbre', en: 'Algebra' },
+        { fr: 'Algèbre', en: 'Algebra' }
       ]
     };
 
-    // Concours structure
     const concoursStructure = {
       med: {
-        biology: {
-          total: 120, duration: 120, unit: 'minutes',
-          courses: [
-            { fr: 'Cytologie', en: 'Cytology', count: 20 },
-            { fr: 'Histologie', en: 'Histology', count: 20 },
-            { fr: 'Génétique', en: 'Genetics', count: 20 },
-            { fr: 'Anatomie', en: 'Anatomy', count: 20 },
-            { fr: 'Botanique', en: 'Botany', count: 20 },
-            { fr: 'Reproduction végétale', en: 'Plant Reproduction', count: 20 },
-          ]
-        },
-        chemistry: {
-          total: 40, duration: 60, unit: 'minutes',
-          courses: [
-            { fr: 'Chimie générale', en: 'General Chemistry', count: 13 },
-            { fr: 'Chimie organique', en: 'Organic Chemistry', count: 14 },
-            { fr: 'Chimie de solution', en: 'Chemistry of Solution', count: 13 },
-          ]
-        },
-        physics: {
-          total: 20, duration: 60, unit: 'minutes',
-          courses: [
-            { fr: 'Physique 1', en: 'Physics 1', count: 10 },
-            { fr: 'Physique 2', en: 'Physics 2', count: 10 },
-          ]
-        },
-        maths: {
-          total: 30, duration: 60, unit: 'minutes',
-          courses: [
-            { fr: 'Analyse', en: 'Analysis', count: 20 },
-            { fr: 'Statistique', en: 'Statistics', count: 10 },
-          ]
-        }
+        biology: { total: 120, duration: 120, courses: [
+          { fr: 'Cytologie', en: 'Cytology', count: 20 },
+          { fr: 'Histologie', en: 'Histology', count: 20 },
+          { fr: 'Génétique', en: 'Genetics', count: 20 },
+          { fr: 'Anatomie', en: 'Anatomy', count: 20 },
+          { fr: 'Botanique', en: 'Botany', count: 20 },
+          { fr: 'Reproduction végétale', en: 'Plant Reproduction', count: 20 }
+        ]},
+        chemistry: { total: 40, duration: 60, courses: [
+          { fr: 'Chimie générale', en: 'General Chemistry', count: 13 },
+          { fr: 'Chimie organique', en: 'Organic Chemistry', count: 14 },
+          { fr: 'Chimie de solution', en: 'Chemistry of Solution', count: 13 }
+        ]},
+        physics: { total: 20, duration: 60, courses: [
+          { fr: 'Physique 1', en: 'Physics 1', count: 10 },
+          { fr: 'Physique 2', en: 'Physics 2', count: 10 }
+        ]},
+        maths: { total: 30, duration: 60, courses: [
+          { fr: 'Analyse', en: 'Analysis', count: 20 },
+          { fr: 'Statistique', en: 'Statistics', count: 10 }
+        ]}
       },
       pharma: {
-        biology: {
-          total: 60, duration: 60, unit: 'minutes',
-          courses: [
-            { fr: 'Cytologie', en: 'Cytology', count: 10 },
-            { fr: 'Histologie', en: 'Histology', count: 10 },
-            { fr: 'Génétique', en: 'Genetics', count: 10 },
-            { fr: 'Anatomie', en: 'Anatomy', count: 10 },
-            { fr: 'Botanique', en: 'Botany', count: 10 },
-            { fr: 'Reproduction végétale', en: 'Plant Reproduction', count: 10 },
-          ]
-        },
-        chemistry: {
-          total: 60, duration: 120, unit: 'minutes',
-          courses: [
-            { fr: 'Chimie générale', en: 'General Chemistry', count: 20 },
-            { fr: 'Chimie organique', en: 'Organic Chemistry', count: 20 },
-            { fr: 'Chimie de solution', en: 'Chemistry of Solution', count: 20 },
-          ]
-        },
-        physics: {
-          total: 20, duration: 60, unit: 'minutes',
-          courses: [
-            { fr: 'Physique 1', en: 'Physics 1', count: 10 },
-            { fr: 'Physique 2', en: 'Physics 2', count: 10 },
-          ]
-        },
-        maths: {
-          total: 30, duration: 60, unit: 'minutes',
-          courses: [
-            { fr: 'Analyse', en: 'Analysis', count: 20 },
-            { fr: 'Statistique', en: 'Statistics', count: 10 },
-          ]
-        }
+        biology: { total: 60, duration: 60, courses: [
+          { fr: 'Cytologie', en: 'Cytology', count: 10 },
+          { fr: 'Histologie', en: 'Histology', count: 10 },
+          { fr: 'Génétique', en: 'Genetics', count: 10 },
+          { fr: 'Anatomie', en: 'Anatomy', count: 10 },
+          { fr: 'Botanique', en: 'Botany', count: 10 },
+          { fr: 'Reproduction végétale', en: 'Plant Reproduction', count: 10 }
+        ]},
+        chemistry: { total: 60, duration: 120, courses: [
+          { fr: 'Chimie générale', en: 'General Chemistry', count: 20 },
+          { fr: 'Chimie organique', en: 'Organic Chemistry', count: 20 },
+          { fr: 'Chimie de solution', en: 'Chemistry of Solution', count: 20 }
+        ]},
+        physics: { total: 20, duration: 60, courses: [
+          { fr: 'Physique 1', en: 'Physics 1', count: 10 },
+          { fr: 'Physique 2', en: 'Physics 2', count: 10 }
+        ]},
+        maths: { total: 30, duration: 60, courses: [
+          { fr: 'Analyse', en: 'Analysis', count: 20 },
+          { fr: 'Statistique', en: 'Statistics', count: 10 }
+        ]}
       }
     };
 
-    // ============================================
-    // State
-    // ============================================
     let currentLang = 'en';
-    let currentView = 'dashboard';
     let currentCategory = null;
 
-    // ============================================
-    // Initialization
-    // ============================================
-    async function init() {
-      const user = await getCurrentUser();
-      if (!user) {
-        window.location.href = 'index.html';
-        return;
-      }
-
-      const prefs = await getUserPrefs();
-      currentLang = prefs.language || 'en';
-
-      // Show import link only for admin
-      if (user.email === ADMIN_EMAIL) {
-        document.getElementById('navImport').classList.remove('hidden');
-      }
-
-      applyTranslations();
-      setupEventListeners();
-    }
-
-    function t(key) {
-      return translations[currentLang][key] || key;
-    }
-
-    function applyTranslations() {
-      document.getElementById('welcomeMsg').textContent = t('welcome');
-      document.getElementById('welcomeSub').textContent = t('welcomeSub');
-      document.getElementById('catBio').textContent = t('biology');
-      document.getElementById('catBioDesc').textContent = t('biologyDesc');
-      document.getElementById('catChem').textContent = t('chemistry');
-      document.getElementById('catChemDesc').textContent = t('chemistryDesc');
-      document.getElementById('catPhys').textContent = t('physics');
-      document.getElementById('catPhysDesc').textContent = t('physicsDesc');
-      document.getElementById('catMath').textContent = t('maths');
-      document.getElementById('catMathDesc').textContent = t('mathsDesc');
-      document.getElementById('catConcours').textContent = t('concours');
-      document.getElementById('catConcoursDesc').textContent = t('concoursDesc');
-      document.getElementById('catNotebook').textContent = t('notebook');
-      document.getElementById('catNotebookDesc').textContent = t('notebookDesc');
-      document.getElementById('catPrevTests').textContent = t('prevTests');
-      document.getElementById('catPrevTestsDesc').textContent = t('prevTestsDesc');
-      document.getElementById('catSettings').textContent = t('settings');
-      document.getElementById('catSettingsDesc').textContent = t('settingsDesc');
-      document.getElementById('navDashboard').textContent = t('back');
-    }
-
-    function setupEventListeners() {
-      document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-        e.preventDefault();
-        await logOut();
-        window.location.href = 'index.html';
-      });
-
-      // Category card clicks
-      document.querySelectorAll('.category-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const category = card.dataset.category;
-          if (category === 'concours') openConcours();
-          else if (category === 'notebook') openNotebook();
-          else if (category === 'prevtests') openPreviousTests();
-          else if (category === 'settings') openSettings();
-          else openCategory(category);
-        });
-      });
-    }
-
-    // ============================================
-    // Navigation
-    // ============================================
     function showContent() {
       document.getElementById('categoryGrid').classList.add('hidden');
       document.getElementById('contentArea').classList.remove('hidden');
     }
 
-    window.goBack = function() {
+    function goBack() {
       document.getElementById('categoryGrid').classList.remove('hidden');
       document.getElementById('contentArea').classList.add('hidden');
       document.getElementById('contentBody').innerHTML = '';
-      currentView = 'dashboard';
       currentCategory = null;
-    };
+    }
 
-    // ============================================
-    // Category Pages
-    // ============================================
-    window.openCategory = function(category) {
+    function openCategory(category) {
       currentCategory = category;
-      currentView = 'category';
       showContent();
-
       const catCourses = courses[category];
-      const catNames = {
-        biology: t('biology'),
-        chemistry: t('chemistry'),
-        physics: t('physics'),
-        maths: t('maths')
-      };
+      const catNames = { biology: 'Biology', chemistry: 'Chemistry', physics: 'Physics', maths: 'Maths' };
 
-      let html = `<h2 class="mb-3">${catNames[category]}</h2>`;
-      html += `<div class="card mb-3"><h3 class="mb-2">${t('selectCourse')}</h3><div class="category-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">`;
+      let html = '<h2 class="mb-3">' + catNames[category] + '</h2>';
+      html += '<div class="card mb-3"><h3 class="mb-2">Select a Course</h3><div class="category-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">';
 
-      catCourses.forEach(course => {
-        const name = course[currentLang];
-        html += `<button class="btn btn-outline" onclick="openCourse('${category}', '${course.en.replace(/'/g, "\\'")}')" style="text-align:left;">${name}</button>`;
+      catCourses.forEach(function(course) {
+        html += '<button class="btn btn-outline" onclick="window.app.openCourse(\'' + category + '\',\'' + course.en + '\')" style="text-align:left;">' + course[currentLang] + '</button>';
       });
 
-      html += `</div></div>`;
+      html += '</div></div>';
 
-      // Quick create test section
-      html += `
-        <div class="card">
-          <h3 class="mb-3">${t('createTest')}</h3>
-          <div class="form-group">
-            <label class="form-label">${t('selectCourse')}</label>
-            <select id="courseSelect" class="form-select">
-              <option value="">--</option>
-              ${catCourses.map(c => `<option value="${c.en}">${c[currentLang]}</option>`).join('')}
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">${t('questionPool')}</label>
-            <select id="poolSelect" class="form-select">
-              <option value="all">${t('all')}</option>
-              <option value="unused">${t('unused')}</option>
-              <option value="incorrect">${t('incorrectOmitted')}</option>
-              <option value="marked">${t('marked')}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">${t('numQuestions')}: <span id="qCountLabel">25</span></label>
-            <input type="range" id="qCount" min="1" max="100" value="25" class="form-input" oninput="document.getElementById('qCountLabel').textContent=this.value">
-          </div>
-          <div class="form-group">
-            <label class="form-label">${t('tutorMode')}</label>
-            <select id="tutorSelect" class="form-select">
-              <option value="on">${t('tutorOn')}</option>
-              <option value="off">${t('tutorOff')}</option>
-            </select>
-          </div>
-          <button class="btn btn-primary" onclick="startCourseTest('${category}')">${t('startTest')}</button>
-        </div>
-      `;
+      html += '<div class="card"><h3 class="mb-3">Create Test</h3>';
+      html += '<div class="form-group"><label class="form-label">Course</label><select id="courseSelect" class="form-select"><option value="">--</option>';
+      catCourses.forEach(function(c) {
+        html += '<option value="' + c.en + '">' + c[currentLang] + '</option>';
+      });
+      html += '</select></div>';
+      html += '<div class="form-group"><label class="form-label">Question Pool</label><select id="poolSelect" class="form-select"><option value="all">All</option><option value="unused">Unused</option><option value="incorrect">Incorrect/Omitted</option><option value="marked">Marked</option></select></div>';
+      html += '<div class="form-group"><label class="form-label">Number of Questions: <span id="qCountLabel">25</span></label><input type="range" id="qCount" min="1" max="100" value="25" class="form-input" oninput="document.getElementById(\'qCountLabel\').textContent=this.value"></div>';
+      html += '<div class="form-group"><label class="form-label">Tutor Mode</label><select id="tutorSelect" class="form-select"><option value="on">ON (continue after time)</option><option value="off">OFF (auto-submit)</option></select></div>';
+      html += '<button class="btn btn-primary" onclick="window.app.startTest(\'' + category + '\')">Start Test</button>';
+      html += '</div>';
 
       document.getElementById('contentBody').innerHTML = html;
-    };
+    }
 
-    window.openCourse = function(courseEn) {
-      // Show course details, previous tests, etc.
-      const courseData = courses[currentCategory].find(c => c.en === courseEn);
+    function openCourse(category, courseEn) {
+      const courseData = courses[category].find(function(c) { return c.en === courseEn; });
       if (!courseData) return;
 
-      let html = `<h2 class="mb-3">${courseData[currentLang]}</h2>`;
-      html += `<div class="card mb-3"><h3 class="mb-2">${t('performance')}</h3><p class="text-secondary">Coming soon...</p></div>`;
-      html += `<div class="card"><h3 class="mb-2">${t('reviewTests')}</h3><p class="text-secondary">${t('noTests')}</p></div>`;
+      let html = '<h2 class="mb-3">' + courseData[currentLang] + '</h2>';
+      html += '<div class="card mb-3"><h3 class="mb-2">Performance</h3><p class="text-secondary">Coming soon...</p></div>';
+      html += '<div class="card"><h3 class="mb-2">Review Previous Tests</h3><p class="text-secondary">No tests completed yet</p></div>';
 
       document.getElementById('contentBody').innerHTML = html;
-    };
+    }
 
-    window.startCourseTest = function(category) {
+    function startCourseTest(category) {
       const courseSelect = document.getElementById('courseSelect');
       const pool = document.getElementById('poolSelect').value;
       const numQ = parseInt(document.getElementById('qCount').value);
@@ -575,7 +253,6 @@
         return;
       }
 
-      // Store test config and redirect to test page
       const testConfig = {
         type: 'course',
         category: category,
@@ -588,72 +265,56 @@
 
       sessionStorage.setItem('testConfig', JSON.stringify(testConfig));
       window.location.href = 'test.html';
-    };
+    }
 
-    // ============================================
-    // Concours Exam
-    // ============================================
-    window.openConcours = function() {
-      currentView = 'concours';
+    function openConcours() {
       showContent();
-
-      let html = `<h2 class="mb-3">${t('concours')}</h2>`;
-      html += `<div class="card mb-3"><h3 class="mb-2">${t('selectType')}</h3>`;
-      html += `<div class="category-grid" style="grid-template-columns: 1fr 1fr;">`;
-      html += `<button class="btn btn-concours" onclick="selectConcoursType('med')" style="padding:20px; text-align:center;"><strong>${t('concoursMed')}</strong></button>`;
-      html += `<button class="btn btn-concours" onclick="selectConcoursType('pharma')" style="padding:20px; text-align:center;"><strong>${t('concoursPharma')}</strong></button>`;
-      html += `</div></div>`;
-
+      let html = '<h2 class="mb-3">Concours Exam</h2>';
+      html += '<div class="card mb-3"><h3 class="mb-2">Select Exam Type</h3>';
+      html += '<div class="category-grid" style="grid-template-columns: 1fr 1fr;">';
+      html += '<button class="btn btn-concours" onclick="window.app.selectConcoursType(\'med\')" style="padding:20px;"><strong>Concours de Médecine et Dentisterie</strong></button>';
+      html += '<button class="btn btn-concours" onclick="window.app.selectConcoursType(\'pharma\')" style="padding:20px;"><strong>Concours de Pharmacie</strong></button>';
+      html += '</div></div>';
       document.getElementById('contentBody').innerHTML = html;
-    };
+    }
 
-    window.selectConcoursType = function(type) {
-      let html = `<h2 class="mb-3">${type === 'med' ? t('concoursMed') : t('concoursPharma')}</h2>`;
-      html += `<div class="card mb-3"><h3 class="mb-2">${t('selectCategory')}</h3>`;
-      html += `<div class="category-grid" style="grid-template-columns: repeat(2, 1fr);">`;
+    function selectConcoursType(type) {
+      let html = '<h2 class="mb-3">' + (type === 'med' ? 'Concours de Médecine et Dentisterie' : 'Concours de Pharmacie') + '</h2>';
+      html += '<div class="card mb-3"><h3 class="mb-2">Select Category</h3><div class="category-grid" style="grid-template-columns: repeat(2, 1fr);">';
 
       const cats = [
-        { key: 'biology', cls: 'biology', label: t('biology') },
-        { key: 'chemistry', cls: 'chemistry', label: t('chemistry') },
-        { key: 'physics', cls: 'physics', label: t('physics') },
-        { key: 'maths', cls: 'maths', label: t('maths') },
+        { key: 'biology', cls: 'biology', label: 'Biology' },
+        { key: 'chemistry', cls: 'chemistry', label: 'Chemistry' },
+        { key: 'physics', cls: 'physics', label: 'Physics' },
+        { key: 'maths', cls: 'maths', label: 'Maths' }
       ];
 
-      cats.forEach(cat => {
+      cats.forEach(function(cat) {
         const struct = concoursStructure[type][cat.key];
-        html += `<button class="btn btn-${cat.cls}" onclick="generateConcours('${type}', '${cat.key}')" style="padding:20px; text-align:center;">
-          <strong>${cat.label}</strong><br>
-          <small>${struct.total} ${t('question')} · ${struct.duration} ${t('minutes')}</small>
-        </button>`;
+        html += '<button class="btn btn-' + cat.cls + '" onclick="window.app.generateConcours(\'' + type + '\',\'' + cat.key + '\')" style="padding:20px;text-align:center;"><strong>' + cat.label + '</strong><br><small>' + struct.total + ' questions · ' + struct.duration + ' min</small></button>';
       });
 
-      html += `</div></div>`;
-
+      html += '</div></div>';
       document.getElementById('contentBody').innerHTML = html;
-    };
+    }
 
-    window.generateConcours = function(type, category) {
+    function generateConcours(type, category) {
       const struct = concoursStructure[type][category];
-
-      let html = `<h2 class="mb-3">${t('concours')} - ${t(category)}</h2>`;
-      html += `<div class="card mb-3">`;
-      html += `<p><strong>${t('numQuestions')}:</strong> ${struct.total}</p>`;
-      html += `<p><strong>${t('duration')}:</strong> ${struct.duration} ${t('minutes')}</p>`;
-      html += `<h4 class="mt-2 mb-1">${t('selectCourse')}:</h4><ul style="margin-left:20px;">`;
-
-      struct.courses.forEach(c => {
-        html += `<li>${c[currentLang]} — ${c.count} ${t('question')}</li>`;
+      let html = '<h2 class="mb-3">Concours - ' + category + '</h2>';
+      html += '<div class="card mb-3">';
+      html += '<p><strong>Questions:</strong> ' + struct.total + '</p>';
+      html += '<p><strong>Duration:</strong> ' + struct.duration + ' minutes</p>';
+      html += '<h4 class="mt-2 mb-1">Distribution:</h4><ul style="margin-left:20px;">';
+      struct.courses.forEach(function(c) {
+        html += '<li>' + c[currentLang] + ' — ' + c.count + ' questions</li>';
       });
-
-      html += `</ul></div>`;
-      html += `<button class="btn btn-concours btn-block" onclick="startConcoursTest('${type}', '${category}')">${t('generateExam')}</button>`;
-
+      html += '</ul></div>';
+      html += '<button class="btn btn-concours btn-block" onclick="window.app.startConcoursTest(\'' + type + '\',\'' + category + '\')">Generate Exam</button>';
       document.getElementById('contentBody').innerHTML = html;
-    };
+    }
 
-    window.startConcoursTest = function(type, category) {
+    function startConcoursTest(type, category) {
       const struct = concoursStructure[type][category];
-
       const testConfig = {
         type: 'concours',
         concoursType: type,
@@ -664,101 +325,106 @@
         tutorMode: 'off',
         lang: currentLang
       };
-
       sessionStorage.setItem('testConfig', JSON.stringify(testConfig));
       window.location.href = 'test.html';
-    };
+    }
 
-    // ============================================
-    // Notebook
-    // ============================================
-    window.openNotebook = function() {
-      currentView = 'notebook';
+    function openNotebook() {
       showContent();
-
-      let html = `<h2 class="mb-3">${t('notebook')}</h2>`;
-      html += `<div class="card"><p class="text-secondary">${t('noNotes')}</p></div>`;
-
+      let html = '<h2 class="mb-3">Notebook</h2>';
+      html += '<div class="card"><p class="text-secondary">No notes saved yet</p></div>';
       document.getElementById('contentBody').innerHTML = html;
-    };
+    }
 
-    // ============================================
-    // Previous Tests
-    // ============================================
-    window.openPreviousTests = function() {
-      currentView = 'prevTests';
+    function openPreviousTests() {
       showContent();
-
-      let html = `<h2 class="mb-3">${t('prevTests')}</h2>`;
-      html += `<div class="card"><p class="text-secondary">${t('noTests')}</p></div>`;
-
+      let html = '<h2 class="mb-3">Previous Tests</h2>';
+      html += '<div class="card"><p class="text-secondary">No tests completed yet</p></div>';
       document.getElementById('contentBody').innerHTML = html;
-    };
+    }
 
-    // ============================================
-    // Settings
-    // ============================================
-    window.openSettings = function() {
-      currentView = 'settings';
+    function openSettings() {
       showContent();
-
-      let html = `<h2 class="mb-3">${t('settings')}</h2>`;
-      html += `
-        <div class="card">
-          <h3 class="mb-3">${t('changeLanguage')}</h3>
-          <div class="form-group">
-            <label class="form-label">${t('adminPassword')}</label>
-            <input type="password" id="adminPwd" class="form-input" placeholder="${t('adminPassword')}">
-          </div>
-          <div id="langSection" class="hidden">
-            <div class="form-group">
-              <label class="form-label">${t('language')}</label>
-              <select id="langSelect" class="form-select">
-                <option value="en">English</option>
-                <option value="fr">Français</option>
-              </select>
-            </div>
-            <button class="btn btn-primary" onclick="saveLanguage()">${t('save')}</button>
-          </div>
-          <div id="pwdError" class="hidden" style="color:var(--danger);margin-top:10px;">${t('incorrectPassword')}</div>
-          <button class="btn btn-outline mt-2" onclick="checkAdminPwd()">${t('changeLanguage')} →</button>
-        </div>
-      `;
-
+      let html = '<h2 class="mb-3">Settings</h2>';
+      html += '<div class="card"><h3 class="mb-3">Change Language</h3>';
+      html += '<div class="form-group"><label class="form-label">Admin Password</label><input type="password" id="adminPwd" class="form-input" placeholder="Admin Password"></div>';
+      html += '<div id="langSection" class="hidden"><div class="form-group"><label class="form-label">Language</label><select id="langSelect" class="form-select"><option value="en">English</option><option value="fr">Français</option></select></div><button class="btn btn-primary" onclick="window.app.saveLanguage()">Save</button></div>';
+      html += '<div id="pwdError" class="hidden" style="color:var(--danger);margin-top:10px;">Incorrect admin password</div>';
+      html += '<button class="btn btn-outline mt-2" onclick="window.app.checkAdminPwd()">Change Language →</button></div>';
       document.getElementById('contentBody').innerHTML = html;
-    };
+    }
 
-    window.checkAdminPwd = function() {
-      const pwd = document.getElementById('adminPwd').value';
-
+    function checkAdminPwd() {
+      const pwd = document.getElementById('adminPwd').value;
       if (pwd === ADMIN_PASSWORD) {
         document.getElementById('langSection').classList.remove('hidden');
         document.getElementById('pwdError').classList.add('hidden');
       } else {
         document.getElementById('pwdError').classList.remove('hidden');
       }
-    };
+    }
 
-    window.saveLanguage = async function() {
+    async function saveLanguage() {
       const newLang = document.getElementById('langSelect').value;
       currentLang = newLang;
-      
-      // Save to Appwrite user preferences
       try {
         await updateUserPrefs({ language: newLang });
-        alert(t('languageChanged'));
-        applyTranslations();
+        alert('Language changed successfully');
         openSettings();
       } catch (err) {
         alert('Error saving language: ' + err.message);
       }
+    }
+
+    // Initialize
+    async function init() {
+      const user = await getCurrentUser();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const prefs = await getUserPrefs();
+      currentLang = prefs.language || 'en';
+
+      if (user.email === ADMIN_EMAIL) {
+        document.getElementById('navImport').classList.remove('hidden');
+      }
+
+      // Event listeners
+      document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+        e.preventDefault();
+        await logOut();
+        window.location.href = 'index.html';
+      });
+
+      document.getElementById('backBtn').addEventListener('click', goBack);
+
+      document.querySelectorAll('.category-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+          const action = card.dataset.action;
+          if (action === 'concours') openConcours();
+          else if (action === 'notebook') openNotebook();
+          else if (action === 'prevtests') openPreviousTests();
+          else if (action === 'settings') openSettings();
+          else openCategory(action);
+        });
+      });
+    }
+
+    // Expose functions globally
+    window.app = {
+      openCategory: openCategory,
+      openCourse: openCourse,
+      startTest: startCourseTest,
+      selectConcoursType: selectConcoursType,
+      generateConcours: generateConcours,
+      startConcoursTest: startConcoursTest,
+      checkAdminPwd: checkAdminPwd,
+      saveLanguage: saveLanguage
     };
 
-    // ============================================
-    // Initialize
-    // ============================================
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1aac83929fb7b63',t:'MTc4Mzk3MTg2NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
