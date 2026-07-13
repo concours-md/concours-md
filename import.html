@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concours.md - Import Questions</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-brand">Concours<span>.md</span></div>
+      <div class="navbar-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="import.html" class="active">Import</a>
+        <a href="#" id="logoutBtn">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top: 30px; padding-bottom: 60px; max-width: 900px;">
+    <h1 class="mb-3">Import Questions</h1>
+    <p class="text-secondary mb-3">Upload questions in JSON format for the QBank</p>
+
+    <!-- Import Form -->
+    <div class="card mb-3">
+      <h3 class="mb-3">JSON Format</h3>
+      <p class="text-secondary mb-2">Questions must follow this structure:</p>
+      <pre style="background: #f4f4f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5;"><code>{
+  "category": "Biology",
+  "course": { "fr": "Cytologie", "en": "Cytology" },
+  "topic": { "fr": "Membrane plasmique", "en": "Plasma membrane" },
+  "difficulty": "medium",
+  "correct": "C",
+  "en": {
+    "stem": "Question stem...\n\nWhat is correct?",
+    "choices": ["A", "B", "C", "D", "E"],
+    "objective": "Identify...",
+    "rationale": "Correct because...",
+    "whyWrong": { "A": "...", "B": "...", "D": "...", "E": "..." }
+  },
+  "fr": {
+    "stem": "Énoncé...\n\nQuelle réponse ?",
+    "choices": ["A", "B", "C", "D", "E"],
+    "objective": "Identifier...",
+    "rationale": "Correct parce que...",
+    "whyWrong": { "A": "...", "B": "...", "D": "...", "E": "..." }
+  }
+}</code></pre>
+    </div>
+
+    <!-- Upload Area -->
+    <div class="card mb-3">
+      <h3 class="mb-3">Upload JSON File</h3>
+      <div class="form-group">
+        <input type="file" id="fileInput" accept=".json" class="form-input">
+      </div>
+      <button class="btn btn-primary" onclick="uploadFile()">Upload & Import</button>
+      <div id="uploadStatus" class="mt-2"></div>
+    </div>
+
+    <!-- Paste JSON -->
+    <div class="card mb-3">
+      <h3 class="mb-3">Or Paste JSON Directly</h3>
+      <div class="form-group">
+        <textarea id="jsonInput" class="form-input" rows="10" placeholder='[{"category": "Biology", ...}]'></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="importJSON()">Import JSON</button>
+      <div id="importStatus" class="mt-2"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card">
+      <h3 class="mb-3">Database Stats</h3>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-value" id="totalQuestions">0</div>
+          <div class="stat-label">Total Questions</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="totalCourses">0</div>
+          <div class="stat-label">Courses</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="totalCategories">4</div>
+          <div class="stat-label">Categories</div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm mt-2" onclick="loadStats()">Refresh Stats</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getCurrentUser, logOut } from './auth.js';
+    import { databases, DB_ID, COLLECTIONS, Query } from './appwrite.js';
+
+    // Check auth
+    async function init() {
+      const user = await getCurrentUser();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+      loadStats();
+    }
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await logOut();
+      window.location.href = 'index.html';
+    });
+
+    // Upload file
+    window.uploadFile = function() {
+      const fileInput = document.getElementById('fileInput');
+      const status = document.getElementById('uploadStatus');
+
+      if (!fileInput.files.length) {
+        status.innerHTML = '<span style="color: var(--danger);">Please select a file</span>';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          processQuestions(data);
+        } catch (err) {
+          status.innerHTML = `<span style="color: var(--danger);">Invalid JSON: ${err.message}</span>`;
+        }
+      };
+      reader.readAsText(fileInput.files[0]);
+    };
+
+    // Import pasted JSON
+    window.importJSON = function() {
+      const input = document.getElementById('jsonInput').value;
+      const status = document.getElementById('importStatus');
+
+      if (!input.trim()) {
+        status.innerHTML = '<span style="color: var(--danger);">Please enter JSON data</span>';
+        return;
+      }
+
+      try {
+        const data = JSON.parse(input);
+        processQuestions(data);
+      } catch (err) {
+        status.innerHTML = `<span style="color: var(--danger);">Invalid JSON: ${err.message}</span>`;
+      }
+    };
+
+    // Process and validate questions
+    async function processQuestions(data) {
+      const status = document.getElementById('importStatus') || document.getElementById('uploadStatus');
+      
+      if (!Array.isArray(data)) {
+        data = [data]; // Single question
+      }
+
+      let imported = 0;
+      let errors = [];
+
+      for (let i = 0; i < data.length; i++) {
+        const q = data[i];
+        
+        // Validate required fields
+        if (!q.category || !q.course || !q.correct) {
+          errors.push(`Question ${i+1}: Missing required fields`);
+          continue;
+        }
+
+        if (!q.en || !q.fr) {
+          errors.push(`Question ${i+1}: Missing language versions`);
+          continue;
+        }
+
+        try {
+          // Convert JSON fields to strings for Appwrite (6 attribute limit)
+          const doc = {
+            category: q.category,
+            course: JSON.stringify(q.course),
+            correct: q.correct,
+            en: JSON.stringify(q.en),
+            fr: JSON.stringify(q.fr),
+            metadata: JSON.stringify({
+              difficulty: q.difficulty || 'medium',
+              topic: q.topic || {}
+            })
+          };
+          await databases.createDocument(DB_ID, COLLECTIONS.QUESTIONS, 'unique()', doc);
+          imported++;
+        } catch (err) {
+          errors.push(`Question ${i+1}: ${err.message}`);
+        }
+      }
+
+      let resultHTML = `<span style="color: var(--success);">✓ Imported ${imported} questions</span>`;
+      if (errors.length > 0) {
+        resultHTML += `<br><span style="color: var(--warning);">⚠ ${errors.length} errors:</span>`;
+        resultHTML += '<ul style="margin-left:20px; font-size:0.85rem; color:var(--danger);">';
+        errors.slice(0, 10).forEach(e => resultHTML += `<li>${e}</li>`);
+        if (errors.length > 10) resultHTML += `<li>...and ${errors.length - 10} more</li>`;
+        resultHTML += '</ul>';
+      }
+
+      status.innerHTML = resultHTML;
+      loadStats();
+    }
+
+    // Load database stats
+    window.loadStats = async function() {
+      try {
+        const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [Query.limit(1)]);
+        document.getElementById('totalQuestions').textContent = result.total;
+      } catch {
+        document.getElementById('totalQuestions').textContent = '0';
+      }
+    };
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,653 @@
+/* ============================================
+   Concours.md - Main Stylesheet
+   Lebanese University CSVT QBank
+   ============================================ */
+
+/* CSS Variables - Color Palette */
+:root {
+  /* Category Colors */
+  --bio-green: #2ecc71;
+  --bio-green-dark: #27ae60;
+  --chem-purple: #9b59b6;
+  --chem-purple-dark: #8e44ad;
+  --phys-blue: #3498db;
+  --phys-blue-dark: #2980b9;
+  --math-orange: #e67e22;
+  --math-orange-dark: #d35400;
+  --concours-gold: #f39c12;
+  --concours-dark: #2c3e50;
+
+  /* Neutral Colors */
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #ffffff;
+  --bg-dark: #1a1a2e;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --text-light: #ffffff;
+  --border-color: #e0e0e0;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+  /* Status Colors */
+  --success: #27ae60;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --info: #3498db;
+}
+
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--phys-blue);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================
+   Layout
+   ============================================ */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.container-sm {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ============================================
+   Navigation
+   ============================================ */
+
+.navbar {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+}
+
+.navbar .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--concours-dark);
+}
+
+.navbar-brand span {
+  color: var(--concours-gold);
+}
+
+.navbar-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.navbar-links a {
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.navbar-links a:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+
+.card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-category {
+  border-left: 4px solid transparent;
+}
+
+.card-category.biology { border-left-color: var(--bio-green); }
+.card-category.chemistry { border-left-color: var(--chem-purple); }
+.card-category.physics { border-left-color: var(--phys-blue); }
+.card-category.maths { border-left-color: var(--math-orange); }
+.card-category.concours { border-left-color: var(--concours-gold); }
+
+/* ============================================
+   Buttons
+   ============================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--concours-dark);
+  color: var(--text-light);
+}
+
+.btn-primary:hover {
+  background: #1a252f;
+}
+
+.btn-biology { background: var(--bio-green); color: white; }
+.btn-biology:hover { background: var(--bio-green-dark); }
+
+.btn-chemistry { background: var(--chem-purple); color: white; }
+.btn-chemistry:hover { background: var(--chem-purple-dark); }
+
+.btn-physics { background: var(--phys-blue); color: white; }
+.btn-physics:hover { background: var(--phys-blue-dark); }
+
+.btn-maths { background: var(--math-orange); color: white; }
+.btn-maths:hover { background: var(--math-orange-dark); }
+
+.btn-concours { background: var(--concours-dark); color: var(--concours-gold); }
+.btn-concours:hover { background: #1a252f; }
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-outline:hover {
+  border-color: var(--text-primary);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   Forms
+   ============================================ */
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--phys-blue);
+}
+
+.form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--phys-blue);
+}
+
+/* ============================================
+   Auth Pages (Login/Signup)
+   ============================================ */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--concours-dark) 0%, #16213e 100%);
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.auth-logo h1 {
+  font-size: 2rem;
+  color: var(--concours-dark);
+}
+
+.auth-logo h1 span {
+  color: var(--concours-gold);
+}
+
+.auth-logo p {
+  color: var(--text-secondary);
+  margin-top: 5px;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   Dashboard
+   ============================================ */
+
+.dashboard-header {
+  margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.dashboard-header p {
+  color: var(--text-secondary);
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.category-card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.category-card.biology { border-color: var(--bio-green); }
+.category-card.chemistry { border-color: var(--chem-purple); }
+.category-card.physics { border-color: var(--phys-blue); }
+.category-card.maths { border-color: var(--math-orange); }
+.category-card.concours { border-color: var(--concours-gold); background: var(--concours-dark); color: white; }
+.category-card.concours .card-title { color: white; }
+.category-card.concours .card-desc { color: #bdc3c7; }
+
+.category-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.category-card.biology .category-icon { background: rgba(46, 204, 113, 0.1); }
+.category-card.chemistry .category-icon { background: rgba(155, 89, 182, 0.1); }
+.category-card.physics .category-icon { background: rgba(52, 152, 219, 0.1); }
+.category-card.maths .category-icon { background: rgba(230, 126, 34, 0.1); }
+.category-card.concours .category-icon { background: rgba(243, 156, 18, 0.2); }
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.card-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   Test Interface
+   ============================================ */
+
+.test-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+.timer {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+.timer.warning { color: var(--warning); }
+.timer.danger { color: var(--danger); }
+
+.question-card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: var(--shadow);
+}
+
+.question-number {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.question-stem {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 24px;
+  white-space: pre-wrap;
+}
+
+.answer-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.answer-choice:hover {
+  border-color: var(--phys-blue);
+  background: rgba(52, 152, 219, 0.05);
+}
+
+.answer-choice.selected {
+  border-color: var(--phys-blue);
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.answer-choice.correct {
+  border-color: var(--success);
+  background: rgba(39, 174, 96, 0.1);
+}
+
+.answer-choice.incorrect {
+  border-color: var(--danger);
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.answer-choice.strikethrough .choice-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.choice-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.choice-text {
+  flex: 1;
+  line-height: 1.5;
+}
+
+/* ============================================
+   Question Navigator
+   ============================================ */
+
+.question-navigator {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  margin-top: 20px;
+  box-shadow: var(--shadow);
+}
+
+.nav-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid var(--border-color);
+  background: white;
+  transition: all 0.2s;
+}
+
+.nav-dot:hover {
+  border-color: var(--phys-blue);
+}
+
+.nav-dot.current {
+  border-color: var(--phys-blue);
+  background: var(--phys-blue);
+  color: white;
+}
+
+.nav-dot.answered {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.nav-dot.marked {
+  border-color: var(--warning);
+  background: var(--warning);
+  color: white;
+}
+
+.nav-dot.marked.answered {
+  background: var(--success);
+  border-color: var(--warning);
+}
+
+/* ============================================
+   Results / Summary
+   ============================================ */
+
+.results-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.score-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 auto 20px;
+  color: white;
+}
+
+.score-circle.excellent { background: var(--success); }
+.score-circle.good { background: var(--info); }
+.score-circle.average { background: var(--warning); }
+.score-circle.poor { background: var(--danger); }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.stat-box {
+  text-align: center;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   Utilities
+   ============================================ */
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.hidden { display: none !important; }
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success { background: rgba(39, 174, 96, 0.1); color: var(--success); }
+.badge-danger { background: rgba(231, 76, 60, 0.1); color: var(--danger); }
+.badge-warning { background: rgba(243, 156, 18, 0.1); color: var(--warning); }
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .test-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .navbar .container {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

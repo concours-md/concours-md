@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concours.md - Test</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- MathJax for equations -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <style>
+    .test-body { background: #f0f2f5; }
+    .test-navigator { position: sticky; bottom: 0; }
+    .equation { font-family: 'Times New Roman', serif; font-style: italic; }
+  </style>
+</head>
+<body class="test-body">
+  <!-- Test Header -->
+  <div class="test-header">
+    <div class="container" style="max-width: 1000px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <strong id="testTitle">Test</strong>
+        <span id="questionCounter" style="margin-left: 15px; color: var(--text-secondary);">1 / 25</span>
+      </div>
+      <div style="display: flex; gap: 15px; align-items: center;">
+        <span id="markedBadge" class="badge badge-warning hidden">★ Marked</span>
+        <span id="timer" class="timer">45:00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Test Area -->
+  <div class="container" style="max-width: 1000px; padding-top: 20px;">
+    
+    <!-- Question Card -->
+    <div class="question-card" id="questionCard">
+      <div class="question-number" id="questionNum">Question 1</div>
+      <div class="question-stem" id="questionStem">Loading question...</div>
+      <div id="answerChoices"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+      <button class="btn btn-outline btn-sm" id="markBtn" onclick="toggleMark()">★ Mark</button>
+      <button class="btn btn-outline btn-sm" onclick="strikethroughMode()">⟶ Strikethrough</button>
+      <button class="btn btn-outline btn-sm" onclick="prevQuestion()">← Previous</button>
+      <button class="btn btn-primary btn-sm" onclick="nextQuestion()">Next →</button>
+      <button class="btn btn-danger btn-sm" onclick="suspendTest()" style="margin-left: auto;">Suspend</button>
+      <button class="btn btn-concours btn-sm" onclick="submitTest()">Submit</button>
+    </div>
+
+    <!-- Question Navigator -->
+    <div class="question-navigator test-navigator" id="questionNav"></div>
+
+  </div>
+
+  <!-- Submit Confirmation Modal -->
+  <div id="submitModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+    <div class="card" style="max-width: 400px; width: 90%;">
+      <h3 class="mb-2">Submit Test?</h3>
+      <p class="text-secondary mb-2" id="submitSummary">You have answered X of Y questions.</p>
+      <p class="text-secondary mb-3" id="markedSummary"></p>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-concours" onclick="confirmSubmit()">Confirm Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Page (hidden initially) -->
+  <div id="resultsPage" class="hidden">
+    <div class="container" style="max-width: 900px; padding-top: 30px;">
+      <h1 class="mb-3">Test Results</h1>
+      <div class="card text-center mb-3">
+        <div class="score-circle" id="scoreCircle">0%</div>
+        <h2 id="scoreText">Score</h2>
+        <div class="stats-grid mt-3">
+          <div class="stat-box">
+            <div class="stat-value" id="correctCount" style="color: var(--success);">0</div>
+            <div class="stat-label">Correct</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="incorrectCount" style="color: var(--danger);">0</div>
+            <div class="stat-label">Incorrect</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="omittedCount" style="color: var(--text-secondary);">0</div>
+            <div class="stat-label">Omitted</div>
+          </div>
+        </div>
+        <p class="text-secondary mt-2" id="timeSummary"></p>
+      </div>
+
+      <div class="card">
+        <h3 class="mb-3">Question Review</h3>
+        <div id="reviewList"></div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+        <button class="btn btn-outline" onclick="reviewIncorrect()">Review Incorrect</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getCurrentUser, getUserLanguage } from './auth.js';
+    import { databases, DB_ID, COLLECTIONS, Query, ID } from './appwrite.js';
+
+    // ============================================
+    // State
+    // ============================================
+    let testConfig = null;
+    let questions = [];
+    let currentIndex = 0;
+    let answers = {}; // { questionId: selectedLetter }
+    let markedQuestions = new Set();
+    let timeRemaining = 0;
+    let timerInterval = null;
+    let questionTimes = {}; // { questionId: seconds }
+    let questionStartTime = Date.now();
+    let testStartTime = Date.now();
+    let isSubmitted = false;
+    let currentLang = 'en';
+
+    // ============================================
+    // Translations
+    // ============================================
+    const t = {
+      en: {
+        question: 'Question', of: 'of', marked: '★ Marked', mark: 'Mark', markedDone: '★ Marked',
+        strikethrough: 'Strikethrough', previous: 'Previous', next: 'Next', suspend: 'Suspend', submit: 'Submit',
+        submitTitle: 'Submit Test?', submitSummary: 'You have answered {x} of {y} questions.',
+        markedSummary: '{n} questions are marked for review.',
+        cancel: 'Cancel', confirm: 'Confirm Submit',
+        correct: 'Correct', incorrect: 'Incorrect', omitted: 'Omitted',
+        yourAnswer: 'Your Answer', correctAnswer: 'Correct Answer', rationale: 'Rationale',
+        timeUsed: 'Time Used', targetTime: 'Target Time',
+        review: 'Review Question', back: 'Back to Dashboard', reviewIncorrect: 'Review Incorrect',
+        suspendMsg: 'Test suspended. Your progress has been saved.',
+        noQuestions: 'No questions available for this test.',
+      },
+      fr: {
+        question: 'Question', of: 'sur', marked: '★ Marqué', mark: 'Marquer', markedDone: '★ Marqué',
+        strikethrough: 'Barrer', previous: 'Précédent', next: 'Suivant', suspend: 'Suspendre', submit: 'Soumettre',
+        submitTitle: 'Soumettre le Test?', submitSummary: 'Vous avez répondu à {x} questions sur {y}.',
+        markedSummary: '{n} questions sont marquées pour révision.',
+        cancel: 'Annuler', confirm: 'Confirmer',
+        correct: 'Correct', incorrect: 'Incorrect', omitted: 'Omis',
+        yourAnswer: 'Votre Réponse', correctAnswer: 'Bonne Réponse', rationale: 'Raisonnement',
+        timeUsed: 'Temps Utilisé', targetTime: 'Temps Cible',
+        review: 'Revoir', back: 'Retour au Tableau', reviewIncorrect: 'Revoir les Incorrectes',
+        suspendMsg: 'Test suspendu. Votre progression a été sauvegardée.',
+        noQuestions: 'Aucune question disponible pour ce test.',
+      }
+    };
+
+    function lang(key) {
+      return t[currentLang]?.[key] || t.en[key] || key;
+    }
+
+    // ============================================
+    // Initialization
+    // ============================================
+    async function init() {
+      const user = await getCurrentUser();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      currentLang = await getUserLanguage();
+
+      // Load test config from session
+      const configStr = sessionStorage.getItem('testConfig');
+      if (!configStr) {
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      testConfig = JSON.parse(configStr);
+      
+      // Calculate time based on questions
+      if (testConfig.type === 'concours') {
+        timeRemaining = testConfig.duration * 60;
+      } else {
+        // 1.5 minutes per question default
+        timeRemaining = testConfig.numQuestions * 90;
+      }
+
+      // Load questions
+      await loadQuestions();
+    }
+
+    async function loadQuestions() {
+      try {
+        let allQuestions = [];
+
+        if (testConfig.type === 'concours') {
+          // Load questions for each course in the concours
+          for (const course of testConfig.courses) {
+            const courseQuestions = await databases.listDocuments(
+              DB_ID, COLLECTIONS.QUESTIONS, [
+                Query.equal('category', testConfig.category),
+                Query.equal('course.en', course.en),
+                Query.limit(course.count)
+              ]
+            );
+            allQuestions = allQuestions.concat(courseQuestions.documents);
+          }
+        } else {
+          // Course-specific test
+          const result = await databases.listDocuments(
+            DB_ID, COLLECTIONS.QUESTIONS, [
+              Query.equal('category', testConfig.category),
+              Query.equal('course.en', testConfig.course),
+              Query.limit(testConfig.numQuestions)
+            ]
+          );
+          allQuestions = result.documents;
+        }
+
+        if (allQuestions.length === 0) {
+          document.getElementById('questionStem').textContent = lang('noQuestions');
+          return;
+        }
+
+        // Parse JSON strings back to objects
+        questions = allQuestions.map(q => {
+          const metadata = JSON.parse(q.metadata || '{}');
+          return {
+            ...q,
+            course: JSON.parse(q.course || '{}'),
+            topic: metadata.topic || {},
+            difficulty: metadata.difficulty || 'medium',
+            en: JSON.parse(q.en || '{}'),
+            fr: JSON.parse(q.fr || '{}')
+          };
+        });
+        shuffleArray(questions);
+        renderQuestion();
+        renderNavigator();
+        startTimer();
+      } catch (err) {
+        console.error('Failed to load questions:', err);
+        document.getElementById('questionStem').textContent = 'Error loading questions: ' + err.message;
+      }
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    // ============================================
+    // Render Question
+    // ============================================
+    function renderQuestion() {
+      const q = questions[currentIndex];
+      if (!q) return;
+
+      // Update counter
+      document.getElementById('questionCounter').textContent = `${currentIndex + 1} / ${questions.length}`;
+      document.getElementById('questionNum').textContent = `${lang('question')} ${currentIndex + 1}`;
+
+      // Update marked badge
+      const markBadge = document.getElementById('markedBadge');
+      const markBtn = document.getElementById('markBtn');
+      if (markedQuestions.has(currentIndex)) {
+        markBadge.classList.remove('hidden');
+        markBtn.textContent = lang('markedDone');
+        markBtn.style.borderColor = 'var(--warning)';
+      } else {
+        markBadge.classList.add('hidden');
+        markBtn.textContent = lang('mark');
+        markBtn.style.borderColor = '';
+      }
+
+      // Render stem with MathJax
+      const stem = q[currentLang]?.stem || q.en?.stem || '';
+      document.getElementById('questionStem').innerHTML = stem;
+      renderMath();
+
+      // Render choices
+      const choices = q[currentLang]?.choices || q.en?.choices || [];
+      const container = document.getElementById('answerChoices');
+      const letters = ['A', 'B', 'C', 'D', 'E'];
+      const selectedAnswer = answers[q.$id];
+
+      container.innerHTML = choices.map((choice, i) => {
+        const letter = letters[i];
+        const isSelected = selectedAnswer === letter;
+        return `
+          <div class="answer-choice ${isSelected ? 'selected' : ''}" 
+               onclick="selectAnswer('${letter}')" 
+               ondblclick="strikethroughChoice(this)"
+               data-letter="${letter}">
+            <span class="choice-letter">${letter}</span>
+            <span class="choice-text">${choice}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Track time per question
+      questionStartTime = Date.now();
+    }
+
+    function renderMath() {
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise([document.getElementById('questionCard')]).catch(err => {
+          console.log('MathJax error:', err);
+        });
+      }
+    }
+
+    // ============================================
+    // Answer Selection
+    // ============================================
+    window.selectAnswer = function(letter) {
+      const q = questions[currentIndex];
+      if (!q) return;
+
+      // Record time spent on this question
+      const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
+      questionTimes[q.$id] = (questionTimes[q.$id] || 0) + timeSpent;
+
+      answers[q.$id] = letter;
+
+      // Update UI
+      document.querySelectorAll('.answer-choice').forEach(el => {
+        el.classList.toggle('selected', el.dataset.letter === letter);
+      });
+
+      // Update navigator
+      renderNavigator();
+    };
+
+    // ============================================
+    // Strikethrough
+    // ============================================
+    let strikethroughEnabled = false;
+
+    window.strikethroughMode = function() {
+      strikethroughEnabled = !strikethroughEnabled;
+      document.querySelector('button[onclick="strikethroughMode()"]').style.background = 
+        strikethroughEnabled ? 'var(--phys-blue)' : '';
+    };
+
+    window.strikethroughChoice = function(el) {
+      el.classList.toggle('strikethrough');
+    };
+
+    // ============================================
+    // Navigation
+    // ============================================
+    window.nextQuestion = function() {
+      if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      }
+    };
+
+    window.prevQuestion = function() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+      }
+    };
+
+    window.goToQuestion = function(index) {
+      currentIndex = index;
+      renderQuestion();
+    };
+
+    // ============================================
+    // Mark Questions
+    // ============================================
+    window.toggleMark = function() {
+      const q = questions[currentIndex];
+      if (markedQuestions.has(currentIndex)) {
+        markedQuestions.delete(currentIndex);
+      } else {
+        markedQuestions.add(currentIndex);
+      }
+      renderQuestion();
+      renderNavigator();
+    };
+
+    // ============================================
+    // Question Navigator
+    // ============================================
+    function renderNavigator() {
+      const nav = document.getElementById('questionNav');
+      nav.innerHTML = questions.map((q, i) => {
+        const isAnswered = answers[q.$id] !== undefined;
+        const isMarked = markedQuestions.has(i);
+        const isCurrent = i === currentIndex;
+
+        let cls = 'nav-dot';
+        if (isCurrent) cls += ' current';
+        else if (isMarked) cls += ' marked';
+        else if (isAnswered) cls += ' answered';
+
+        return `<div class="${cls}" onclick="goToQuestion(${i})">${i + 1}</div>`;
+      }).join('');
+    }
+
+    // ============================================
+    // Timer
+    // ============================================
+    function startTimer() {
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+
+        if (timeRemaining <= 0) {
+          clearInterval(timerInterval);
+          if (testConfig.tutorMode === 'off') {
+            // Auto-submit
+            confirmSubmit();
+          }
+          // If tutor mode ON, just stop timer but allow continuing
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const timer = document.getElementById('timer');
+      const hours = Math.floor(Math.abs(timeRemaining) / 3600);
+      const minutes = Math.floor((Math.abs(timeRemaining) % 3600) / 60);
+      const seconds = Math.abs(timeRemaining) % 60;
+
+      if (timeRemaining < 0) {
+        timer.textContent = `-${hours > 0 ? hours + ':' : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        timer.className = 'timer danger';
+      } else if (timeRemaining < 300) {
+        timer.textContent = `${hours > 0 ? hours + ':' : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        timer.className = 'timer warning';
+      } else {
+        timer.textContent = `${hours > 0 ? hours + ':' : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        timer.className = 'timer';
+      }
+    }
+
+    // ============================================
+    // Suspend & Submit
+    // ============================================
+    window.suspendTest = function() {
+      clearInterval(timerInterval);
+      // Save progress to session
+      sessionStorage.setItem('suspendedTest', JSON.stringify({
+        testConfig, questions, answers, markedQuestions, timeRemaining, questionTimes
+      }));
+      alert(lang('suspendMsg'));
+      window.location.href = 'dashboard.html';
+    };
+
+    window.submitTest = function() {
+      const answered = Object.keys(answers).length;
+      const total = questions.length;
+      const marked = markedQuestions.size;
+
+      document.getElementById('submitSummary').textContent = lang('submitSummary').replace('{x}', answered).replace('{y}', total);
+      document.getElementById('markedSummary').textContent = lang('markedSummary').replace('{n}', marked);
+      document.getElementById('submitModal').classList.remove('hidden');
+    };
+
+    window.closeModal = function() {
+      document.getElementById('submitModal').classList.add('hidden');
+    };
+
+    window.confirmSubmit = function() {
+      if (isSubmitted) return;
+      isSubmitted = true;
+      clearInterval(timerInterval);
+      showResults();
+    };
+
+    // ============================================
+    // Results
+    // ============================================
+    function showResults() {
+      document.querySelector('.container').classList.add('hidden');
+      document.querySelector('.test-header').classList.add('hidden');
+      document.getElementById('resultsPage').classList.remove('hidden');
+
+      let correct = 0;
+      let incorrect = 0;
+      let omitted = 0;
+
+      questions.forEach(q => {
+        const userAnswer = answers[q.$id];
+        if (!userAnswer) omitted++;
+        else if (userAnswer === q.correct) correct++;
+        else incorrect++;
+      });
+
+      const percentage = Math.round((correct / questions.length) * 100);
+
+      // Score circle
+      const circle = document.getElementById('scoreCircle');
+      circle.textContent = `${percentage}%`;
+      circle.className = 'score-circle ' + (percentage >= 70 ? 'excellent' : percentage >= 50 ? 'good' : percentage >= 30 ? 'average' : 'poor');
+
+      document.getElementById('correctCount').textContent = correct;
+      document.getElementById('incorrectCount').textContent = incorrect;
+      document.getElementById('omittedCount').textContent = omitted;
+
+      const totalTime = Math.round((Date.now() - testStartTime) / 1000);
+      const hours = Math.floor(totalTime / 3600);
+      const mins = Math.floor((totalTime % 3600) / 60);
+      const secs = totalTime % 60;
+      document.getElementById('timeSummary').textContent = `${lang('timeUsed')}: ${hours > 0 ? hours + 'h ' : ''}${mins}m ${secs}s`;
+
+      // Review list
+      const reviewList = document.getElementById('reviewList');
+      const letters = ['A', 'B', 'C', 'D', 'E'];
+
+      reviewList.innerHTML = questions.map((q, i) => {
+        const userAnswer = answers[q.$id];
+        const isCorrect = userAnswer === q.correct;
+        const isOmitted = !userAnswer;
+        const targetTime = 90; // seconds per question
+        const qTime = questionTimes[q.$id] || 0;
+        const isSlow = qTime > targetTime;
+
+        let statusColor = 'var(--text-secondary)';
+        let statusText = lang('omitted');
+        if (userAnswer) {
+          if (isCorrect) { statusColor = 'var(--success)'; statusText = lang('correct'); }
+          else { statusColor = 'var(--danger)'; statusText = lang('incorrect'); }
+        }
+
+        return `
+          <div class="card mb-2" style="cursor: pointer; border-left: 4px solid ${statusColor};" onclick="toggleReview(${i})">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>${lang('question')} ${i + 1}</strong>
+              <span style="color: ${statusColor};">${statusText}</span>
+              ${isSlow ? '<span style="color: var(--warning);">⏱ Slow</span>' : ''}
+            </div>
+            <div id="review-${i}" class="hidden mt-2" style="font-size: 0.9rem;">
+              <p><strong>${lang('yourAnswer')}:</strong> ${userAnswer || '-'}</p>
+              <p><strong>${lang('correctAnswer')}:</strong> ${q.correct}</p>
+              <p><strong>${lang('rationale')}:</strong> ${q[currentLang]?.rationale || q.en?.rationale || '-'}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Save test to database (async, don't block)
+      saveTestResults(correct, incorrect, omitted, percentage);
+    }
+
+    window.toggleReview = function(index) {
+      const el = document.getElementById(`review-${index}`);
+      el.classList.toggle('hidden');
+      if (!el.classList.contains('hidden')) {
+        renderMath();
+      }
+    };
+
+    window.reviewIncorrect = function() {
+      document.querySelectorAll('[id^="review-"]').forEach(el => el.classList.add('hidden');
+      // Show only incorrect ones
+      questions.forEach((q, i) => {
+        const userAnswer = answers[q.$id];
+        if (userAnswer && userAnswer !== q.correct) {
+          document.getElementById(`review-${i}`).classList.remove('hidden');
+        }
+      });
+    };
+
+    async function saveTestResults(correct, incorrect, omitted, percentage) {
+      try {
+        const user = await getCurrentUser();
+        await databases.createDocument(DB_ID, COLLECTIONS.TESTS, ID.unique(), {
+          userId: user.$id,
+          type: testConfig.type,
+          category: testConfig.category,
+          course: testConfig.course || '',
+          questions: JSON.stringify(questions.map(q => q.$id)),
+          answers: JSON.stringify(answers),
+          score: percentage,
+          duration: Math.round((Date.now() - testStartTime) / 1000),
+          createdAt: new Date().toISOString()
+        });
+      } catch (err) {
+        console.error('Failed to save test:', err);
+      }
+    }
+
+    // ============================================
+    // Initialize
+    // ============================================
+    init();
+  </script>
+</body>
+</html>

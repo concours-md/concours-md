@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concours.md - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- MathJax for equations -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-brand">Concours<span>.md</span></div>
+      <div class="navbar-links">
+        <a href="dashboard.html" id="navDashboard">Dashboard</a>
+        <a href="import.html" id="navImport" class="hidden">Import</a>
+        <a href="#" id="logoutBtn">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container" style="padding-top: 30px; padding-bottom: 60px;">
+    
+    <!-- Welcome Section -->
+    <div class="dashboard-header">
+      <h1 id="welcomeMsg">Welcome back!</h1>
+      <p id="welcomeSub">Choose a category to start practicing</p>
+    </div>
+
+    <!-- Category Grid -->
+    <div class="category-grid" id="categoryGrid">
+      <!-- Biology -->
+      <div class="category-card biology" onclick="openCategory('biology')">
+        <div class="category-icon">🧬</div>
+        <div>
+          <div class="card-title" id="catBio">Biology</div>
+          <div class="card-desc" id="catBioDesc">11 courses available</div>
+        </div>
+      </div>
+
+      <!-- Chemistry -->
+      <div class="category-card chemistry" onclick="openCategory('chemistry')">
+        <div class="category-icon">⚗️</div>
+        <div>
+          <div class="card-title" id="catChem">Chemistry</div>
+          <div class="card-desc" id="catChemDesc">3 courses available</div>
+        </div>
+      </div>
+
+      <!-- Physics -->
+      <div class="category-card physics" onclick="openCategory('physics')">
+        <div class="category-icon">⚡</div>
+        <div>
+          <div class="card-title" id="catPhys">Physics</div>
+          <div class="card-desc" id="catPhysDesc">2 courses available</div>
+        </div>
+      </div>
+
+      <!-- Maths -->
+      <div class="category-card maths" onclick="openCategory('maths')">
+        <div class="category-icon">📐</div>
+        <div>
+          <div class="card-title" id="catMath">Maths</div>
+          <div class="card-desc" id="catMathDesc">3 courses available</div>
+        </div>
+      </div>
+
+      <!-- Concours Exam -->
+      <div class="category-card concours" onclick="openConcours()">
+        <div class="category-icon">🎓</div>
+        <div>
+          <div class="card-title" id="catConcours">Concours Exam</div>
+          <div class="card-desc" id="catConcoursDesc">Simulate the real exam</div>
+        </div>
+      </div>
+
+      <!-- Notebook -->
+      <div class="category-card" onclick="openNotebook()" style="border-color: var(--text-secondary);">
+        <div class="category-icon">📓</div>
+        <div>
+          <div class="card-title" id="catNotebook">Notebook</div>
+          <div class="card-desc" id="catNotebookDesc">Your saved notes</div>
+        </div>
+      </div>
+
+      <!-- Previous Tests -->
+      <div class="category-card" onclick="openPreviousTests()" style="border-color: var(--info);">
+        <div class="category-icon">📊</div>
+        <div>
+          <div class="card-title" id="catPrevTests">Previous Tests</div>
+          <div class="card-desc" id="catPrevTestsDesc">Review your history</div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="category-card" onclick="openSettings()" style="border-color: var(--text-secondary);">
+        <div class="category-icon">⚙️</div>
+        <div>
+          <div class="card-title" id="catSettings">Settings</div>
+          <div class="card-desc" id="catSettingsDesc">Preferences & language</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic Content Area (hidden by default) -->
+    <div id="contentArea" class="hidden" style="margin-top: 30px;">
+      <button class="btn btn-outline btn-sm mb-3" onclick="goBack()">← Back to Dashboard</button>
+      <div id="contentBody"></div>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { getCurrentUser, logOut, getUserLanguage, getUserPrefs } from './auth.js';
+
+    // ============================================
+    // Translations
+    // ============================================
+    const translations = {
+      en: {
+        welcome: 'Welcome back!',
+        welcomeSub: 'Choose a category to start practicing',
+        biology: 'Biology',
+        biologyDesc: '11 courses available',
+        chemistry: 'Chemistry',
+        chemistryDesc: '3 courses available',
+        physics: 'Physics',
+        physicsDesc: '2 courses available',
+        maths: 'Maths',
+        mathsDesc: '3 courses available',
+        concours: 'Concours Exam',
+        concoursDesc: 'Simulate the real exam',
+        notebook: 'Notebook',
+        notebookDesc: 'Your saved notes',
+        prevTests: 'Previous Tests',
+        prevTestsDesc: 'Review your history',
+        settings: 'Settings',
+        settingsDesc: 'Preferences & language',
+        selectCourse: 'Select a Course',
+        createTest: 'Create Test',
+        reviewTests: 'Review Previous Tests',
+        performance: 'Performance',
+        questionPool: 'Question Pool',
+        all: 'All',
+        unused: 'Unused',
+        incorrectOmitted: 'Incorrect/Omitted',
+        marked: 'Marked',
+        numQuestions: 'Number of Questions',
+        tutorMode: 'Tutor Mode',
+        tutorOn: 'ON (continue after time)',
+        tutorOff: 'OFF (auto-submit)',
+        startTest: 'Start Test',
+        concoursMed: 'Concours de Médecine et Dentisterie',
+        concoursPharma: 'Concours de Pharmacie',
+        selectType: 'Select Exam Type',
+        selectCategory: 'Select Category',
+        generateExam: 'Generate Exam',
+        notEnough: 'Not enough questions available',
+        language: 'Language',
+        changeLanguage: 'Change Language',
+        adminPassword: 'Admin Password',
+        save: 'Save',
+        cancel: 'Cancel',
+        incorrectPassword: 'Incorrect admin password',
+        languageChanged: 'Language changed successfully',
+        notebook: 'Notebook',
+        noNotes: 'No notes saved yet',
+        addNote: 'Add Note',
+        objective: 'Objective',
+        explanation: 'Explanation',
+        saveNote: 'Save Note',
+        deleteNote: 'Delete',
+        testHistory: 'Test History',
+        noTests: 'No tests completed yet',
+        score: 'Score',
+        date: 'Date',
+        duration: 'Duration',
+        review: 'Review',
+        back: 'Back to Dashboard',
+        suspend: 'Suspend',
+        submit: 'Submit',
+        resume: 'Resume',
+        question: 'Question',
+        of: 'of',
+        timeRemaining: 'Time Remaining',
+        markedQuestions: 'Marked',
+        finish: 'Finish & Submit',
+        correct: 'Correct',
+        incorrect: 'Incorrect',
+        omitted: 'Omitted',
+        yourAnswer: 'Your Answer',
+        correctAnswer: 'Correct Answer',
+        rationale: 'Rationale',
+        whyWrong: 'Why Others Are Wrong',
+        timeUsed: 'Time Used',
+        targetTime: 'Target Time',
+        seconds: 'seconds',
+        minutes: 'minutes',
+        hours: 'hours',
+      },
+      fr: {
+        welcome: 'Bonjour !',
+        welcomeSub: 'Choisissez une catégorie pour commencer',
+        biology: 'Biologie',
+        biologyDesc: '11 cours disponibles',
+        chemistry: 'Chimie',
+        chemistryDesc: '3 cours disponibles',
+        physics: 'Physique',
+        physicsDesc: '2 cours disponibles',
+        maths: 'Maths',
+        mathsDesc: '3 cours disponibles',
+        concours: 'Examen Concours',
+        concoursDesc: 'Simuler le vrai examen',
+        notebook: 'Carnet',
+        notebookDesc: 'Vos notes sauvegardées',
+        prevTests: 'Tests Précédents',
+        prevTestsDesc: 'Revoir votre historique',
+        settings: 'Paramètres',
+        settingsDesc: 'Préférences et langue',
+        selectCourse: 'Sélectionner un Cours',
+        createTest: 'Créer un Test',
+        reviewTests: 'Revoir les Tests Précédents',
+        performance: 'Performance',
+        questionPool: 'Banque de Questions',
+        all: 'Tout',
+        unused: 'Inutilisées',
+        incorrectOmitted: 'Incorrectes/Ommises',
+        marked: 'Marquées',
+        numQuestions: 'Nombre de Questions',
+        tutorMode: 'Mode Tuteur',
+        tutorOn: 'ON (continuer après le temps)',
+        tutorOff: 'OFF (soumission auto)',
+        startTest: 'Commencer le Test',
+        concoursMed: 'Concours de Médecine et Dentisterie',
+        concoursPharma: 'Concours de Pharmacie',
+        selectType: 'Sélectionner le Type',
+        selectCategory: 'Sélectionner la Catégorie',
+        generateExam: 'Générer l\'Examen',
+        notEnough: 'Pas assez de questions disponibles',
+        language: 'Langue',
+        changeLanguage: 'Changer la Langue',
+        adminPassword: 'Mot de passe admin',
+        save: 'Enregistrer',
+        cancel: 'Annuler',
+        incorrectPassword: 'Mot de passe admin incorrect',
+        languageChanged: 'Langue changée avec succès',
+        notebook: 'Carnet',
+        noNotes: 'Aucune note sauvegardée',
+        addNote: 'Ajouter une Note',
+        objective: 'Objectif',
+        explanation: 'Explication',
+        saveNote: 'Enregistrer',
+        deleteNote: 'Supprimer',
+        testHistory: 'Historique des Tests',
+        noTests: 'Aucun test complété',
+        score: 'Score',
+        date: 'Date',
+        duration: 'Durée',
+        review: 'Revoir',
+        back: 'Retour au Tableau de Bord',
+        suspend: 'Suspendre',
+        submit: 'Soumettre',
+        resume: 'Reprendre',
+        question: 'Question',
+        of: 'sur',
+        timeRemaining: 'Temps Restant',
+        markedQuestions: 'Marquées',
+        finish: 'Terminer & Soumettre',
+        correct: 'Correct',
+        incorrect: 'Incorrect',
+        omitted: 'Omis',
+        yourAnswer: 'Votre Réponse',
+        correctAnswer: 'Bonne Réponse',
+        rationale: 'Raisonnement',
+        whyWrong: 'Pourquoi les Autres sont Faux',
+        timeUsed: 'Temps Utilisé',
+        targetTime: 'Temps Cible',
+        seconds: 'secondes',
+        minutes: 'minutes',
+        hours: 'heures',
+      }
+    };
+
+    // ============================================
+    // Course Data
+    // ============================================
+    const courses = {
+      biology: [
+        { fr: 'Cytologie', en: 'Cytology' },
+        { fr: 'Histologie animale', en: 'Animal Histology' },
+        { fr: 'Histologie végétale', en: 'Plant Histology' },
+        { fr: 'Génétique', en: 'Genetics' },
+        { fr: 'Anatomie', en: 'Anatomy' },
+        { fr: 'Botanique', en: 'Botany' },
+        { fr: 'Reproduction animale', en: 'Animal Reproduction' },
+        { fr: 'Reproduction végétale', en: 'Plant Reproduction' },
+        { fr: 'Embryologie', en: 'Embryology' },
+        { fr: 'Géologie', en: 'Geology' },
+        { fr: 'Écologie', en: 'Ecology' },
+      ],
+      chemistry: [
+        { fr: 'Chimie générale', en: 'General Chemistry' },
+        { fr: 'Chimie organique', en: 'Organic Chemistry' },
+        { fr: 'Chimie de solution', en: 'Chemistry of Solution' },
+      ],
+      physics: [
+        { fr: 'Physique 1', en: 'Physics 1' },
+        { fr: 'Physique 2', en: 'Physics 2' },
+      ],
+      maths: [
+        { fr: 'Analyse', en: 'Analysis' },
+        { fr: 'Statistique', en: 'Statistics' },
+        { fr: 'Algèbre', en: 'Algebra' },
+      ]
+    };
+
+    // Concours structure
+    const concoursStructure = {
+      med: {
+        biology: {
+          total: 120, duration: 120, unit: 'minutes',
+          courses: [
+            { fr: 'Cytologie', en: 'Cytology', count: 20 },
+            { fr: 'Histologie', en: 'Histology', count: 20 },
+            { fr: 'Génétique', en: 'Genetics', count: 20 },
+            { fr: 'Anatomie', en: 'Anatomy', count: 20 },
+            { fr: 'Botanique', en: 'Botany', count: 20 },
+            { fr: 'Reproduction végétale', en: 'Plant Reproduction', count: 20 },
+          ]
+        },
+        chemistry: {
+          total: 40, duration: 60, unit: 'minutes',
+          courses: [
+            { fr: 'Chimie générale', en: 'General Chemistry', count: 13 },
+            { fr: 'Chimie organique', en: 'Organic Chemistry', count: 14 },
+            { fr: 'Chimie de solution', en: 'Chemistry of Solution', count: 13 },
+          ]
+        },
+        physics: {
+          total: 20, duration: 60, unit: 'minutes',
+          courses: [
+            { fr: 'Physique 1', en: 'Physics 1', count: 10 },
+            { fr: 'Physique 2', en: 'Physics 2', count: 10 },
+          ]
+        },
+        maths: {
+          total: 30, duration: 60, unit: 'minutes',
+          courses: [
+            { fr: 'Analyse', en: 'Analysis', count: 20 },
+            { fr: 'Statistique', en: 'Statistics', count: 10 },
+          ]
+        }
+      },
+      pharma: {
+        biology: {
+          total: 60, duration: 60, unit: 'minutes',
+          courses: [
+            { fr: 'Cytologie', en: 'Cytology', count: 10 },
+            { fr: 'Histologie', en: 'Histology', count: 10 },
+            { fr: 'Génétique', en: 'Genetics', count: 10 },
+            { fr: 'Anatomie', en: 'Anatomy', count: 10 },
+            { fr: 'Botanique', en: 'Botany', count: 10 },
+            { fr: 'Reproduction végétale', en: 'Plant Reproduction', count: 10 },
+          ]
+        },
+        chemistry: {
+          total: 60, duration: 120, unit: 'minutes',
+          courses: [
+            { fr: 'Chimie générale', en: 'General Chemistry', count: 20 },
+            { fr: 'Chimie organique', en: 'Organic Chemistry', count: 20 },
+            { fr: 'Chimie de solution', en: 'Chemistry of Solution', count: 20 },
+          ]
+        },
+        physics: {
+          total: 20, duration: 60, unit: 'minutes',
+          courses: [
+            { fr: 'Physique 1', en: 'Physics 1', count: 10 },
+            { fr: 'Physique 2', en: 'Physics 2', count: 10 },
+          ]
+        },
+        maths: {
+          total: 30, duration: 60, unit: 'minutes',
+          courses: [
+            { fr: 'Analyse', en: 'Analysis', count: 20 },
+            { fr: 'Statistique', en: 'Statistics', count: 10 },
+          ]
+        }
+      }
+    };
+
+    // ============================================
+    // State
+    // ============================================
+    let currentLang = 'en';
+    let currentView = 'dashboard';
+    let currentCategory = null;
+
+    // ============================================
+    // Initialization
+    // ============================================
+    async function init() {
+      const user = await getCurrentUser();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const prefs = await getUserPrefs();
+      currentLang = prefs.language || 'en';
+
+      applyTranslations();
+      setupEventListeners();
+    }
+
+    function t(key) {
+      return translations[currentLang][key] || key;
+    }
+
+    function applyTranslations() {
+      document.getElementById('welcomeMsg').textContent = t('welcome');
+      document.getElementById('welcomeSub').textContent = t('welcomeSub');
+      document.getElementById('catBio').textContent = t('biology');
+      document.getElementById('catBioDesc').textContent = t('biologyDesc');
+      document.getElementById('catChem').textContent = t('chemistry');
+      document.getElementById('catChemDesc').textContent = t('chemistryDesc');
+      document.getElementById('catPhys').textContent = t('physics');
+      document.getElementById('catPhysDesc').textContent = t('physicsDesc');
+      document.getElementById('catMath').textContent = t('maths');
+      document.getElementById('catMathDesc').textContent = t('mathsDesc');
+      document.getElementById('catConcours').textContent = t('concours');
+      document.getElementById('catConcoursDesc').textContent = t('concoursDesc');
+      document.getElementById('catNotebook').textContent = t('notebook');
+      document.getElementById('catNotebookDesc').textContent = t('notebookDesc');
+      document.getElementById('catPrevTests').textContent = t('prevTests');
+      document.getElementById('catPrevTestsDesc').textContent = t('prevTestsDesc');
+      document.getElementById('catSettings').textContent = t('settings');
+      document.getElementById('catSettingsDesc').textContent = t('settingsDesc');
+      document.getElementById('navDashboard').textContent = t('back');
+    }
+
+    function setupEventListeners() {
+      document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await logOut();
+        window.location.href = 'index.html';
+      });
+    }
+
+    // ============================================
+    // Navigation
+    // ============================================
+    function showContent() {
+      document.getElementById('categoryGrid').classList.add('hidden');
+      document.getElementById('contentArea').classList.remove('hidden');
+    }
+
+    function goBack() {
+      document.getElementById('categoryGrid').classList.remove('hidden');
+      document.getElementById('contentArea').classList.add('hidden');
+      document.getElementById('contentBody').innerHTML = '';
+      currentView = 'dashboard';
+      currentCategory = null;
+    }
+
+    // ============================================
+    // Category Pages
+    // ============================================
+    window.openCategory = function(category) {
+      currentCategory = category;
+      currentView = 'category';
+      showContent();
+
+      const catCourses = courses[category];
+      const catNames = {
+        biology: t('biology'),
+        chemistry: t('chemistry'),
+        physics: t('physics'),
+        maths: t('maths')
+      };
+
+      let html = `<h2 class="mb-3">${catNames[category]}</h2>`;
+      html += `<div class="card mb-3"><h3 class="mb-2">${t('selectCourse')}</h3><div class="category-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">`;
+
+      catCourses.forEach(course => {
+        const name = course[currentLang];
+        html += `<button class="btn btn-outline" onclick="openCourse('${category}', '${course.en.replace(/'/g, "\\'")}')" style="text-align:left;">${name}</button>`;
+      });
+
+      html += `</div></div>`;
+
+      // Quick create test section
+      html += `
+        <div class="card">
+          <h3 class="mb-3">${t('createTest')}</h3>
+          <div class="form-group">
+            <label class="form-label">${t('selectCourse')}</label>
+            <select id="courseSelect" class="form-select">
+              <option value="">--</option>
+              ${catCourses.map(c => `<option value="${c.en}">${c[currentLang]}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">${t('questionPool')}</label>
+            <select id="poolSelect" class="form-select">
+              <option value="all">${t('all')}</option>
+              <option value="unused">${t('unused')}</option>
+              <option value="incorrect">${t('incorrectOmitted')}</option>
+              <option value="marked">${t('marked')}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">${t('numQuestions')}: <span id="qCountLabel">25</span></label>
+            <input type="range" id="qCount" min="1" max="100" value="25" class="form-input" oninput="document.getElementById('qCountLabel').textContent=this.value">
+          </div>
+          <div class="form-group">
+            <label class="form-label">${t('tutorMode')}</label>
+            <select id="tutorSelect" class="form-select">
+              <option value="on">${t('tutorOn')}</option>
+              <option value="off">${t('tutorOff')}</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="startCourseTest('${category}')">${t('startTest')}</button>
+        </div>
+      `;
+
+      document.getElementById('contentBody').innerHTML = html;
+    };
+
+    window.openCourse = function(courseEn) {
+      // Show course details, previous tests, etc.
+      const courseData = courses[currentCategory].find(c => c.en === courseEn);
+      if (!courseData) return;
+
+      let html = `<h2 class="mb-3">${courseData[currentLang]}</h2>`;
+      html += `<div class="card mb-3"><h3 class="mb-2">${t('performance')}</h3><p class="text-secondary">Coming soon...</p></div>`;
+      html += `<div class="card"><h3 class="mb-2">${t('reviewTests')}</h3><p class="text-secondary">${t('noTests')}</p></div>`;
+
+      document.getElementById('contentBody').innerHTML = html;
+    };
+
+    window.startCourseTest = function(category) {
+      const courseSelect = document.getElementById('courseSelect');
+      const pool = document.getElementById('poolSelect').value;
+      const numQ = parseInt(document.getElementById('qCount').value);
+      const tutorMode = document.getElementById('tutorSelect').value;
+
+      if (!courseSelect.value) {
+        alert('Please select a course');
+        return;
+      }
+
+      // Store test config and redirect to test page
+      const testConfig = {
+        type: 'course',
+        category: category,
+        course: courseSelect.value,
+        pool: pool,
+        numQuestions: numQ,
+        tutorMode: tutorMode,
+        lang: currentLang
+      };
+
+      sessionStorage.setItem('testConfig', JSON.stringify(testConfig));
+      window.location.href = 'test.html';
+    };
+
+    // ============================================
+    // Concours Exam
+    // ============================================
+    window.openConcours = function() {
+      currentView = 'concours';
+      showContent();
+
+      let html = `<h2 class="mb-3">${t('concours')}</h2>`;
+      html += `<div class="card mb-3"><h3 class="mb-2">${t('selectType')}</h3>`;
+      html += `<div class="category-grid" style="grid-template-columns: 1fr 1fr;">`;
+      html += `<button class="btn btn-concours" onclick="selectConcoursType('med')" style="padding:20px; text-align:center;"><strong>${t('concoursMed')}</strong></button>`;
+      html += `<button class="btn btn-concours" onclick="selectConcoursType('pharma')" style="padding:20px; text-align:center;"><strong>${t('concoursPharma')}</strong></button>`;
+      html += `</div></div>`;
+
+      document.getElementById('contentBody').innerHTML = html;
+    };
+
+    window.selectConcoursType = function(type) {
+      let html = `<h2 class="mb-3">${type === 'med' ? t('concoursMed') : t('concoursPharma')}</h2>`;
+      html += `<div class="card mb-3"><h3 class="mb-2">${t('selectCategory')}</h3>`;
+      html += `<div class="category-grid" style="grid-template-columns: repeat(2, 1fr);">`;
+
+      const cats = [
+        { key: 'biology', cls: 'biology', label: t('biology') },
+        { key: 'chemistry', cls: 'chemistry', label: t('chemistry') },
+        { key: 'physics', cls: 'physics', label: t('physics') },
+        { key: 'maths', cls: 'maths', label: t('maths') },
+      ];
+
+      cats.forEach(cat => {
+        const struct = concoursStructure[type][cat.key];
+        html += `<button class="btn btn-${cat.cls}" onclick="generateConcours('${type}', '${cat.key}')" style="padding:20px; text-align:center;">
+          <strong>${cat.label}</strong><br>
+          <small>${struct.total} ${t('question')} · ${struct.duration} ${t('minutes')}</small>
+        </button>`;
+      });
+
+      html += `</div></div>`;
+
+      document.getElementById('contentBody').innerHTML = html;
+    };
+
+    window.generateConcours = function(type, category) {
+      const struct = concoursStructure[type][category];
+
+      let html = `<h2 class="mb-3">${t('concours')} - ${t(category)}</h2>`;
+      html += `<div class="card mb-3">`;
+      html += `<p><strong>${t('numQuestions')}:</strong> ${struct.total}</p>`;
+      html += `<p><strong>${t('duration')}:</strong> ${struct.duration} ${t('minutes')}</p>`;
+      html += `<h4 class="mt-2 mb-1">${t('selectCourse')}:</h4><ul style="margin-left:20px;">`;
+
+      struct.courses.forEach(c => {
+        html += `<li>${c[currentLang]} — ${c.count} ${t('question')}</li>`;
+      });
+
+      html += `</ul></div>`;
+      html += `<button class="btn btn-concours btn-block" onclick="startConcoursTest('${type}', '${category}')">${t('generateExam')}</button>`;
+
+      document.getElementById('contentBody').innerHTML = html;
+    };
+
+    window.startConcoursTest = function(type, category) {
+      const struct = concoursStructure[type][category];
+
+      const testConfig = {
+        type: 'concours',
+        concoursType: type,
+        category: category,
+        totalQuestions: struct.total,
+        duration: struct.duration,
+        courses: struct.courses,
+        tutorMode: 'off',
+        lang: currentLang
+      };
+
+      sessionStorage.setItem('testConfig', JSON.stringify(testConfig));
+      window.location.href = 'test.html';
+    };
+
+    // ============================================
+    // Notebook
+    // ============================================
+    window.openNotebook = function() {
+      currentView = 'notebook';
+      showContent();
+
+      let html = `<h2 class="mb-3">${t('notebook')}</h2>`;
+      html += `<div class="card"><p class="text-secondary">${t('noNotes')}</p></div>`;
+
+      document.getElementById('contentBody').innerHTML = html;
+    };
+
+    // ============================================
+    // Previous Tests
+    // ============================================
+    window.openPreviousTests = function() {
+      currentView = 'prevTests';
+      showContent();
+
+      let html = `<h2 class="mb-3">${t('prevTests')}</h2>`;
+      html += `<div class="card"><p class="text-secondary">${t('noTests')}</p></div>`;
+
+      document.getElementById('contentBody').innerHTML = html;
+    };
+
+    // ============================================
+    // Settings
+    // ============================================
+    window.openSettings = function() {
+      currentView = 'settings';
+      showContent();
+
+      const ADMIN_PASSWORD = "Concours17072003@@";
+
+      let html = `<h2 class="mb-3">${t('settings')}</h2>`;
+      html += `
+        <div class="card">
+          <h3 class="mb-3">${t('changeLanguage')}</h3>
+          <div class="form-group">
+            <label class="form-label">${t('adminPassword')}</label>
+            <input type="password" id="adminPwd" class="form-input" placeholder="${t('adminPassword')}">
+          </div>
+          <div id="langSection" class="hidden">
+            <div class="form-group">
+              <label class="form-label">${t('language')}</label>
+              <select id="langSelect" class="form-select">
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="saveLanguage()">${t('save')}</button>
+          </div>
+          <div id="pwdError" class="hidden" style="color:var(--danger);margin-top:10px;">${t('incorrectPassword')}</div>
+          <button class="btn btn-outline mt-2" onclick="checkAdminPwd()">${t('changeLanguage')} →</button>
+        </div>
+      `;
+
+      document.getElementById('contentBody').innerHTML = html;
+    };
+
+    window.checkAdminPwd = function() {
+      const pwd = document.getElementById('adminPwd').value;
+      const ADMIN_PASSWORD = "Concours17072003@@";
+
+      if (pwd === ADMIN_PASSWORD) {
+        document.getElementById('langSection').classList.remove('hidden');
+        document.getElementById('pwdError').classList.add('hidden');
+      } else {
+        document.getElementById('pwdError').classList.remove('hidden');
+      }
+    };
+
+    window.saveLanguage = function() {
+      const newLang = document.getElementById('langSelect').value;
+      currentLang = newLang;
+      // In production, save to user prefs
+      // await updateUserPrefs({ language: newLang });
+      alert(t('languageChanged'));
+      applyTranslations();
+      openSettings();
+    };
+
+    // ============================================
+    // Initialize
+    // ============================================
+    init();
+  </script>
+</body>
+</html>
