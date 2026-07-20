@@ -104,7 +104,7 @@
   </div>
 
   <script type="module">
-    import { getCurrentUser, logOut, getUserPrefs, updateUserPrefs, ADMIN_EMAIL, ADMIN_PASSWORD } from './auth.js';
+    import { getCurrentUser, logOut, getUserPrefs, updateUserPrefs, getUserConcoursType, ADMIN_EMAIL, ADMIN_PASSWORD } from './auth.js';
     import { databases, DB_ID, COLLECTIONS, Query } from './appwrite.js';
 
     const courses = {
@@ -284,8 +284,20 @@
       window.location.href = 'test.html';
     }
 
-    function openConcours() {
+    async function openConcours() {
       showContent();
+      
+      // Get user's concours type from signup
+      const userConcoursType = await getUserConcoursType();
+      
+      // If user is not admin and has a saved concours type, skip selection
+      const user = await getCurrentUser();
+      if (user.email !== ADMIN_EMAIL && userConcoursType) {
+        selectConcoursType(userConcoursType);
+        return;
+      }
+      
+      // Admin or no saved type - show selection
       let html = '<h2 class="mb-3">' + (currentLang === 'fr' ? 'Examen Concours' : 'Concours Exam') + '</h2>';
       html += '<div class="card mb-3"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Sélectionner le Type' : 'Select Exam Type') + '</h3>';
       html += '<div class="category-grid" style="grid-template-columns: 1fr 1fr;">';
@@ -445,5 +457,5 @@
 
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e386c0fd0fe30e',t:'MTc4NDU2Njg3MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
