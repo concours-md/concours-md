@@ -4,7 +4,7 @@ import { account, ID, databases, DB_ID, COLLECTIONS } from "./appwrite.js";
 // Admin Configuration
 // ============================================
 export const ADMIN_EMAIL = "admin.concours.md@gmail.com";
-export const ADMIN_PASSWORD = "Concours17072003@@"; // For language switching
+export const ADMIN_PASSWORD = "Concours_2026"; // For language switching
 
 // ============================================
 // Authentication Functions
@@ -63,6 +63,11 @@ export async function updateUserPrefs(prefs) {
 export async function getUserLanguage() {
   const prefs = await getUserPrefs();
   return prefs.language || "en";
+}
+
+export async function getUserConcoursType() {
+  const prefs = await getUserPrefs();
+  return prefs.concoursType || "med";
 }
 
 // ============================================

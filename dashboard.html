@@ -35,64 +35,64 @@
       <div class="category-card biology" data-action="biology">
         <div class="category-icon">🧬</div>
         <div>
-          <div class="card-title">Biology</div>
-          <div class="card-desc">11 courses</div>
+          <div class="card-title" id="cat-biology">Biology</div>
+          <div class="card-desc" id="cat-biology-desc">11 courses</div>
         </div>
       </div>
 
       <div class="category-card chemistry" data-action="chemistry">
         <div class="category-icon">⚗️</div>
         <div>
-          <div class="card-title">Chemistry</div>
-          <div class="card-desc">3 courses</div>
+          <div class="card-title" id="cat-chemistry">Chemistry</div>
+          <div class="card-desc" id="cat-chemistry-desc">3 courses</div>
         </div>
       </div>
 
       <div class="category-card physics" data-action="physics">
         <div class="category-icon">⚡</div>
         <div>
-          <div class="card-title">Physics</div>
-          <div class="card-desc">2 courses</div>
+          <div class="card-title" id="cat-physics">Physics</div>
+          <div class="card-desc" id="cat-physics-desc">2 courses</div>
         </div>
       </div>
 
       <div class="category-card maths" data-action="maths">
         <div class="category-icon">📐</div>
         <div>
-          <div class="card-title">Maths</div>
-          <div class="card-desc">3 courses</div>
+          <div class="card-title" id="cat-maths">Maths</div>
+          <div class="card-desc" id="cat-maths-desc">3 courses</div>
         </div>
       </div>
 
       <div class="category-card concours" data-action="concours">
         <div class="category-icon">🎓</div>
         <div>
-          <div class="card-title">Concours Exam</div>
-          <div class="card-desc">Simulate the real exam</div>
+          <div class="card-title" id="cat-concours">Concours Exam</div>
+          <div class="card-desc" id="cat-concours-desc">Simulate the real exam</div>
         </div>
       </div>
 
       <div class="category-card" data-action="notebook" style="border-color: var(--text-secondary);">
         <div class="category-icon">📓</div>
         <div>
-          <div class="card-title">Notebook</div>
-          <div class="card-desc">Your saved notes</div>
+          <div class="card-title" id="cat-notebook">Notebook</div>
+          <div class="card-desc" id="cat-notebook-desc">Your saved notes</div>
         </div>
       </div>
 
       <div class="category-card" data-action="prevtests" style="border-color: var(--info);">
         <div class="category-icon">📊</div>
         <div>
-          <div class="card-title">Previous Tests</div>
-          <div class="card-desc">Review your history</div>
+          <div class="card-title" id="cat-prevtests">Previous Tests</div>
+          <div class="card-desc" id="cat-prevtests-desc">Review your history</div>
         </div>
       </div>
 
       <div class="category-card" data-action="settings" style="border-color: var(--text-secondary);">
         <div class="category-icon">⚙️</div>
         <div>
-          <div class="card-title">Settings</div>
-          <div class="card-desc">Preferences & language</div>
+          <div class="card-title" id="cat-settings">Settings</div>
+          <div class="card-desc" id="cat-settings-desc">Preferences & language</div>
         </div>
       </div>
     </div>
@@ -135,6 +135,13 @@
         { fr: 'Statistique', en: 'Statistics' },
         { fr: 'Algèbre', en: 'Algebra' }
       ]
+    };
+
+    const subjectNames = {
+      biology: { en: 'Biology', fr: 'Biologie' },
+      chemistry: { en: 'Chemistry', fr: 'Chimie' },
+      physics: { en: 'Physics', fr: 'Physique' },
+      maths: { en: 'Maths', fr: 'Maths' }
     };
 
     const concoursStructure = {
@@ -201,14 +208,33 @@
       currentCategory = null;
     }
 
+    function translateCategories() {
+      document.getElementById('cat-biology').textContent = subjectNames.biology[currentLang];
+      document.getElementById('cat-biology-desc').textContent = currentLang === 'fr' ? '11 cours' : '11 courses';
+      document.getElementById('cat-chemistry').textContent = subjectNames.chemistry[currentLang];
+      document.getElementById('cat-chemistry-desc').textContent = currentLang === 'fr' ? '3 cours' : '3 courses';
+      document.getElementById('cat-physics').textContent = subjectNames.physics[currentLang];
+      document.getElementById('cat-physics-desc').textContent = currentLang === 'fr' ? '2 cours' : '2 courses';
+      document.getElementById('cat-maths').textContent = subjectNames.maths[currentLang];
+      document.getElementById('cat-maths-desc').textContent = currentLang === 'fr' ? '3 cours' : '3 courses';
+      document.getElementById('cat-concours').textContent = currentLang === 'fr' ? 'Examen Concours' : 'Concours Exam';
+      document.getElementById('cat-concours-desc').textContent = currentLang === 'fr' ? 'Simuler le vrai examen' : 'Simulate the real exam';
+      document.getElementById('cat-notebook').textContent = currentLang === 'fr' ? 'Carnet' : 'Notebook';
+      document.getElementById('cat-notebook-desc').textContent = currentLang === 'fr' ? 'Vos notes sauvegardées' : 'Your saved notes';
+      document.getElementById('cat-prevtests').textContent = currentLang === 'fr' ? 'Tests Précédents' : 'Previous Tests';
+      document.getElementById('cat-prevtests-desc').textContent = currentLang === 'fr' ? 'Revoir votre historique' : 'Review your history';
+      document.getElementById('cat-settings').textContent = currentLang === 'fr' ? 'Paramètres' : 'Settings';
+      document.getElementById('cat-settings-desc').textContent = currentLang === 'fr' ? 'Préférences et langue' : 'Preferences & language';
+    }
+
     function openCategory(category) {
       currentCategory = category;
       showContent();
       const catCourses = courses[category];
-      const catNames = { biology: 'Biology', chemistry: 'Chemistry', physics: 'Physics', maths: 'Maths' };
+      const catName = subjectNames[category][currentLang];
 
-      let html = '<h2 class="mb-3">' + catNames[category] + '</h2>';
-      html += '<div class="card mb-3"><h3 class="mb-2">Select a Course</h3><div class="category-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">';
+      let html = '<h2 class="mb-3">' + catName + '</h2>';
+      html += '<div class="card mb-3"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Sélectionner un Cours' : 'Select a Course') + '</h3><div class="category-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">';
 
       catCourses.forEach(function(course) {
         html += '<button class="btn btn-outline" onclick="window.app.openCourse(\'' + category + '\',\'' + course.en + '\')" style="text-align:left;">' + course[currentLang] + '</button>';
@@ -223,21 +249,18 @@
       const courseData = courses[category].find(function(c) { return c.en === courseEn; });
       if (!courseData) return;
 
-      let html = '<h2 class="mb-3">' + courseData[currentLang] + '</h2>';
+      const courseName = courseData[currentLang];
+      let html = '<h2 class="mb-3">' + courseName + '</h2>';
 
-      // Create Test section
-      html += '<div class="card mb-3"><h3 class="mb-3">Create Test</h3>';
-      html += '<div class="form-group"><label class="form-label">Question Pool</label><select id="poolSelect" class="form-select"><option value="all">All</option><option value="unused">Unused</option><option value="incorrect">Incorrect/Omitted</option><option value="marked">Marked</option></select></div>';
-      html += '<div class="form-group"><label class="form-label">Number of Questions: <span id="qCountLabel">25</span></label><input type="range" id="qCount" min="1" max="100" value="25" class="form-input" oninput="document.getElementById(\'qCountLabel\').textContent=this.value"></div>';
-      html += '<div class="form-group"><label class="form-label">Tutor Mode</label><select id="tutorSelect" class="form-select"><option value="on">ON (continue after time)</option><option value="off">OFF (auto-submit)</option></select></div>';
-      html += '<button class="btn btn-primary" onclick="window.app.startTest(\'' + category + '\',\'' + courseEn + '\')">Start Test</button>';
+      html += '<div class="card mb-3"><h3 class="mb-3">' + (currentLang === 'fr' ? 'Créer un Test' : 'Create Test') + '</h3>';
+      html += '<div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Banque de Questions' : 'Question Pool') + '</label><select id="poolSelect" class="form-select"><option value="all">' + (currentLang === 'fr' ? 'Tout' : 'All') + '</option><option value="unused">' + (currentLang === 'fr' ? 'Inutilisées' : 'Unused') + '</option><option value="incorrect">' + (currentLang === 'fr' ? 'Incorrectes/Ommises' : 'Incorrect/Omitted') + '</option><option value="marked">' + (currentLang === 'fr' ? 'Marquées' : 'Marked') + '</option></select></div>';
+      html += '<div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Nombre de Questions' : 'Number of Questions') + ': <span id="qCountLabel">25</span></label><input type="range" id="qCount" min="1" max="100" value="25" class="form-input" oninput="document.getElementById(\'qCountLabel\').textContent=this.value"></div>';
+      html += '<div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Mode Tuteur' : 'Tutor Mode') + '</label><select id="tutorSelect" class="form-select"><option value="on">' + (currentLang === 'fr' ? 'ON (continuer après le temps)' : 'ON (continue after time)') + '</option><option value="off">' + (currentLang === 'fr' ? 'OFF (soumission auto)' : 'OFF (auto-submit)') + '</option></select></div>';
+      html += '<button class="btn btn-primary" onclick="window.app.startTest(\'' + category + '\',\'' + courseEn + '\')">' + (currentLang === 'fr' ? 'Commencer le Test' : 'Start Test') + '</button>';
       html += '</div>';
 
-      // Performance section
-      html += '<div class="card mb-3"><h3 class="mb-2">Performance</h3><p class="text-secondary">Coming soon...</p></div>';
-
-      // Review Previous Tests section
-      html += '<div class="card"><h3 class="mb-2">Review Previous Tests</h3><p class="text-secondary">No tests completed yet</p></div>';
+      html += '<div class="card mb-3"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Performance' : 'Performance') + '</h3><p class="text-secondary">' + (currentLang === 'fr' ? 'Bientôt...' : 'Coming soon...') + '</p></div>';
+      html += '<div class="card"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Tests Précédents' : 'Review Previous Tests') + '</h3><p class="text-secondary">' + (currentLang === 'fr' ? 'Aucun test complété' : 'No tests completed yet') + '</p></div>';
 
       document.getElementById('contentBody').innerHTML = html;
     }
@@ -263,29 +286,30 @@
 
     function openConcours() {
       showContent();
-      let html = '<h2 class="mb-3">Concours Exam</h2>';
-      html += '<div class="card mb-3"><h3 class="mb-2">Select Exam Type</h3>';
+      let html = '<h2 class="mb-3">' + (currentLang === 'fr' ? 'Examen Concours' : 'Concours Exam') + '</h2>';
+      html += '<div class="card mb-3"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Sélectionner le Type' : 'Select Exam Type') + '</h3>';
       html += '<div class="category-grid" style="grid-template-columns: 1fr 1fr;">';
-      html += '<button class="btn btn-concours" onclick="window.app.selectConcoursType(\'med\')" style="padding:20px;"><strong>Concours de Médecine et Dentisterie</strong></button>';
+      html += '<button class="btn btn-concours" onclick="window.app.selectConcoursType(\'med\')" style="padding:20px;"><strong>' + (currentLang === 'fr' ? 'Concours de Médecine Générale et Médecine Dentaire' : 'Concours de Médecine Générale et Médecine Dentaire') + '</strong></button>';
       html += '<button class="btn btn-concours" onclick="window.app.selectConcoursType(\'pharma\')" style="padding:20px;"><strong>Concours de Pharmacie</strong></button>';
       html += '</div></div>';
       document.getElementById('contentBody').innerHTML = html;
     }
 
     function selectConcoursType(type) {
-      let html = '<h2 class="mb-3">' + (type === 'med' ? 'Concours de Médecine et Dentisterie' : 'Concours de Pharmacie') + '</h2>';
-      html += '<div class="card mb-3"><h3 class="mb-2">Select Category</h3><div class="category-grid" style="grid-template-columns: repeat(2, 1fr);">';
+      const typeName = type === 'med' ? 'Concours de Médecine Générale et Médecine Dentaire' : 'Concours de Pharmacie';
+      let html = '<h2 class="mb-3">' + typeName + '</h2>';
+      html += '<div class="card mb-3"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Sélectionner la Catégorie' : 'Select Category') + '</h3><div class="category-grid" style="grid-template-columns: repeat(2, 1fr);">';
 
       const cats = [
-        { key: 'biology', cls: 'biology', label: 'Biology' },
-        { key: 'chemistry', cls: 'chemistry', label: 'Chemistry' },
-        { key: 'physics', cls: 'physics', label: 'Physics' },
-        { key: 'maths', cls: 'maths', label: 'Maths' }
+        { key: 'biology', cls: 'biology', label: subjectNames.biology },
+        { key: 'chemistry', cls: 'chemistry', label: subjectNames.chemistry },
+        { key: 'physics', cls: 'physics', label: subjectNames.physics },
+        { key: 'maths', cls: 'maths', label: subjectNames.maths }
       ];
 
       cats.forEach(function(cat) {
         const struct = concoursStructure[type][cat.key];
-        html += '<button class="btn btn-' + cat.cls + '" onclick="window.app.generateConcours(\'' + type + '\',\'' + cat.key + '\')" style="padding:20px;text-align:center;"><strong>' + cat.label + '</strong><br><small>' + struct.total + ' questions · ' + struct.duration + ' min</small></button>';
+        html += '<button class="btn btn-' + cat.cls + '" onclick="window.app.generateConcours(\'' + type + '\',\'' + cat.key + '\')" style="padding:20px;text-align:center;"><strong>' + cat.label[currentLang] + '</strong><br><small>' + struct.total + ' ' + (currentLang === 'fr' ? 'questions' : 'questions') + ' · ' + struct.duration + ' ' + (currentLang === 'fr' ? 'min' : 'min') + '</small></button>';
       });
 
       html += '</div></div>';
@@ -294,16 +318,17 @@
 
     function generateConcours(type, category) {
       const struct = concoursStructure[type][category];
-      let html = '<h2 class="mb-3">Concours - ' + category + '</h2>';
+      const catName = subjectNames[category][currentLang];
+      let html = '<h2 class="mb-3">' + (currentLang === 'fr' ? 'Concours' : 'Concours') + ' - ' + catName + '</h2>';
       html += '<div class="card mb-3">';
-      html += '<p><strong>Questions:</strong> ' + struct.total + '</p>';
-      html += '<p><strong>Duration:</strong> ' + struct.duration + ' minutes</p>';
-      html += '<h4 class="mt-2 mb-1">Distribution:</h4><ul style="margin-left:20px;">';
+      html += '<p><strong>' + (currentLang === 'fr' ? 'Questions' : 'Questions') + ':</strong> ' + struct.total + '</p>';
+      html += '<p><strong>' + (currentLang === 'fr' ? 'Durée' : 'Duration') + ':</strong> ' + struct.duration + ' ' + (currentLang === 'fr' ? 'minutes' : 'minutes') + '</p>';
+      html += '<h4 class="mt-2 mb-1">' + (currentLang === 'fr' ? 'Distribution' : 'Distribution') + ':</h4><ul style="margin-left:20px;">';
       struct.courses.forEach(function(c) {
-        html += '<li>' + c[currentLang] + ' — ' + c.count + ' questions</li>';
+        html += '<li>' + c[currentLang] + ' — ' + c.count + ' ' + (currentLang === 'fr' ? 'questions' : 'questions') + '</li>';
       });
       html += '</ul></div>';
-      html += '<button class="btn btn-concours btn-block" onclick="window.app.startConcoursTest(\'' + type + '\',\'' + category + '\')">Generate Exam</button>';
+      html += '<button class="btn btn-concours btn-block" onclick="window.app.startConcoursTest(\'' + type + '\',\'' + category + '\')">' + (currentLang === 'fr' ? 'Générer l\'Examen' : 'Generate Exam') + '</button>';
       document.getElementById('contentBody').innerHTML = html;
     }
 
@@ -325,26 +350,26 @@
 
     function openNotebook() {
       showContent();
-      let html = '<h2 class="mb-3">Notebook</h2>';
-      html += '<div class="card"><p class="text-secondary">No notes saved yet</p></div>';
+      let html = '<h2 class="mb-3">' + (currentLang === 'fr' ? 'Carnet' : 'Notebook') + '</h2>';
+      html += '<div class="card"><p class="text-secondary">' + (currentLang === 'fr' ? 'Aucune note sauvegardée' : 'No notes saved yet') + '</p></div>';
       document.getElementById('contentBody').innerHTML = html;
     }
 
     function openPreviousTests() {
       showContent();
-      let html = '<h2 class="mb-3">Previous Tests</h2>';
-      html += '<div class="card"><p class="text-secondary">No tests completed yet</p></div>';
+      let html = '<h2 class="mb-3">' + (currentLang === 'fr' ? 'Tests Précédents' : 'Previous Tests') + '</h2>';
+      html += '<div class="card"><p class="text-secondary">' + (currentLang === 'fr' ? 'Aucun test complété' : 'No tests completed yet') + '</p></div>';
       document.getElementById('contentBody').innerHTML = html;
     }
 
     function openSettings() {
       showContent();
-      let html = '<h2 class="mb-3">Settings</h2>';
-      html += '<div class="card"><h3 class="mb-3">Change Language</h3>';
-      html += '<div class="form-group"><label class="form-label">Admin Password</label><input type="password" id="adminPwd" class="form-input" placeholder="Admin Password"></div>';
-      html += '<div id="langSection" class="hidden"><div class="form-group"><label class="form-label">Language</label><select id="langSelect" class="form-select"><option value="en">English</option><option value="fr">Français</option></select></div><button class="btn btn-primary" onclick="window.app.saveLanguage()">Save</button></div>';
-      html += '<div id="pwdError" class="hidden" style="color:var(--danger);margin-top:10px;">Incorrect admin password</div>';
-      html += '<button class="btn btn-outline mt-2" onclick="window.app.checkAdminPwd()">Change Language →</button></div>';
+      let html = '<h2 class="mb-3">' + (currentLang === 'fr' ? 'Paramètres' : 'Settings') + '</h2>';
+      html += '<div class="card"><h3 class="mb-3">' + (currentLang === 'fr' ? 'Changer la Langue' : 'Change Language') + '</h3>';
+      html += '<div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Mot de passe admin' : 'Admin Password') + '</label><input type="password" id="adminPwd" class="form-input" placeholder="' + (currentLang === 'fr' ? 'Mot de passe admin' : 'Admin Password') + '"></div>';
+      html += '<div id="langSection" class="hidden"><div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Langue' : 'Language') + '</label><select id="langSelect" class="form-select"><option value="en">English</option><option value="fr">Français</option></select></div><button class="btn btn-primary" onclick="window.app.saveLanguage()">' + (currentLang === 'fr' ? 'Enregistrer' : 'Save') + '</button></div>';
+      html += '<div id="pwdError" class="hidden" style="color:var(--danger);margin-top:10px;">' + (currentLang === 'fr' ? 'Mot de passe admin incorrect' : 'Incorrect admin password') + '</div>';
+      html += '<button class="btn btn-outline mt-2" onclick="window.app.checkAdminPwd()">' + (currentLang === 'fr' ? 'Changer la Langue →' : 'Change Language →') + '</button></div>';
       document.getElementById('contentBody').innerHTML = html;
     }
 
@@ -363,18 +388,18 @@
       currentLang = newLang;
       try {
         await updateUserPrefs({ language: newLang });
-        alert('Language changed successfully');
+        alert(currentLang === 'fr' ? 'Langue changée avec succès' : 'Language changed successfully');
+        translateCategories();
         openSettings();
       } catch (err) {
         alert('Error saving language: ' + err.message);
       }
     }
 
-    // Initialize
     async function init() {
       const user = await getCurrentUser();
       if (!user) {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return;
       }
 
@@ -385,11 +410,12 @@
         document.getElementById('navImport').classList.remove('hidden');
       }
 
-      // Event listeners
+      translateCategories();
+
       document.getElementById('logoutBtn').addEventListener('click', async function(e) {
         e.preventDefault();
         await logOut();
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
       });
 
       document.getElementById('backBtn').addEventListener('click', goBack);
@@ -406,7 +432,6 @@
       });
     }
 
-    // Expose functions globally
     window.app = {
       openCategory: openCategory,
       openCourse: openCourse,
@@ -420,5 +445,5 @@
 
     init();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e386c0fd0fe30e',t:'MTc4NDU2Njg3MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
