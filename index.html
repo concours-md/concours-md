@@ -3,63 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concours.md - Login</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="auth-page">
-    <div class="auth-card">
-      <div class="auth-logo">
-        <h1>Concours<span>.md</span></h1>
-        <p>Lebanese University CSVT QBank</p>
-      </div>
-
-      <form id="loginForm">
-        <div class="form-group">
-          <label class="form-label" for="email">Email</label>
-          <input type="email" id="email" class="form-input" placeholder="your@email.com" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="password">Password</label>
-          <input type="password" id="password" class="form-input" placeholder="••••••••" required>
-        </div>
-
-        <div id="errorMsg" class="hidden" style="color: var(--danger); margin-bottom: 16px; font-size: 0.9rem;"></div>
-
-        <button type="submit" class="btn btn-primary btn-block">Log In</button>
-      </form>
-
-      <div class="auth-footer">
-        <p><a href="forgot-password.html">Forgot password?</a></p>
-        <p class="mt-2">Don't have an account? <a href="signup.html">Sign up</a></p>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { logIn, getCurrentUser } from './auth.js';
-
-    // Redirect if already logged in
-    getCurrentUser().then(user => {
-      if (user) window.location.href = 'dashboard.html';
-    });
-
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const errorMsg = document.getElementById('errorMsg');
-
-      try {
-        errorMsg.classList.add('hidden');
-        await logIn(email, password);
-        window.location.href = 'dashboard.html';
-      } catch (err) {
-        errorMsg.textContent = err.message || 'Invalid email or password';
-        errorMsg.classList.remove('hidden');
-      }
-    });
+  <title>Concours.md - Redirecting...</title>
+  <meta http-equiv="refresh" content="0; url=landing.html">
+  <script>
+    window.location.href = "landing.html";
   </script>
-</body>
+</head>
+<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;background:#1a1a2e;color:#fff;">
+  <div style="text-align:center;">
+    <h1 style="font-size:2rem;margin-bottom:1rem;">Concours<span style="color:#f39c12;">.md</span></h1>
+    <p style="color:rgba(255,255,255,0.7);">Redirecting to <a href="landing.html" style="color:#f39c12;">homepage</a>...</p>
+  </div>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e364bb8c48e30e',t:'MTc4NDU2NTQ3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

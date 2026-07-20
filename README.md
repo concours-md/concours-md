@@ -39,7 +39,7 @@ Fallback file: index.html
 ### Build Command
 
 ```bash
-rm -rf dist && mkdir -p dist /mnt/code && cp -f index.html signup.html dashboard.html test.html forgot-password.html reset-password.html privacy.html terms.html import.html style.css appwrite.js auth.js dist/ && tar -czf /mnt/code/code.tar.gz -C dist . && ls -lh /mnt/code/code.tar.gz && ls -la dist
+rm -rf dist && mkdir -p dist /mnt/code && cp -f landing.html index.html login.html signup.html dashboard.html test.html forgot-password.html reset-password.html privacy.html terms.html import.html style.css appwrite.js auth.js dist/ && tar -czf /mnt/code/code.tar.gz -C dist . && ls -lh /mnt/code/code.tar.gz && ls -la dist
 ```
 
 ### Database Setup
