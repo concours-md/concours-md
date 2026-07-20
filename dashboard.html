@@ -216,18 +216,6 @@
 
       html += '</div></div>';
 
-      html += '<div class="card"><h3 class="mb-3">Create Test</h3>';
-      html += '<div class="form-group"><label class="form-label">Course</label><select id="courseSelect" class="form-select"><option value="">--</option>';
-      catCourses.forEach(function(c) {
-        html += '<option value="' + c.en + '">' + c[currentLang] + '</option>';
-      });
-      html += '</select></div>';
-      html += '<div class="form-group"><label class="form-label">Question Pool</label><select id="poolSelect" class="form-select"><option value="all">All</option><option value="unused">Unused</option><option value="incorrect">Incorrect/Omitted</option><option value="marked">Marked</option></select></div>';
-      html += '<div class="form-group"><label class="form-label">Number of Questions: <span id="qCountLabel">25</span></label><input type="range" id="qCount" min="1" max="100" value="25" class="form-input" oninput="document.getElementById(\'qCountLabel\').textContent=this.value"></div>';
-      html += '<div class="form-group"><label class="form-label">Tutor Mode</label><select id="tutorSelect" class="form-select"><option value="on">ON (continue after time)</option><option value="off">OFF (auto-submit)</option></select></div>';
-      html += '<button class="btn btn-primary" onclick="window.app.startTest(\'' + category + '\')">Start Test</button>';
-      html += '</div>';
-
       document.getElementById('contentBody').innerHTML = html;
     }
 
@@ -236,27 +224,33 @@
       if (!courseData) return;
 
       let html = '<h2 class="mb-3">' + courseData[currentLang] + '</h2>';
+
+      // Create Test section
+      html += '<div class="card mb-3"><h3 class="mb-3">Create Test</h3>';
+      html += '<div class="form-group"><label class="form-label">Question Pool</label><select id="poolSelect" class="form-select"><option value="all">All</option><option value="unused">Unused</option><option value="incorrect">Incorrect/Omitted</option><option value="marked">Marked</option></select></div>';
+      html += '<div class="form-group"><label class="form-label">Number of Questions: <span id="qCountLabel">25</span></label><input type="range" id="qCount" min="1" max="100" value="25" class="form-input" oninput="document.getElementById(\'qCountLabel\').textContent=this.value"></div>';
+      html += '<div class="form-group"><label class="form-label">Tutor Mode</label><select id="tutorSelect" class="form-select"><option value="on">ON (continue after time)</option><option value="off">OFF (auto-submit)</option></select></div>';
+      html += '<button class="btn btn-primary" onclick="window.app.startTest(\'' + category + '\',\'' + courseEn + '\')">Start Test</button>';
+      html += '</div>';
+
+      // Performance section
       html += '<div class="card mb-3"><h3 class="mb-2">Performance</h3><p class="text-secondary">Coming soon...</p></div>';
+
+      // Review Previous Tests section
       html += '<div class="card"><h3 class="mb-2">Review Previous Tests</h3><p class="text-secondary">No tests completed yet</p></div>';
 
       document.getElementById('contentBody').innerHTML = html;
     }
 
-    function startCourseTest(category) {
-      const courseSelect = document.getElementById('courseSelect');
+    function startCourseTest(category, courseEn) {
       const pool = document.getElementById('poolSelect').value;
       const numQ = parseInt(document.getElementById('qCount').value);
       const tutorMode = document.getElementById('tutorSelect').value;
 
-      if (!courseSelect.value) {
-        alert('Please select a course');
-        return;
-      }
-
       const testConfig = {
         type: 'course',
         category: category,
-        course: courseSelect.value,
+        course: courseEn,
         pool: pool,
         numQuestions: numQ,
         tutorMode: tutorMode,
