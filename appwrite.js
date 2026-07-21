@@ -16,7 +16,7 @@ export const databases = new Databases(client);
 export { ID, Query };
 
 // Database IDs
-export const DB_ID = "concours_db";
+export const DB_ID = "6a552fec00060aa947e7";
 
 // Collection IDs
 export const COLLECTIONS = {
