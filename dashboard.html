@@ -490,7 +490,7 @@
 
       let html = '<div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Chapitres' : 'Chapters') + '</label>';
       html += '<div class="chapter-actions">';
-      html += '<button type="button" class="chapter-action-btn" onclick="window.app.selectAllChapters()">' + (currentLang === 'fr' ? 'Tout sélectionner' : 'Select All') + '</button>';
+      html += '<button type="button" class="chapter-action-btn" onclick="window.app.selectAllChapters(\'' + category + '\',\'' + courseEn + '\')">' + (currentLang === 'fr' ? 'Tout sélectionner' : 'Select All') + '</button>';
       html += '<button type="button" class="chapter-action-btn" onclick="window.app.deselectAllChapters()">' + (currentLang === 'fr' ? 'Tout désélectionner' : 'Deselect All') + '</button>';
       html += '</div>';
       html += '<div class="chapter-selector">';
@@ -498,7 +498,7 @@
       courseChapters.forEach(function(chapter, idx) {
         html += '<div class="chapter-item" onclick="window.app.toggleChapter(' + idx + ')">';
         html += '<input type="checkbox" class="chapter-checkbox" id="chap-' + idx + '" ' + (selectedChapters.includes(idx) ? 'checked' : '') + ' onclick="event.stopPropagation(); window.app.toggleChapter(' + idx + ')">';
-        html += '<label class="chapter-label" for="chap-' + idx + '">' + chapter[currentLang] + '</label>';
+        html += '<label class="chapter-label" for="chap-' + idx + '">' + chapter[currentLang] + ' <span style="color:var(--text-secondary);font-size:0.8rem;">(0)</span></label>';
         html += '</div>';
       });
 
@@ -531,21 +531,45 @@
       html += '<div class="card"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Tests Précédents' : 'Review Previous Tests') + '</h3><p class="text-secondary">' + (currentLang === 'fr' ? 'Aucun test complété' : 'No tests completed yet') + '</p></div>';
 
       document.getElementById('contentBody').innerHTML = html;
+      
+      // Load question counts
+      loadQuestionCounts(category, courseEn);
     }
 
-    function selectAllChapters() {
-      const courseEl = document.querySelector('.card h2');
-      if (!courseEl) return;
-      const courseName = courseEl.textContent;
-      const category = currentCategory;
-      
-      // Find the course data
-      const courseData = courses[category]?.find(c => c[currentLang] === courseName || c.en === courseName);
-      if (!courseData) return;
-      
-      const courseChapters = chapters[category]?.[courseData.en] || [];
+    function selectAllChapters(category, courseEn) {
+      const courseChapters = chapters[category]?.[courseEn] || [];
       selectedChapters = courseChapters.map((_, idx) => idx);
       updateChapterCheckboxes();
+    }
+
+    async function loadQuestionCounts(category, courseEn) {
+      try {
+        const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
+          Query.equal('category', category),
+          Query.limit(500)
+        ]);
+        
+        const questions = result.documents;
+        const courseChapters = chapters[category]?.[courseEn] || [];
+        
+        // Count questions per chapter
+        courseChapters.forEach(function(chapter, idx) {
+          const count = questions.filter(q => {
+            try {
+              const topic = JSON.parse(q.topic || '{}');
+              return topic[currentLang] === chapter[currentLang] || topic.en === chapter.en;
+            } catch { return false; }
+          }).length;
+          
+          const label = document.querySelector(`#chap-${idx} + .chapter-label`);
+          if (label) {
+            const countSpan = label.querySelector('span');
+            if (countSpan) countSpan.textContent = `(${count})`;
+          }
+        });
+      } catch (err) {
+        console.error('Failed to load question counts:', err);
+      }
     }
 
     function deselectAllChapters() {
@@ -765,10 +789,11 @@
       saveLanguage: saveLanguage,
       selectAllChapters: selectAllChapters,
       deselectAllChapters: deselectAllChapters,
-      toggleChapter: toggleChapter
+      toggleChapter: toggleChapter,
+      loadQuestionCounts: loadQuestionCounts
     };
 
     init();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ec1abafe93e30d',t:'MTc4NDY1NjgxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

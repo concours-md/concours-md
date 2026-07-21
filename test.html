@@ -199,6 +199,7 @@
 
       <div style="display: flex; gap: 10px; margin-top: 20px;">
         <button class="btn btn-primary" id="backToDashboard">Back to Dashboard</button>
+        <button class="btn btn-outline" id="retryCourse">Retry This Course</button>
         <button class="btn btn-outline" id="reviewIncorrect">Review Incorrect</button>
       </div>
     </div>
@@ -284,6 +285,14 @@
       document.getElementById('cancelSubmit').addEventListener('click', closeModal);
       document.getElementById('confirmSubmitBtn').addEventListener('click', confirmSubmit);
       document.getElementById('backToDashboard').addEventListener('click', () => window.location.href = 'dashboard.html');
+      document.getElementById('retryCourse').addEventListener('click', () => {
+        if (testConfig && testConfig.type === 'course') {
+          sessionStorage.setItem('testConfig', JSON.stringify(testConfig));
+          window.location.href = 'dashboard.html';
+        } else {
+          window.location.href = 'dashboard.html';
+        }
+      });
       document.getElementById('reviewIncorrect').addEventListener('click', reviewIncorrect);
     }
 
@@ -692,5 +701,5 @@
 
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ec0ed34ba1e30f',t:'MTc4NDY1NjMzMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
