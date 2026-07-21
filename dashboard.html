@@ -534,11 +534,17 @@
     }
 
     function selectAllChapters() {
-      const courseEn = courses[currentCategory].find(function(c) { 
-        return document.querySelector('.card h3') && document.querySelector('.card h3').textContent.includes(c[currentLang]);
-      });
-      const courseChapters = chapters[currentCategory]?.[courseEn?.en || ''] || [];
-      selectedChapters = courseChapters.map(function(_, idx) { return idx; });
+      const courseEl = document.querySelector('.card h2');
+      if (!courseEl) return;
+      const courseName = courseEl.textContent;
+      const category = currentCategory;
+      
+      // Find the course data
+      const courseData = courses[category]?.find(c => c[currentLang] === courseName || c.en === courseName);
+      if (!courseData) return;
+      
+      const courseChapters = chapters[category]?.[courseData.en] || [];
+      selectedChapters = courseChapters.map((_, idx) => idx);
       updateChapterCheckboxes();
     }
 
