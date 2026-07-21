@@ -408,12 +408,15 @@
           const doc = {
             category: q.category,
             course: JSON.stringify(q.course),
-            topic: JSON.stringify(q.topic || {}),
-            difficulty: q.difficulty || 'medium',
             correct: q.correct,
             en: JSON.stringify(q.en),
             fr: JSON.stringify(q.fr),
-            metadata: JSON.stringify({ source: "import", importedAt: new Date().toISOString() })
+            metadata: JSON.stringify({ 
+              topic: q.topic || {}, 
+              difficulty: q.difficulty || 'medium',
+              source: "import", 
+              importedAt: new Date().toISOString() 
+            })
           };
           await databases.createDocument(DB_ID, COLLECTIONS.QUESTIONS, q._id, doc);
           imported++;
@@ -658,5 +661,5 @@
 
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ec2fcc7edee30d',t:'MTc4NDY1NzY4MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ec502af997e30d',t:'MTc4NDY1OTAwNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
