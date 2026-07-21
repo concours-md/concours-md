@@ -392,12 +392,9 @@
           const doc = {
             category: q.category,
             course: JSON.stringify(q.course),
-            topic: JSON.stringify(q.topic || {}),
-            difficulty: q.difficulty || 'medium',
             correct: q.correct,
             en: JSON.stringify(q.en),
             fr: JSON.stringify(q.fr),
-            chapters: JSON.stringify(q.chapters || []),
             metadata: JSON.stringify({ source: "import", importedAt: new Date().toISOString() })
           };
           await databases.createDocument(DB_ID, COLLECTIONS.QUESTIONS, q._id, doc);
