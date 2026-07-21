@@ -3,8 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concours.md - Import Questions</title>
+  <title>Concours.md - Question Bank Manager</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .import-container { max-width: 1200px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 20px 0; }
+    .stat-card { background: var(--bg-secondary); border-radius: 12px; padding: 20px; text-align: center; box-shadow: var(--shadow); }
+    .stat-number { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .stat-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; }
+    .stat-number.warning { color: var(--warning); }
+    .stat-number.danger { color: var(--danger); }
+    .stat-number.success { color: var(--success); }
+
+    .section-card { background: var(--bg-secondary); border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow); }
+    .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+
+    .question-preview { background: var(--bg-primary); border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 4px solid var(--phys-blue); }
+    .question-preview.duplicate { border-left-color: var(--warning); background: rgba(243, 156, 18, 0.05); }
+    .question-preview.flawed { border-left-color: var(--danger); background: rgba(231, 76, 60, 0.05); }
+    .question-preview.valid { border-left-color: var(--success); }
+    .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .question-meta { font-size: 0.8rem; color: var(--text-secondary); }
+    .question-stem { font-size: 0.95rem; margin-bottom: 8px; line-height: 1.5; }
+    .question-choices { font-size: 0.85rem; color: var(--text-secondary); padding-left: 16px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .badge-duplicate { background: rgba(243, 156, 18, 0.15); color: var(--warning); }
+    .badge-flawed { background: rgba(231, 76, 60, 0.15); color: var(--danger); }
+    .badge-valid { background: rgba(39, 174, 96, 0.15); color: var(--success); }
+
+    .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .filter-bar select, .filter-bar input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; }
+    .filter-bar input { flex: 1; min-width: 200px; }
+
+    .bulk-actions { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+
+    .checkbox-cell { width: 40px; text-align: center; }
+    .checkbox-cell input { width: 18px; height: 18px; cursor: pointer; }
+
+    .preview-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .preview-table th, .preview-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .preview-table th { background: var(--bg-primary); font-weight: 600; }
+    .preview-table tr:hover { background: rgba(52, 152, 219, 0.05); }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); }
+    .tab { padding: 12px 24px; cursor: pointer; font-weight: 600; color: var(--text-secondary); border-bottom: 3px solid transparent; transition: all 0.2s; }
+    .tab.active { color: var(--phys-blue); border-bottom-color: var(--phys-blue); }
+    .tab:hover { color: var(--phys-blue); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+    .empty-state-icon { font-size: 4rem; margin-bottom: 16px; }
+
+    .progress-bar { height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden; margin: 16px 0; }
+    .progress-fill { height: 100%; background: var(--success); border-radius: 4px; transition: width 0.3s; }
+
+    .btn-sm { padding: 6px 14px; font-size: 0.85rem; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #c0392b; }
+  </style>
 </head>
 <body>
   <nav class="navbar">
@@ -18,216 +76,403 @@
     </div>
   </nav>
 
-  <div class="container" style="padding-top: 30px; padding-bottom: 60px; max-width: 900px;">
-    <h1 class="mb-3">Import Questions</h1>
-    <p class="text-secondary mb-3">Upload questions in JSON format for the QBank</p>
-
-    <!-- Import Form -->
-    <div class="card mb-3">
-      <h3 class="mb-3">JSON Format</h3>
-      <p class="text-secondary mb-2">Questions must follow this structure:</p>
-      <pre style="background: #f4f4f4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5;"><code>{
-  "category": "Biology",
-  "course": { "fr": "Cytologie", "en": "Cytology" },
-  "topic": { "fr": "Membrane plasmique", "en": "Plasma membrane" },
-  "difficulty": "medium",
-  "correct": "C",
-  "en": {
-    "stem": "Question stem...\n\nWhat is correct?",
-    "choices": ["A", "B", "C", "D", "E"],
-    "objective": "Identify...",
-    "rationale": "Correct because...",
-    "whyWrong": { "A": "...", "B": "...", "D": "...", "E": "..." }
-  },
-  "fr": {
-    "stem": "Énoncé...\n\nQuelle réponse ?",
-    "choices": ["A", "B", "C", "D", "E"],
-    "objective": "Identifier...",
-    "rationale": "Correct parce que...",
-    "whyWrong": { "A": "...", "B": "...", "D": "...", "E": "..." }
-  }
-}</code></pre>
-    </div>
-
-    <!-- Upload Area -->
-    <div class="card mb-3">
-      <h3 class="mb-3">Upload JSON File</h3>
-      <div class="form-group">
-        <input type="file" id="fileInput" accept=".json" class="form-input">
-      </div>
-      <button class="btn btn-primary" onclick="uploadFile()">Upload & Import</button>
-      <div id="uploadStatus" class="mt-2"></div>
-    </div>
-
-    <!-- Paste JSON -->
-    <div class="card mb-3">
-      <h3 class="mb-3">Or Paste JSON Directly</h3>
-      <div class="form-group">
-        <textarea id="jsonInput" class="form-input" rows="10" placeholder='[{"category": "Biology", ...}]'></textarea>
-      </div>
-      <button class="btn btn-primary" onclick="importJSON()">Import JSON</button>
-      <div id="importStatus" class="mt-2"></div>
-    </div>
+  <div class="container import-container" style="padding-top: 30px; padding-bottom: 60px;">
+    <h1 class="mb-3">Question Bank Manager</h1>
 
     <!-- Stats -->
-    <div class="card">
-      <h3 class="mb-3">Database Stats</h3>
-      <div class="stats-grid">
-        <div class="stat-box">
-          <div class="stat-value" id="totalQuestions">0</div>
-          <div class="stat-label">Total Questions</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-value" id="totalCourses">0</div>
-          <div class="stat-label">Courses</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-value" id="totalCategories">4</div>
-          <div class="stat-label">Categories</div>
-        </div>
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalImported">0</div>
+        <div class="stat-label">Imported</div>
       </div>
-      <button class="btn btn-outline btn-sm mt-2" onclick="loadStats()">Refresh Stats</button>
+      <div class="stat-card">
+        <div class="stat-number warning" id="totalDuplicates">0</div>
+        <div class="stat-label">Duplicates</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number danger" id="totalFlawed">0</div>
+        <div class="stat-label">Flawed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number success" id="totalValid">0</div>
+        <div class="stat-label">Valid</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" data-tab="import">Import</div>
+      <div class="tab" data-tab="preview">Preview & Validate</div>
+      <div class="tab" data-tab="manage">Manage Questions</div>
+    </div>
+
+    <!-- Import Tab -->
+    <div class="tab-content active" id="tab-import">
+      <div class="section-card">
+        <div class="section-title">Upload Questions</div>
+        <p class="text-secondary mb-3">Upload a JSON file or paste JSON directly. Questions will be validated before import.</p>
+        
+        <div class="form-group">
+          <label class="form-label">Upload JSON File</label>
+          <input type="file" id="fileInput" accept=".json" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Or Paste JSON</label>
+          <textarea id="jsonInput" class="form-input" rows="8" placeholder='[{"category": "Biology", ...}]'></textarea>
+        </div>
+
+        <button class="btn btn-primary" onclick="window.app.parseInput()">Parse & Validate</button>
+      </div>
+    </div>
+
+    <!-- Preview Tab -->
+    <div class="tab-content" id="tab-preview">
+      <div class="section-card">
+        <div class="section-title">Validation Results</div>
+        
+        <div class="filter-bar">
+          <select id="filterStatus" onchange="window.app.filterPreview()">
+            <option value="all">All Questions</option>
+            <option value="valid">Valid Only</option>
+            <option value="duplicate">Duplicates Only</option>
+            <option value="flawed">Flawed Only</option>
+          </select>
+          <select id="filterCategory" onchange="window.app.filterPreview()">
+            <option value="all">All Categories</option>
+          </select>
+          <select id="filterCourse" onchange="window.app.filterPreview()">
+            <option value="all">All Courses</option>
+          </select>
+          <input type="text" id="searchInput" placeholder="Search questions..." oninput="window.app.filterPreview()">
+        </div>
+
+        <div class="bulk-actions">
+          <button class="btn btn-sm btn-outline" onclick="window.app.selectAllVisible()">Select All Visible</button>
+          <button class="btn btn-sm btn-outline" onclick="window.app.deselectAll()">Deselect All</button>
+          <button class="btn btn-sm btn-danger" onclick="window.app.deleteSelected()">Delete Selected</button>
+          <button class="btn btn-sm btn-danger" onclick="window.app.deleteByFilter()">Delete by Filter</button>
+        </div>
+
+        <div id="previewList"></div>
+      </div>
+    </div>
+
+    <!-- Manage Tab -->
+    <div class="tab-content" id="tab-manage">
+      <div class="section-card">
+        <div class="section-title">Bulk Delete</div>
+        <p class="text-secondary mb-3">Delete questions by category, course, or chapter.</p>
+        
+        <div class="filter-bar">
+          <select id="bulkCategory" onchange="window.app.updateBulkCourses()">
+            <option value="">Select Category</option>
+          </select>
+          <select id="bulkCourse" onchange="window.app.updateBulkChapters()">
+            <option value="">Select Course</option>
+          </select>
+          <select id="bulkChapter">
+            <option value="">Select Chapter (optional)</option>
+          </select>
+        </div>
+
+        <button class="btn btn-danger" onclick="window.app.bulkDelete()">Delete Matching Questions</button>
+        <div id="bulkDeleteInfo" class="mt-2 text-secondary"></div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">Database Stats</div>
+        <div id="dbStats"></div>
+        <button class="btn btn-outline btn-sm mt-2" onclick="window.app.loadDbStats()">Refresh Stats</button>
+      </div>
     </div>
   </div>
 
   <script type="module">
     import { getCurrentUser, logOut, ADMIN_EMAIL } from './auth.js';
-    import { databases, DB_ID, COLLECTIONS, Query } from './appwrite.js';
+    import { databases, DB_ID, COLLECTIONS, Query, ID } from './appwrite.js';
 
-    // Check auth - only admin can access
+    let parsedQuestions = [];
+    let existingQuestions = [];
+    let selectedForImport = new Set();
+
+    // ===== INITIALIZATION =====
     async function init() {
       const user = await getCurrentUser();
-      if (!user) {
-        window.location.href = 'index.html';
-        return;
-      }
-      
-      // Redirect non-admin users
-      if (user.email !== ADMIN_EMAIL) {
-        window.location.href = 'dashboard.html';
-        return;
-      }
-      
-      loadStats();
+      if (!user) { window.location.href = 'login.html'; return; }
+      if (user.email !== ADMIN_EMAIL) { window.location.href = 'dashboard.html'; return; }
+
+      document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await logOut();
+        window.location.href = 'login.html';
+      });
+
+      setupTabs();
+      await loadExistingQuestions();
+      await loadDbStats();
+      populateBulkFilters();
     }
 
-    // Logout
-    document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-      e.preventDefault();
-      await logOut();
-      window.location.href = 'index.html';
-    });
+    function setupTabs() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+        });
+      });
+    }
 
-    // Upload file
-    window.uploadFile = function() {
+    // ===== PARSE & VALIDATE =====
+    async function parseInput() {
       const fileInput = document.getElementById('fileInput');
-      const status = document.getElementById('uploadStatus');
+      const textInput = document.getElementById('jsonInput');
+      let raw = '';
 
-      if (!fileInput.files.length) {
-        status.innerHTML = '<span style="color: var(--danger);">Please select a file</span>';
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          processQuestions(data);
-        } catch (err) {
-          status.innerHTML = `<span style="color: var(--danger);">Invalid JSON: ${err.message}</span>`;
-        }
-      };
-      reader.readAsText(fileInput.files[0]);
-    };
-
-    // Import pasted JSON
-    window.importJSON = function() {
-      const input = document.getElementById('jsonInput').value;
-      const status = document.getElementById('importStatus');
-
-      if (!input.trim()) {
-        status.innerHTML = '<span style="color: var(--danger);">Please enter JSON data</span>';
+      if (fileInput.files.length) {
+        raw = await fileInput.files[0].text();
+      } else if (textInput.value.trim()) {
+        raw = textInput.value.trim();
+      } else {
+        alert('Please upload a file or paste JSON');
         return;
       }
 
       try {
-        const data = JSON.parse(input);
-        processQuestions(data);
+        const data = JSON.parse(raw);
+        parsedQuestions = Array.isArray(data) ? data : [data];
+        validateQuestions();
+        updateStats();
+        renderPreview();
+        switchTab('preview');
       } catch (err) {
-        status.innerHTML = `<span style="color: var(--danger);">Invalid JSON: ${err.message}</span>`;
+        alert('Invalid JSON: ' + err.message);
       }
-    };
+    }
 
-    // Process and validate questions
-    async function processQuestions(data) {
-      const status = document.getElementById('importStatus') || document.getElementById('uploadStatus');
-      
-      if (!Array.isArray(data)) {
-        data = [data]; // Single question
+    function validateQuestions() {
+      const existingStems = new Set(existingQuestions.map(q => q.en?.stem?.toLowerCase().trim()));
+      const seenStems = new Set();
+
+      parsedQuestions.forEach((q, idx) => {
+        q._index = idx;
+        q._id = generateId();
+        q._status = 'valid';
+        q._errors = [];
+
+        // Check required fields
+        if (!q.category) q._errors.push('Missing category');
+        if (!q.course?.en && !q.course?.fr) q._errors.push('Missing course');
+        if (!q.en?.stem && !q.fr?.stem) q._errors.push('Missing question stem');
+        if (!q.correct) q._errors.push('Missing correct answer');
+        if (!q.en?.choices?.length && !q.fr?.choices?.length) q._errors.push('Missing choices');
+
+        // Check for duplicates
+        const stem = (q.en?.stem || q.fr?.stem || '').toLowerCase().trim();
+        if (existingStems.has(stem)) {
+          q._status = 'duplicate';
+          q._errors.push('Duplicate: already in database');
+        } else if (seenStems.has(stem)) {
+          q._status = 'duplicate';
+          q._errors.push('Duplicate: appears multiple times in this batch');
+        }
+        seenStems.add(stem);
+
+        if (q._errors.length > 0 && q._status !== 'duplicate') {
+          q._status = 'flawed';
+        }
+      });
+    }
+
+    function generateId() {
+      return 'q_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    function updateStats() {
+      const valid = parsedQuestions.filter(q => q._status === 'valid').length;
+      const duplicates = parsedQuestions.filter(q => q._status === 'duplicate').length;
+      const flawed = parsedQuestions.filter(q => q._status === 'flawed').length;
+
+      document.getElementById('totalImported').textContent = parsedQuestions.length;
+      document.getElementById('totalValid').textContent = valid;
+      document.getElementById('totalDuplicates').textContent = duplicates;
+      document.getElementById('totalFlawed').textContent = flawed;
+    }
+
+    // ===== PREVIEW =====
+    function renderPreview() {
+      const list = document.getElementById('previewList');
+      const filter = document.getElementById('filterStatus').value;
+      const category = document.getElementById('filterCategory').value;
+      const course = document.getElementById('filterCourse').value;
+      const search = document.getElementById('searchInput').value.toLowerCase();
+
+      let filtered = parsedQuestions;
+      if (filter !== 'all') filtered = filtered.filter(q => q._status === filter);
+      if (category !== 'all') filtered = filtered.filter(q => q.category === category);
+      if (course !== 'all') filtered = filtered.filter(q => q.course?.en === course || q.course?.fr === course);
+      if (search) {
+        filtered = filtered.filter(q => 
+          q.en?.stem?.toLowerCase().includes(search) || 
+          q.fr?.stem?.toLowerCase().includes(search)
+        );
       }
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No questions match your filter</p></div>';
+        return;
+      }
+
+      let html = `<p class="text-secondary mb-3">${filtered.length} questions found</p>`;
+      filtered.forEach(q => {
+        const badgeClass = q._status === 'valid' ? 'badge-valid' : q._status === 'duplicate' ? 'badge-duplicate' : 'badge-flawed';
+        html += `
+          <div class="question-preview ${q._status}">
+            <div class="question-header">
+              <span class="badge ${badgeClass}">${q._status.toUpperCase()}</span>
+              <span class="question-meta">${q.category} • ${q.course?.en || q.course?.fr}</span>
+            </div>
+            <div class="question-stem">${q.en?.stem || q.fr?.stem || 'No stem'}</div>
+            <div class="question-choices">
+              <strong>Choices:</strong> ${(q.en?.choices || q.fr?.choices || []).join(' | ')}<br>
+              <strong>Correct:</strong> ${q.correct}
+            </div>
+            ${q._errors.length > 0 ? `<div style="color:var(--danger);font-size:0.85rem;margin-top:8px;">⚠ ${q._errors.join(', ')}</div>` : ''}
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+    }
+
+    function filterPreview() { renderPreview(); }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    // ===== IMPORT =====
+    async function importValid() {
+      const valid = parsedQuestions.filter(q => q._status === 'valid');
+      if (valid.length === 0) {
+        alert('No valid questions to import');
+        return;
+      }
+
+      if (!confirm(`Import ${valid.length} questions?`)) return;
 
       let imported = 0;
-      let errors = [];
+      let errors = 0;
 
-      for (let i = 0; i < data.length; i++) {
-        const q = data[i];
-        
-        // Validate required fields
-        if (!q.category || !q.course || !q.correct) {
-          errors.push(`Question ${i+1}: Missing required fields`);
-          continue;
-        }
-
-        if (!q.en || !q.fr) {
-          errors.push(`Question ${i+1}: Missing language versions`);
-          continue;
-        }
-
+      for (const q of valid) {
         try {
-          // Convert JSON fields to strings for Appwrite (6 attribute limit)
           const doc = {
+            id: q._id,
             category: q.category,
             course: JSON.stringify(q.course),
+            topic: JSON.stringify(q.topic || {}),
+            difficulty: q.difficulty || 'medium',
             correct: q.correct,
             en: JSON.stringify(q.en),
             fr: JSON.stringify(q.fr),
-            metadata: JSON.stringify({
-              difficulty: q.difficulty || 'medium',
-              topic: q.topic || {}
-            })
+            chapters: JSON.stringify(q.chapters || [])
           };
-          await databases.createDocument(DB_ID, COLLECTIONS.QUESTIONS, 'unique()', doc);
+          await databases.createDocument(DB_ID, COLLECTIONS.QUESTIONS, q._id, doc);
           imported++;
         } catch (err) {
-          errors.push(`Question ${i+1}: ${err.message}`);
+          errors++;
         }
       }
 
-      let resultHTML = `<span style="color: var(--success);">✓ Imported ${imported} questions</span>`;
-      if (errors.length > 0) {
-        resultHTML += `<br><span style="color: var(--warning);">⚠ ${errors.length} errors:</span>`;
-        resultHTML += '<ul style="margin-left:20px; font-size:0.85rem; color:var(--danger);">';
-        errors.slice(0, 10).forEach(e => resultHTML += `<li>${e}</li>`);
-        if (errors.length > 10) resultHTML += `<li>...and ${errors.length - 10} more</li>`;
-        resultHTML += '</ul>';
-      }
-
-      status.innerHTML = resultHTML;
-      loadStats();
+      alert(`Imported: ${imported}\nErrors: ${errors}`);
+      await loadExistingQuestions();
+      await loadDbStats();
     }
 
-    // Load database stats
-    window.loadStats = async function() {
+    // ===== MANAGE =====
+    async function loadExistingQuestions() {
+      try {
+        const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [Query.limit(500)]);
+        existingQuestions = result.documents;
+      } catch (err) {
+        console.error('Failed to load questions:', err);
+      }
+    }
+
+    async function loadDbStats() {
       try {
         const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [Query.limit(1)]);
-        document.getElementById('totalQuestions').textContent = result.total;
-      } catch {
-        document.getElementById('totalQuestions').textContent = '0';
+        document.getElementById('dbStats').innerHTML = `
+          <p><strong>Total questions in database:</strong> ${result.total}</p>
+        `;
+        document.getElementById('totalImported').textContent = result.total;
+      } catch (err) {
+        document.getElementById('dbStats').innerHTML = '<p class="text-secondary">Unable to load stats</p>';
       }
+    }
+
+    function populateBulkFilters() {
+      const categories = [...new Set(existingQuestions.map(q => q.category))];
+      const catSelect = document.getElementById('bulkCategory');
+      catSelect.innerHTML = '<option value="">Select Category</option>';
+      categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
+    }
+
+    function updateBulkCourses() {
+      const category = document.getElementById('bulkCategory').value;
+      const courses = [...new Set(existingQuestions.filter(q => q.category === category).map(q => {
+        try { return JSON.parse(q.course).en; } catch { return q.course; }
+      }))];
+      const courseSelect = document.getElementById('bulkCourse');
+      courseSelect.innerHTML = '<option value="">Select Course</option>';
+      courses.forEach(c => courseSelect.innerHTML += `<option value="${c}">${c}</option>`);
+    }
+
+    async function bulkDelete() {
+      const category = document.getElementById('bulkCategory').value;
+      const course = document.getElementById('bulkCourse').value;
+      if (!category) { alert('Select a category'); return; }
+
+      if (!confirm('Delete all matching questions? This cannot be undone.')) return;
+
+      try {
+        let queries = [Query.equal('category', category)];
+        if (course) queries.push(Query.contains('course', course));
+
+        const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, queries);
+        let deleted = 0;
+        for (const doc of result.documents) {
+          await databases.deleteDocument(DB_ID, COLLECTIONS.QUESTIONS, doc.$id);
+          deleted++;
+        }
+        alert(`Deleted ${deleted} questions`);
+        await loadExistingQuestions();
+        await loadDbStats();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // ===== EXPORT =====
+    window.app = {
+      parseInput,
+      filterPreview,
+      importValid,
+      loadDbStats,
+      populateBulkFilters,
+      updateBulkCourses,
+      bulkDelete,
+      selectAllVisible: () => {},
+      deselectAll: () => {},
+      deleteSelected: () => {},
+      deleteByFilter: () => {}
     };
 
     init();
   </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1aaa2760d6dae2d',t:'MTc4Mzk3MDMxNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
