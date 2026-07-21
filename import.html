@@ -162,6 +162,25 @@
     <!-- Manage Tab -->
     <div class="tab-content" id="tab-manage">
       <div class="section-card">
+        <div class="section-title">All Questions</div>
+        
+        <div class="filter-bar">
+          <select id="manageCategory" onchange="window.app.filterManage()">
+            <option value="all">All Categories</option>
+          </select>
+          <select id="manageCourse" onchange="window.app.filterManage()">
+            <option value="all">All Courses</option>
+          </select>
+          <select id="manageChapter" onchange="window.app.filterManage()">
+            <option value="all">All Chapters</option>
+          </select>
+          <input type="text" id="manageSearch" placeholder="Search questions..." oninput="window.app.filterManage()">
+        </div>
+
+        <div id="questionsList"></div>
+      </div>
+
+      <div class="section-card">
         <div class="section-title">Bulk Delete</div>
         <p class="text-secondary mb-3">Delete questions by category, course, or chapter.</p>
         
@@ -169,11 +188,8 @@
           <select id="bulkCategory" onchange="window.app.updateBulkCourses()">
             <option value="">Select Category</option>
           </select>
-          <select id="bulkCourse" onchange="window.app.updateBulkChapters()">
+          <select id="bulkCourse">
             <option value="">Select Course</option>
-          </select>
-          <select id="bulkChapter">
-            <option value="">Select Chapter (optional)</option>
           </select>
         </div>
 
@@ -433,8 +449,135 @@
       try {
         const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [Query.limit(500)]);
         existingQuestions = result.documents;
+        populateManageFilters();
+        renderQuestionsList();
       } catch (err) {
         console.error('Failed to load questions:', err);
+      }
+    }
+
+    function populateManageFilters() {
+      const categories = [...new Set(existingQuestions.map(q => q.category))];
+      const catSelect = document.getElementById('manageCategory');
+      catSelect.innerHTML = '<option value="all">All Categories</option>';
+      categories.forEach(c => catSelect.innerHTML += `<option value="${c}">${c}</option>`);
+      updateManageCourses();
+    }
+
+    function updateManageCourses() {
+      const category = document.getElementById('manageCategory').value;
+      const filtered = category === 'all' ? existingQuestions : existingQuestions.filter(q => q.category === category);
+      const courses = [...new Set(filtered.map(q => { try { return JSON.parse(q.course).en; } catch { return q.course; } }))];
+      const courseSelect = document.getElementById('manageCourse');
+      courseSelect.innerHTML = '<option value="all">All Courses</option>';
+      courses.forEach(c => courseSelect.innerHTML += `<option value="${c}">${c}</option>`);
+      updateManageChapters();
+    }
+
+    function updateManageChapters() {
+      const category = document.getElementById('manageCategory').value;
+      const course = document.getElementById('manageCourse').value;
+      let filtered = existingQuestions;
+      if (category !== 'all') filtered = filtered.filter(q => q.category === category);
+      if (course !== 'all') filtered = filtered.filter(q => { try { return JSON.parse(q.course).en === course; } catch { return false; } });
+      
+      const chapters = [...new Set(filtered.map(q => { try { return JSON.parse(q.topic || '{}').en || 'No Chapter'; } catch { return 'No Chapter'; } }))];
+      const chapterSelect = document.getElementById('manageChapter');
+      chapterSelect.innerHTML = '<option value="all">All Chapters</option>';
+      chapters.forEach(c => chapterSelect.innerHTML += `<option value="${c}">${c}</option>`);
+    }
+
+    function filterManage() {
+      updateManageCourses();
+      renderQuestionsList();
+    }
+
+    function renderQuestionsList() {
+      const category = document.getElementById('manageCategory').value;
+      const course = document.getElementById('manageCourse').value;
+      const chapter = document.getElementById('manageChapter').value;
+      const search = document.getElementById('manageSearch').value.toLowerCase();
+
+      let filtered = existingQuestions;
+      if (category !== 'all') filtered = filtered.filter(q => q.category === category);
+      if (course !== 'all') filtered = filtered.filter(q => { try { return JSON.parse(q.course).en === course; } catch { return false; } });
+      if (chapter !== 'all') filtered = filtered.filter(q => { try { return (JSON.parse(q.topic || '{}').en || 'No Chapter') === chapter; } catch { return false; } });
+      if (search) {
+        filtered = filtered.filter(q => {
+          try {
+            const en = JSON.parse(q.en || '{}');
+            return en.stem?.toLowerCase().includes(search);
+          } catch { return false; }
+        });
+      }
+
+      const list = document.getElementById('questionsList');
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>No questions found</p></div>';
+        return;
+      }
+
+      let html = `<p class="text-secondary mb-3">${filtered.length} questions found</p>`;
+      filtered.forEach(q => {
+        let courseName = q.course;
+        let chapterName = 'No Chapter';
+        let stem = 'No stem';
+        try { courseName = JSON.parse(q.course).en || q.course; } catch {}
+        try { chapterName = JSON.parse(q.topic || '{}').en || 'No Chapter'; } catch {}
+        try { stem = JSON.parse(q.en || '{}').stem || 'No stem'; } catch {}
+        
+        html += `
+          <div class="question-preview valid">
+            <div class="question-header">
+              <span class="badge badge-valid">${q.category}</span>
+              <span class="question-meta">${courseName} • ${chapterName}</span>
+            </div>
+            <div class="question-stem">${stem.substring(0, 150)}${stem.length > 150 ? '...' : ''}</div>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+              <button class="btn btn-sm btn-outline" onclick="window.app.viewQuestion('${q.$id}')">👁 View</button>
+              <button class="btn btn-sm btn-outline" onclick="window.app.editQuestion('${q.$id}')">✏️ Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="window.app.deleteQuestion('${q.$id}')">🗑 Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+    }
+
+    function viewQuestion(id) {
+      const q = existingQuestions.find(x => x.$id === id);
+      if (!q) return;
+      let stem = 'No stem', choices = [], rationale = '';
+      try { const en = JSON.parse(q.en || '{}'); stem = en.stem || 'No stem'; choices = en.choices || []; rationale = en.rationale || ''; } catch {}
+      
+      alert(`Question:\n${stem}\n\nChoices:\n${choices.join('\n')}\n\nCorrect: ${q.correct}\n\nRationale:\n${rationale}`);
+    }
+
+    function editQuestion(id) {
+      const q = existingQuestions.find(x => x.$id === id);
+      if (!q) return;
+      let stem = '';
+      try { stem = JSON.parse(q.en || '{}').stem || ''; } catch {}
+      
+      const newStem = prompt('Edit question stem:', stem);
+      if (newStem !== null && newStem !== stem) {
+        try {
+          const en = JSON.parse(q.en || '{}');
+          en.stem = newStem;
+          databases.updateDocument(DB_ID, COLLECTIONS.QUESTIONS, id, { en: JSON.stringify(en) }).then(() => {
+            loadExistingQuestions();
+          });
+        } catch {}
+      }
+    }
+
+    async function deleteQuestion(id) {
+      if (!confirm('Delete this question?')) return;
+      try {
+        await databases.deleteDocument(DB_ID, COLLECTIONS.QUESTIONS, id);
+        await loadExistingQuestions();
+      } catch (err) {
+        alert('Error: ' + err.message);
       }
     }
 
@@ -501,6 +644,10 @@
       populateBulkFilters,
       updateBulkCourses,
       bulkDelete,
+      filterManage,
+      viewQuestion,
+      editQuestion,
+      deleteQuestion,
       selectAllVisible: () => {},
       deselectAll: () => {},
       deleteSelected: () => {},

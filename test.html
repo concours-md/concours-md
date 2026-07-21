@@ -5,18 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Concours.md - Test</title>
   <link rel="stylesheet" href="style.css">
-  <!-- MathJax for equations -->
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script>
     window.MathJax = {
       tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
       svg: { fontCache: 'global' }
     };
   </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <style>
     .test-body { background: #f0f2f5; }
-    .test-navigator { position: sticky; bottom: 0; }
+    .test-navigator { 
+      position: sticky; 
+      bottom: 0; 
+      background: var(--bg-secondary);
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 20px;
+      box-shadow: var(--shadow);
+    }
+    .nav-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .nav-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 2px solid var(--border-color);
+      background: var(--white);
+      transition: all 0.2s;
+      position: relative;
+    }
+    .nav-box:hover { transform: scale(1.1); }
+    .nav-box.current { border-color: var(--phys-blue); box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3); }
+    .nav-box.answered { background: var(--success); color: white; border-color: var(--success); }
+    .nav-box.marked::after { content: '🚩'; position: absolute; top: -8px; right: -8px; font-size: 14px; }
+    .nav-box.marked { border-color: var(--warning); }
+    .nav-box.answered.marked { background: var(--success); }
+    .nav-box.answered.marked::after { content: '🚩'; position: absolute; top: -8px; right: -8px; }
+    
     .equation { font-family: 'Times New Roman', serif; font-style: italic; }
+    
+    .choice-correct { background: rgba(39, 174, 96, 0.15) !important; border-color: var(--success) !important; }
+    .choice-incorrect { background: rgba(231, 76, 60, 0.15) !important; border-color: var(--danger) !important; }
+    
+    .test-header {
+      background: var(--bg-secondary);
+      padding: 16px 0;
+      position: sticky;
+      top: 57px;
+      z-index: 50;
+      box-shadow: var(--shadow);
+    }
   </style>
 </head>
 <body class="test-body">
@@ -46,16 +93,26 @@
 
     <!-- Action Buttons -->
     <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
-      <button class="btn btn-outline btn-sm" id="markBtn" onclick="toggleMark()">★ Mark</button>
-      <button class="btn btn-outline btn-sm" onclick="strikethroughMode()">⟶ Strikethrough</button>
-      <button class="btn btn-outline btn-sm" onclick="prevQuestion()">← Previous</button>
-      <button class="btn btn-primary btn-sm" onclick="nextQuestion()">Next →</button>
-      <button class="btn btn-danger btn-sm" onclick="suspendTest()" style="margin-left: auto;">Suspend</button>
-      <button class="btn btn-concours btn-sm" onclick="submitTest()">Submit</button>
+      <button class="btn btn-outline btn-sm" id="markBtn">★ Mark</button>
+      <button class="btn btn-outline btn-sm" id="strikeBtn">⟶ Strikethrough</button>
+      <button class="btn btn-outline btn-sm" id="prevBtn">← Previous</button>
+      <button class="btn btn-primary btn-sm" id="nextBtn">Next →</button>
+      <button class="btn btn-danger btn-sm" id="suspendBtn" style="margin-left: auto;">Suspend</button>
+      <button class="btn btn-concours btn-sm" id="submitBtn">Submit</button>
     </div>
 
     <!-- Question Navigator -->
-    <div class="question-navigator test-navigator" id="questionNav"></div>
+    <div class="question-navigator test-navigator">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <strong>Question Navigator</strong>
+        <div style="display: flex; gap: 12px; font-size: 0.8rem;">
+          <span><span style="display:inline-block;width:12px;height:12px;background:var(--success);border-radius:3px;margin-right:4px;"></span>Correct</span>
+          <span><span style="display:inline-block;width:12px;height:12px;background:var(--danger);border-radius:3px;margin-right:4px;"></span>Wrong</span>
+          <span><span style="display:inline-block;width:12px;height:12px;background:var(--warning);border-radius:3px;margin-right:4px;"></span>Marked</span>
+        </div>
+      </div>
+      <div class="nav-grid" id="questionNav"></div>
+    </div>
 
   </div>
 
@@ -66,8 +123,8 @@
       <p class="text-secondary mb-2" id="submitSummary">You have answered X of Y questions.</p>
       <p class="text-secondary mb-3" id="markedSummary"></p>
       <div style="display: flex; gap: 10px;">
-        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-concours" onclick="confirmSubmit()">Confirm Submit</button>
+        <button class="btn btn-outline" id="cancelSubmit">Cancel</button>
+        <button class="btn btn-concours" id="confirmSubmit">Confirm Submit</button>
       </div>
     </div>
   </div>
@@ -102,8 +159,8 @@
       </div>
 
       <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn btn-primary" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
-        <button class="btn btn-outline" onclick="reviewIncorrect()">Review Incorrect</button>
+        <button class="btn btn-primary" id="backToDashboard">Back to Dashboard</button>
+        <button class="btn btn-outline" id="reviewIncorrect">Review Incorrect</button>
       </div>
     </div>
   </div>
@@ -112,89 +169,81 @@
     import { getCurrentUser, getUserLanguage } from './auth.js';
     import { databases, DB_ID, COLLECTIONS, Query, ID } from './appwrite.js';
 
-    // ============================================
-    // State
-    // ============================================
     let testConfig = null;
     let questions = [];
     let currentIndex = 0;
-    let answers = {}; // { questionId: selectedLetter }
+    let answers = {};
     let markedQuestions = new Set();
     let timeRemaining = 0;
     let timerInterval = null;
-    let questionTimes = {}; // { questionId: seconds }
+    let questionTimes = {};
     let questionStartTime = Date.now();
     let testStartTime = Date.now();
     let isSubmitted = false;
     let currentLang = 'en';
 
-    // ============================================
-    // Translations
-    // ============================================
-    const t = {
+    const translations = {
       en: {
         question: 'Question', of: 'of', marked: '★ Marked', mark: 'Mark', markedDone: '★ Marked',
-        strikethrough: 'Strikethrough', previous: 'Previous', next: 'Next', suspend: 'Suspend', submit: 'Submit',
+        previous: 'Previous', next: 'Next', suspend: 'Suspend', submit: 'Submit',
         submitTitle: 'Submit Test?', submitSummary: 'You have answered {x} of {y} questions.',
         markedSummary: '{n} questions are marked for review.',
         cancel: 'Cancel', confirm: 'Confirm Submit',
         correct: 'Correct', incorrect: 'Incorrect', omitted: 'Omitted',
         yourAnswer: 'Your Answer', correctAnswer: 'Correct Answer', rationale: 'Rationale',
-        timeUsed: 'Time Used', targetTime: 'Target Time',
-        review: 'Review Question', back: 'Back to Dashboard', reviewIncorrect: 'Review Incorrect',
+        timeUsed: 'Time Used', review: 'Review Question', back: 'Back to Dashboard', reviewIncorrect: 'Review Incorrect',
         suspendMsg: 'Test suspended. Your progress has been saved.',
         noQuestions: 'No questions available for this test.',
+        errorLoading: 'Error loading questions: '
       },
       fr: {
         question: 'Question', of: 'sur', marked: '★ Marqué', mark: 'Marquer', markedDone: '★ Marqué',
-        strikethrough: 'Barrer', previous: 'Précédent', next: 'Suivant', suspend: 'Suspendre', submit: 'Soumettre',
-        submitTitle: 'Soumettre le Test?', submitSummary: 'Vous avez répondu à {x} questions sur {y}.',
-        markedSummary: '{n} questions sont marquées pour révision.',
+        previous: 'Précédent', next: 'Suivant', suspend: 'Suspendre', submit: 'Soumettre',
+        submitSummary: 'Vous avez répondu à {x} questions sur {y}.',
         cancel: 'Annuler', confirm: 'Confirmer',
         correct: 'Correct', incorrect: 'Incorrect', omitted: 'Omis',
         yourAnswer: 'Votre Réponse', correctAnswer: 'Bonne Réponse', rationale: 'Raisonnement',
-        timeUsed: 'Temps Utilisé', targetTime: 'Temps Cible',
-        review: 'Revoir', back: 'Retour au Tableau', reviewIncorrect: 'Revoir les Incorrectes',
+        timeUsed: 'Temps Utilisé', back: 'Retour au Tableau', reviewIncorrect: 'Revoir les Incorrectes',
         suspendMsg: 'Test suspendu. Votre progression a été sauvegardée.',
         noQuestions: 'Aucune question disponible pour ce test.',
+        errorLoading: 'Erreur de chargement : '
       }
     };
 
-    function lang(key) {
-      return t[currentLang]?.[key] || t.en[key] || key;
-    }
+    function t(key) { return translations[currentLang]?.[key] || translations.en[key] || key; }
 
-    // ============================================
-    // Initialization
-    // ============================================
     async function init() {
       const user = await getCurrentUser();
-      if (!user) {
-        window.location.href = 'index.html';
-        return;
-      }
+      if (!user) { window.location.href = 'login.html'; return; }
 
       currentLang = await getUserLanguage();
 
-      // Load test config from session
       const configStr = sessionStorage.getItem('testConfig');
-      if (!configStr) {
-        window.location.href = 'dashboard.html';
-        return;
-      }
+      if (!configStr) { window.location.href = 'dashboard.html'; return; }
 
       testConfig = JSON.parse(configStr);
       
-      // Calculate time based on questions
       if (testConfig.type === 'concours') {
         timeRemaining = testConfig.duration * 60;
       } else {
-        // 1.5 minutes per question default
-        timeRemaining = testConfig.numQuestions * 90;
+        timeRemaining = (testConfig.numQuestions || 25) * 90;
       }
 
-      // Load questions
+      setupEventListeners();
       await loadQuestions();
+    }
+
+    function setupEventListeners() {
+      document.getElementById('markBtn').addEventListener('click', toggleMark);
+      document.getElementById('strikeBtn').addEventListener('click', strikethroughMode);
+      document.getElementById('prevBtn').addEventListener('click', prevQuestion);
+      document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+      document.getElementById('suspendBtn').addEventListener('click', suspendTest);
+      document.getElementById('submitBtn').addEventListener('click', submitTest);
+      document.getElementById('cancelSubmit').addEventListener('click', closeModal);
+      document.getElementById('confirmSubmit').addEventListener('click', confirmSubmit);
+      document.getElementById('backToDashboard').addEventListener('click', () => window.location.href = 'dashboard.html');
+      document.getElementById('reviewIncorrect').addEventListener('click', reviewIncorrect);
     }
 
     async function loadQuestions() {
@@ -202,54 +251,47 @@
         let allQuestions = [];
 
         if (testConfig.type === 'concours') {
-          // Load questions for each course in the concours
           for (const course of testConfig.courses) {
-            const courseQuestions = await databases.listDocuments(
-              DB_ID, COLLECTIONS.QUESTIONS, [
+            try {
+              const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
                 Query.equal('category', testConfig.category),
-                Query.equal('course.en', course.en),
                 Query.limit(course.count)
-              ]
-            );
-            allQuestions = allQuestions.concat(courseQuestions.documents);
+              ]);
+              allQuestions = allQuestions.concat(result.documents);
+            } catch (e) { console.warn('Could not load course questions:', e); }
           }
         } else {
-          // Course-specific test
-          const result = await databases.listDocuments(
-            DB_ID, COLLECTIONS.QUESTIONS, [
-              Query.equal('category', testConfig.category),
-              Query.equal('course.en', testConfig.course),
-              Query.limit(testConfig.numQuestions)
-            ]
-          );
+          const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
+            Query.equal('category', testConfig.category),
+            Query.limit(testConfig.numQuestions || 25)
+          ]);
           allQuestions = result.documents;
         }
 
         if (allQuestions.length === 0) {
-          document.getElementById('questionStem').textContent = lang('noQuestions');
+          document.getElementById('questionStem').textContent = t('noQuestions');
           return;
         }
 
-        // Parse JSON strings back to objects
-        questions = allQuestions.map(q => {
-          const metadata = JSON.parse(q.metadata || '{}');
-          return {
-            ...q,
-            course: JSON.parse(q.course || '{}'),
-            topic: metadata.topic || {},
-            difficulty: metadata.difficulty || 'medium',
-            en: JSON.parse(q.en || '{}'),
-            fr: JSON.parse(q.fr || '{}')
-          };
-        });
+        questions = allQuestions.map(q => ({
+          ...q,
+          course: safeParse(q.course, {}),
+          en: safeParse(q.en, {}),
+          fr: safeParse(q.fr, {})
+        }));
+
         shuffleArray(questions);
         renderQuestion();
         renderNavigator();
         startTimer();
       } catch (err) {
         console.error('Failed to load questions:', err);
-        document.getElementById('questionStem').textContent = 'Error loading questions: ' + err.message;
+        document.getElementById('questionStem').textContent = t('errorLoading') + err.message;
       }
+    }
+
+    function safeParse(str, defaultVal) {
+      try { return JSON.parse(str); } catch { return defaultVal; }
     }
 
     function shuffleArray(array) {
@@ -259,36 +301,29 @@
       }
     }
 
-    // ============================================
-    // Render Question
-    // ============================================
     function renderQuestion() {
       const q = questions[currentIndex];
       if (!q) return;
 
-      // Update counter
       document.getElementById('questionCounter').textContent = `${currentIndex + 1} / ${questions.length}`;
-      document.getElementById('questionNum').textContent = `${lang('question')} ${currentIndex + 1}`;
+      document.getElementById('questionNum').textContent = `${t('question')} ${currentIndex + 1}`;
 
-      // Update marked badge
       const markBadge = document.getElementById('markedBadge');
       const markBtn = document.getElementById('markBtn');
       if (markedQuestions.has(currentIndex)) {
         markBadge.classList.remove('hidden');
-        markBtn.textContent = lang('markedDone');
+        markBtn.textContent = t('markedDone');
         markBtn.style.borderColor = 'var(--warning)';
       } else {
         markBadge.classList.add('hidden');
-        markBtn.textContent = lang('mark');
+        markBtn.textContent = t('mark');
         markBtn.style.borderColor = '';
       }
 
-      // Render stem with MathJax
       const stem = q[currentLang]?.stem || q.en?.stem || '';
       document.getElementById('questionStem').innerHTML = stem;
       renderMath();
 
-      // Render choices
       const choices = q[currentLang]?.choices || q.en?.choices || [];
       const container = document.getElementById('answerChoices');
       const letters = ['A', 'B', 'C', 'D', 'E'];
@@ -298,92 +333,71 @@
         const letter = letters[i];
         const isSelected = selectedAnswer === letter;
         return `
-          <div class="answer-choice ${isSelected ? 'selected' : ''}" 
-               onclick="selectAnswer('${letter}')" 
-               ondblclick="strikethroughChoice(this)"
-               data-letter="${letter}">
+          <div class="answer-choice ${isSelected ? 'selected' : ''}" data-letter="${letter}">
             <span class="choice-letter">${letter}</span>
             <span class="choice-text">${choice}</span>
           </div>
         `;
       }).join('');
 
-      // Track time per question
+      container.querySelectorAll('.answer-choice').forEach(el => {
+        el.addEventListener('click', () => selectAnswer(el.dataset.letter));
+        el.addEventListener('dblclick', () => strikethroughChoice(el));
+      });
+
       questionStartTime = Date.now();
     }
 
     function renderMath() {
       if (window.MathJax && window.MathJax.typesetPromise) {
-        window.MathJax.typesetPromise([document.getElementById('questionCard')]).catch(err => {
-          console.log('MathJax error:', err);
-        });
+        window.MathJax.typesetPromise([document.getElementById('questionCard')]).catch(() => {});
       }
     }
 
-    // ============================================
-    // Answer Selection
-    // ============================================
-    window.selectAnswer = function(letter) {
+    function selectAnswer(letter) {
       const q = questions[currentIndex];
       if (!q) return;
 
-      // Record time spent on this question
       const timeSpent = Math.round((Date.now() - questionStartTime) / 1000);
       questionTimes[q.$id] = (questionTimes[q.$id] || 0) + timeSpent;
 
       answers[q.$id] = letter;
 
-      // Update UI
       document.querySelectorAll('.answer-choice').forEach(el => {
         el.classList.toggle('selected', el.dataset.letter === letter);
       });
 
-      // Update navigator
       renderNavigator();
-    };
+    }
 
-    // ============================================
-    // Strikethrough
-    // ============================================
-    let strikethroughEnabled = false;
+    function strikethroughMode() {
+      document.getElementById('strikeBtn').classList.toggle('active');
+    }
 
-    window.strikethroughMode = function() {
-      strikethroughEnabled = !strikethroughEnabled;
-      document.querySelector('button[onclick="strikethroughMode()"]').style.background = 
-        strikethroughEnabled ? 'var(--phys-blue)' : '';
-    };
-
-    window.strikethroughChoice = function(el) {
+    function strikethroughChoice(el) {
       el.classList.toggle('strikethrough');
-    };
+    }
 
-    // ============================================
-    // Navigation
-    // ============================================
-    window.nextQuestion = function() {
+    function nextQuestion() {
       if (currentIndex < questions.length - 1) {
         currentIndex++;
         renderQuestion();
       }
-    };
+    }
 
-    window.prevQuestion = function() {
+    function prevQuestion() {
       if (currentIndex > 0) {
         currentIndex--;
         renderQuestion();
       }
-    };
+    }
 
-    window.goToQuestion = function(index) {
+    function goToQuestion(index) {
       currentIndex = index;
       renderQuestion();
-    };
+    }
 
-    // ============================================
-    // Mark Questions
-    // ============================================
-    window.toggleMark = function() {
-      const q = questions[currentIndex];
+    function toggleMark() {
       if (markedQuestions.has(currentIndex)) {
         markedQuestions.delete(currentIndex);
       } else {
@@ -391,11 +405,8 @@
       }
       renderQuestion();
       renderNavigator();
-    };
+    }
 
-    // ============================================
-    // Question Navigator
-    // ============================================
     function renderNavigator() {
       const nav = document.getElementById('questionNav');
       nav.innerHTML = questions.map((q, i) => {
@@ -403,31 +414,23 @@
         const isMarked = markedQuestions.has(i);
         const isCurrent = i === currentIndex;
 
-        let cls = 'nav-dot';
+        let cls = 'nav-box';
         if (isCurrent) cls += ' current';
-        else if (isMarked) cls += ' marked';
-        else if (isAnswered) cls += ' answered';
+        if (isAnswered) cls += ' answered';
+        if (isMarked) cls += ' marked';
 
-        return `<div class="${cls}" onclick="goToQuestion(${i})">${i + 1}</div>`;
+        return `<div class="${cls}" onclick="window.app.goToQuestion(${i})">${i + 1}</div>`;
       }).join('');
     }
 
-    // ============================================
-    // Timer
-    // ============================================
     function startTimer() {
       updateTimerDisplay();
       timerInterval = setInterval(() => {
         timeRemaining--;
         updateTimerDisplay();
-
         if (timeRemaining <= 0) {
           clearInterval(timerInterval);
-          if (testConfig.tutorMode === 'off') {
-            // Auto-submit
-            confirmSubmit();
-          }
-          // If tutor mode ON, just stop timer but allow continuing
+          if (testConfig.tutorMode === 'off') confirmSubmit();
         }
       }, 1000);
     }
@@ -450,51 +453,42 @@
       }
     }
 
-    // ============================================
-    // Suspend & Submit
-    // ============================================
-    window.suspendTest = function() {
+    function suspendTest() {
       clearInterval(timerInterval);
-      // Save progress to session
       sessionStorage.setItem('suspendedTest', JSON.stringify({
         testConfig, questions, answers, markedQuestions, timeRemaining, questionTimes
       }));
-      alert(lang('suspendMsg'));
+      alert(t('suspendMsg'));
       window.location.href = 'dashboard.html';
-    };
+    }
 
-    window.submitTest = function() {
+    function submitTest() {
       const answered = Object.keys(answers).length;
       const total = questions.length;
       const marked = markedQuestions.size;
 
-      document.getElementById('submitSummary').textContent = lang('submitSummary').replace('{x}', answered).replace('{y}', total);
-      document.getElementById('markedSummary').textContent = lang('markedSummary').replace('{n}', marked);
+      document.getElementById('submitSummary').textContent = t('submitSummary').replace('{x}', answered).replace('{y}', total);
+      document.getElementById('markedSummary').textContent = t('markedSummary').replace('{n}', marked);
       document.getElementById('submitModal').classList.remove('hidden');
-    };
+    }
 
-    window.closeModal = function() {
+    function closeModal() {
       document.getElementById('submitModal').classList.add('hidden');
-    };
+    }
 
-    window.confirmSubmit = function() {
+    function confirmSubmit() {
       if (isSubmitted) return;
       isSubmitted = true;
       clearInterval(timerInterval);
       showResults();
-    };
+    }
 
-    // ============================================
-    // Results
-    // ============================================
     function showResults() {
       document.querySelector('.container').classList.add('hidden');
       document.querySelector('.test-header').classList.add('hidden');
       document.getElementById('resultsPage').classList.remove('hidden');
 
-      let correct = 0;
-      let incorrect = 0;
-      let omitted = 0;
+      let correct = 0, incorrect = 0, omitted = 0;
 
       questions.forEach(q => {
         const userAnswer = answers[q.$id];
@@ -505,7 +499,6 @@
 
       const percentage = Math.round((correct / questions.length) * 100);
 
-      // Score circle
       const circle = document.getElementById('scoreCircle');
       circle.textContent = `${percentage}%`;
       circle.className = 'score-circle ' + (percentage >= 70 ? 'excellent' : percentage >= 50 ? 'good' : percentage >= 30 ? 'average' : 'poor');
@@ -518,65 +511,53 @@
       const hours = Math.floor(totalTime / 3600);
       const mins = Math.floor((totalTime % 3600) / 60);
       const secs = totalTime % 60;
-      document.getElementById('timeSummary').textContent = `${lang('timeUsed')}: ${hours > 0 ? hours + 'h ' : ''}${mins}m ${secs}s`;
+      document.getElementById('timeSummary').textContent = `${t('timeUsed')}: ${hours > 0 ? hours + 'h ' : ''}${mins}m ${secs}s`;
 
-      // Review list
       const reviewList = document.getElementById('reviewList');
-      const letters = ['A', 'B', 'C', 'D', 'E'];
-
       reviewList.innerHTML = questions.map((q, i) => {
         const userAnswer = answers[q.$id];
         const isCorrect = userAnswer === q.correct;
         const isOmitted = !userAnswer;
-        const targetTime = 90; // seconds per question
-        const qTime = questionTimes[q.$id] || 0;
-        const isSlow = qTime > targetTime;
 
         let statusColor = 'var(--text-secondary)';
-        let statusText = lang('omitted');
+        let statusText = t('omitted');
         if (userAnswer) {
-          if (isCorrect) { statusColor = 'var(--success)'; statusText = lang('correct'); }
-          else { statusColor = 'var(--danger)'; statusText = lang('incorrect'); }
+          if (isCorrect) { statusColor = 'var(--success)'; statusText = t('correct'); }
+          else { statusColor = 'var(--danger)'; statusText = t('incorrect'); }
         }
 
         return `
-          <div class="card mb-2" style="cursor: pointer; border-left: 4px solid ${statusColor};" onclick="toggleReview(${i})">
+          <div class="card mb-2" style="cursor: pointer; border-left: 4px solid ${statusColor};" onclick="window.app.toggleReview(${i})">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <strong>${lang('question')} ${i + 1}</strong>
+              <strong>${t('question')} ${i + 1}</strong>
               <span style="color: ${statusColor};">${statusText}</span>
-              ${isSlow ? '<span style="color: var(--warning);">⏱ Slow</span>' : ''}
             </div>
             <div id="review-${i}" class="hidden mt-2" style="font-size: 0.9rem;">
-              <p><strong>${lang('yourAnswer')}:</strong> ${userAnswer || '-'}</p>
-              <p><strong>${lang('correctAnswer')}:</strong> ${q.correct}</p>
-              <p><strong>${lang('rationale')}:</strong> ${q[currentLang]?.rationale || q.en?.rationale || '-'}</p>
+              <p><strong>${t('yourAnswer')}:</strong> ${userAnswer || '-'}</p>
+              <p><strong>${t('correctAnswer')}:</strong> ${q.correct}</p>
+              <p><strong>${t('rationale')}:</strong> ${q[currentLang]?.rationale || q.en?.rationale || '-'}</p>
             </div>
           </div>
         `;
       }).join('');
 
-      // Save test to database (async, don't block)
       saveTestResults(correct, incorrect, omitted, percentage);
     }
 
-    window.toggleReview = function(index) {
+    function toggleReview(index) {
       const el = document.getElementById(`review-${index}`);
       el.classList.toggle('hidden');
-      if (!el.classList.contains('hidden')) {
-        renderMath();
-      }
-    };
+    }
 
-    window.reviewIncorrect = function() {
-      document.querySelectorAll('[id^="review-"]').forEach(el => el.classList.add('hidden');
-      // Show only incorrect ones
+    function reviewIncorrect() {
+      document.querySelectorAll('[id^="review-"]').forEach(el => el.classList.add('hidden'));
       questions.forEach((q, i) => {
         const userAnswer = answers[q.$id];
         if (userAnswer && userAnswer !== q.correct) {
           document.getElementById(`review-${i}`).classList.remove('hidden');
         }
       });
-    };
+    }
 
     async function saveTestResults(correct, incorrect, omitted, percentage) {
       try {
@@ -597,11 +578,9 @@
       }
     }
 
-    // ============================================
-    // Initialize
-    // ============================================
+    window.app = { goToQuestion, toggleReview };
+
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1aac9e27d0fe30f',t:'MTc4Mzk3MTkzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ebf524dc1be309',t:'MTc4NDY1NTI3OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
