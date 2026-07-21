@@ -152,6 +152,7 @@
           <button class="btn btn-sm btn-outline" onclick="window.app.deselectAll()">Deselect All</button>
           <button class="btn btn-sm btn-danger" onclick="window.app.deleteSelected()">Delete Selected</button>
           <button class="btn btn-sm btn-danger" onclick="window.app.deleteByFilter()">Delete by Filter</button>
+          <button class="btn btn-sm btn-primary" onclick="window.app.importValid()" style="margin-left: auto;">+ Add Valid Questions</button>
         </div>
 
         <div id="previewList"></div>
@@ -185,6 +186,17 @@
         <div id="dbStats"></div>
         <button class="btn btn-outline btn-sm mt-2" onclick="window.app.loadDbStats()">Refresh Stats</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Import Progress Modal -->
+  <div id="importModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+    <div class="card" style="max-width: 500px; width: 90%; text-align: center;">
+      <h3 class="mb-3">Importing Questions...</h3>
+      <div class="progress-bar">
+        <div class="progress-fill" id="importProgress" style="width: 0%;"></div>
+      </div>
+      <p id="importStatus" class="text-secondary">Preparing...</p>
     </div>
   </div>
 
@@ -365,10 +377,16 @@
 
       if (!confirm(`Import ${valid.length} questions?`)) return;
 
+      const modal = document.getElementById('importModal');
+      const progressBar = document.getElementById('importProgress');
+      const statusText = document.getElementById('importStatus');
+      modal.classList.remove('hidden');
+
       let imported = 0;
       let errors = 0;
 
-      for (const q of valid) {
+      for (let i = 0; i < valid.length; i++) {
+        const q = valid[i];
         try {
           const doc = {
             id: q._id,
@@ -386,11 +404,20 @@
         } catch (err) {
           errors++;
         }
+
+        const progress = Math.round(((i + 1) / valid.length) * 100);
+        progressBar.style.width = progress + '%';
+        statusText.textContent = `Imported ${i + 1} of ${valid.length}...`;
       }
 
-      alert(`Imported: ${imported}\nErrors: ${errors}`);
-      await loadExistingQuestions();
-      await loadDbStats();
+      statusText.textContent = `Complete! Imported: ${imported}, Errors: ${errors}`;
+      
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        alert(`Import complete!\nImported: ${imported}\nErrors: ${errors}`);
+        loadExistingQuestions();
+        loadDbStats();
+      }, 1500);
     }
 
     // ===== MANAGE =====
