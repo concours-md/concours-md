@@ -5,6 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Concours.md - Dashboard</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .chapter-selector {
+      background: var(--bg-primary);
+      border-radius: 12px;
+      padding: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .chapter-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 4px;
+    }
+    .chapter-item:hover {
+      background: rgba(52, 152, 219, 0.1);
+    }
+    .chapter-item.selected {
+      background: rgba(52, 152, 219, 0.15);
+      border: 1px solid var(--phys-blue);
+    }
+    .chapter-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--phys-blue);
+    }
+    .chapter-label {
+      flex: 1;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .chapter-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .chapter-action-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--white);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .chapter-action-btn:hover {
+      border-color: var(--phys-blue);
+      color: var(--phys-blue);
+    }
+  </style>
   <script>
     window.MathJax = {
       tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
@@ -107,6 +163,187 @@
     import { getCurrentUser, logOut, getUserPrefs, updateUserPrefs, getUserConcoursType, ADMIN_EMAIL, ADMIN_PASSWORD } from './auth.js';
     import { databases, DB_ID, COLLECTIONS, Query } from './appwrite.js';
 
+    // ===== CHAPTERS DATA =====
+    const chapters = {
+      biology: {
+        'Cytology': [
+          { en: 'Origin of Cell Biology', fr: 'Origine de la biologie cellulaire' },
+          { en: 'Molecular Components of Cells', fr: 'Composants moléculaires des cellules' },
+          { en: 'Eukaryotes, Prokaryotes and Viruses', fr: 'Eucaryotes, procaryotes et virus' },
+          { en: 'Plasma Membrane and Other Cell Membranes', fr: 'Membrane plasmique et autres membranes cellulaires' },
+          { en: 'Ribosomes and Protein Synthesis', fr: 'Ribosomes et synthèse des protéines' },
+          { en: 'Endoplasmic Reticulum', fr: 'Réticulum endoplasmique' },
+          { en: 'Golgi Complex', fr: 'Appareil de Golgi' },
+          { en: 'Lysosomes', fr: 'Lysosomes' },
+          { en: 'Peroxisomes', fr: 'Peroxysomes' },
+          { en: 'Mitochondria', fr: 'Mitochondries' },
+          { en: 'Plastids', fr: 'Plastes' },
+          { en: 'The Cytoskeleton', fr: 'Le cytosquelette' },
+          { en: 'Organization of the Nucleus', fr: 'Organisation du noyau' },
+          { en: 'The Cell Cycle', fr: 'Le cycle cellulaire' }
+        ],
+        'Animal Histology': [
+          { en: 'Epithelial Tissues', fr: 'Les tissus épithéliaux' },
+          { en: 'Non-Specialized Connective Tissue', fr: 'Le tissu conjonctif non spécialisé' },
+          { en: 'Adipose Tissue', fr: 'Tissu adipeux' },
+          { en: 'Cartilaginous Tissue', fr: 'Tissu cartilagineux' },
+          { en: 'Bone Tissue', fr: 'Tissu osseux' },
+          { en: 'Blood Tissue', fr: 'Tissu sanguin' },
+          { en: 'Muscle Tissues', fr: 'Les tissus musculaires' },
+          { en: 'Nervous Tissue', fr: 'Le tissu nerveux' }
+        ],
+        'Plant Histology': [
+          { en: 'Introduction', fr: 'Introduction' },
+          { en: 'Plant Tissues', fr: 'Les tissus végétaux' }
+        ],
+        'Genetics': [
+          { en: 'Biochemical Bases of Heredity', fr: 'Bases biochimiques de l\'hérédité' },
+          { en: 'Mitosis and Meiosis', fr: 'La mitose et la méiose' },
+          { en: 'Genetic Mutations and Chromosomes', fr: 'Mutations génétiques et chromosomes' },
+          { en: 'Mendelian Genetics', fr: 'Génétique mendélienne' },
+          { en: 'Extension of Mendelian Genetics', fr: 'Prolongement de la génétique mendélienne' },
+          { en: 'Genetics and Sexuality', fr: 'Génétique et sexualité' },
+          { en: 'Linkage and Genetic Mapping', fr: 'Liaison et carte génétique' },
+          { en: 'Human Genetics', fr: 'Génétique humaine' }
+        ],
+        'Anatomy': [
+          { en: 'Organization of the Human Body', fr: 'Organisation du corps humain' },
+          { en: 'The Skeletal System', fr: 'Le système squelettique' },
+          { en: 'Central Nervous System: Brain & Spinal Cord', fr: 'Système nerveux central : Cerveau et moelle épinière' },
+          { en: 'Special Senses: Eye & Ear', fr: 'Sens spéciaux : Œil et oreille' },
+          { en: 'The Cardiovascular System: Heart', fr: 'Le système cardiovasculaire : Cœur' },
+          { en: 'The Respiratory System', fr: 'Le système respiratoire' },
+          { en: 'The Digestive System', fr: 'Le système digestif' }
+        ],
+        'Botany': [
+          { en: 'The Organization of the Living World', fr: 'L\'organisation du monde vivant' },
+          { en: 'Prokaryotes: Kingdoms of Eubacteria and Archaebacteria', fr: 'Procaryotes : Règnes des eubactéries et archéobactéries' },
+          { en: 'Kingdom of Protista', fr: 'Règne des protistes' },
+          { en: 'Kingdom of Fungi', fr: 'Règne des champignons' },
+          { en: 'Plant Kingdom', fr: 'Règne végétal' },
+          { en: 'Photosynthesis', fr: 'Photosynthèse' }
+        ],
+        'Ecology': [
+          { en: 'General Introduction', fr: 'Introduction générale' },
+          { en: 'Ecological Domains and Terminologies', fr: 'Domaines écologiques et terminologies' },
+          { en: 'Ecological Factors (Abiotic, Biotic)', fr: 'Les facteurs écologiques (abiotiques, biotiques)' },
+          { en: 'Terrestrial Biomes', fr: 'Les biomes terrestres' },
+          { en: 'Aquatic Biomes', fr: 'Les biomes aquatiques' },
+          { en: 'Food Chains and Ecological Pyramids', fr: 'Chaînes alimentaires et pyramides écologiques' },
+          { en: 'Ecosystem Functioning and Biogeochemical Cycles', fr: 'Fonctionnement des écosystèmes et cycles biogéochimiques' }
+        ],
+        'Embryology': [
+          { en: 'Introduction and Generalities', fr: 'Introduction et généralités' },
+          { en: 'Different Types of Eggs', fr: 'Les différents types d\'œufs' },
+          { en: 'Main Stages of Development', fr: 'Les étapes principales du développement' },
+          { en: 'Development of an Insect', fr: 'Le développement d\'un insecte' },
+          { en: 'Development of an Echinoderm', fr: 'Le développement d\'un échinoderme' },
+          { en: 'Development of an Amphibian', fr: 'Le développement d\'un amphibien' },
+          { en: 'Development of a Bird', fr: 'Le développement d\'un oiseau' },
+          { en: 'Development of a Mammal', fr: 'Le développement d\'un mammifère' }
+        ],
+        'Animal Reproduction': [
+          { en: 'Meiosis and Gametogenesis', fr: 'Méiose et gamétogenèse' },
+          { en: 'Chemical Messengers of Reproduction', fr: 'Les messagers chimiques de la reproduction' },
+          { en: 'Gonadogenesis', fr: 'La gonadogenèse' },
+          { en: 'Male Reproductive System', fr: 'L\'appareil reproducteur masculin' },
+          { en: 'Female Reproductive System', fr: 'L\'appareil reproducteur féminin' },
+          { en: 'Fertilization', fr: 'La fécondation' }
+        ],
+        'Plant Reproduction': [
+          { en: 'Introduction - General Principles', fr: 'Introduction - Principes généraux' },
+          { en: 'Reproduction of Prokaryotes', fr: 'Reproduction des procaryotes' },
+          { en: 'Sexual Reproduction - General Concepts', fr: 'Reproduction sexuelle - Concepts généraux' },
+          { en: 'Reproduction of Algae', fr: 'Reproduction des algues' },
+          { en: 'Reproduction of Fungi', fr: 'Reproduction des champignons' },
+          { en: 'Reproduction of Bryophytes', fr: 'Reproduction des bryophytes' },
+          { en: 'Reproduction of Pteridophytes', fr: 'Reproduction des ptéridophytes' },
+          { en: 'Reproduction of Gymnosperms', fr: 'Reproduction des gymnospermes' },
+          { en: 'Reproduction of Angiosperms', fr: 'Reproduction des angiospermes' },
+          { en: 'Asexual Reproduction', fr: 'Reproduction asexuée' }
+        ],
+        'Geology': [
+          { en: 'The Universe and the Solar System', fr: 'L\'univers et le système solaire' },
+          { en: 'The Lithosphere', fr: 'La lithosphère' },
+          { en: 'The Atmosphere and its Dynamics', fr: 'L\'atmosphère et sa dynamique' },
+          { en: 'The Hydrosphere and its Dynamics', fr: 'L\'hydrosphère et sa dynamique' }
+        ]
+      },
+      chemistry: {
+        'General Chemistry': [
+          { en: 'Atomic Structure', fr: 'Structure atomique' },
+          { en: 'Atomic Electron Configurations and Chemical Periodicity', fr: 'Configurations électroniques atomiques et périodicité chimique' },
+          { en: 'Bonding - General Concept', fr: 'Liaison - Concept général' },
+          { en: 'Bonding Orbitals', fr: 'Orbitales de liaison' },
+          { en: 'Thermochemistry', fr: 'Thermochimie' },
+          { en: 'Entropy and Free Energy', fr: 'Entropie et énergie libre' },
+          { en: 'Chemical Kinetics', fr: 'Cinétique chimique' }
+        ],
+        'Organic Chemistry': [
+          { en: 'Introduction to Organic Chemistry', fr: 'Introduction à la chimie organique' },
+          { en: 'Alkanes and Cycloalkanes', fr: 'Alcanes et cycloalcanes' },
+          { en: 'Alkenes and Alkynes', fr: 'Alcènes et alcynes' },
+          { en: 'Aromatic Compounds', fr: 'Composés aromatiques' },
+          { en: 'Functional Groups', fr: 'Groupes fonctionnels' },
+          { en: 'Stereochemistry', fr: 'Stéréochimie' }
+        ],
+        'Chemistry of Solution': [
+          { en: 'Solutions and Solubility', fr: 'Solutions et solubilité' },
+          { en: 'Acids and Bases', fr: 'Acides et bases' },
+          { en: 'Chemical Equilibrium', fr: 'Équilibre chimique' },
+          { en: 'Electrochemistry', fr: 'Électrochimie' }
+        ]
+      },
+      physics: {
+        'Physics 1': [
+          { en: 'Kinematics', fr: 'Cinématique' },
+          { en: 'Dynamics', fr: 'Dynamique' },
+          { en: 'Work and Energy', fr: 'Travail et énergie' },
+          { en: 'Hydrostatics', fr: 'Hydrostatique' },
+          { en: 'Hydrodynamics', fr: 'Hydrodynamique' },
+          { en: 'Momentum, Shock and Collision', fr: 'Quantité de mouvement, choc et collision' },
+          { en: 'Rotational Dynamics', fr: 'Dynamique de rotation' }
+        ],
+        'Physics 2': [
+          { en: 'Electrostatic Force', fr: 'Force électrostatique' },
+          { en: 'Electrostatic Field', fr: 'Champ électrostatique' },
+          { en: 'Electrostatic Potential', fr: 'Potentiel électrostatique' },
+          { en: "Gauss's Theorem", fr: 'Théorème de Gauss' },
+          { en: 'Capacitors', fr: 'Condensateurs' },
+          { en: "Kirchhoff's Law", fr: 'Loi de Kirchhoff' },
+          { en: 'Magnetic Forces', fr: 'Forces magnétiques' },
+          { en: 'Sources of Magnetic Fields', fr: 'Sources de champs magnétiques' },
+          { en: "Snell's Law", fr: 'Loi de Snell-Descartes' },
+          { en: 'Reflection and Refraction', fr: 'Réflexion et réfraction' },
+          { en: 'Diopters', fr: 'Dioptres' },
+          { en: 'Thin Lenses', fr: 'Lentilles minces' },
+          { en: 'Centered Systems', fr: 'Systèmes centrés' },
+          { en: 'The Eye', fr: 'L\'œil' }
+        ]
+      },
+      maths: {
+        'Analysis': [
+          { en: 'Derivability and Reciprocal Functions', fr: 'Dérivabilité et fonctions réciproques' },
+          { en: 'Exponential and Hyperbolic Functions', fr: 'Fonctions exponentielles et hyperboliques' },
+          { en: 'Taylor Series', fr: 'Développements limités' },
+          { en: 'Simple Integrals', fr: 'Intégrales simples' },
+          { en: 'Double Integrals', fr: 'Intégrales doubles' },
+          { en: 'Differential Equations', fr: 'Équations différentielles' }
+        ],
+        'Statistics': [
+          { en: 'Univariate Statistics', fr: 'Statistique univariée' },
+          { en: 'Bivariate Statistics', fr: 'Statistique bivariée' },
+          { en: 'Combinatorics and Probability', fr: 'Combinatoire et probabilité' }
+        ],
+        'Algebra': [
+          { en: 'Matrices', fr: 'Matrices' },
+          { en: 'Determinants', fr: 'Déterminants' },
+          { en: 'Linear Systems', fr: 'Systèmes linéaires' },
+          { en: 'Matrix Reduction', fr: 'Réduction de matrices' }
+        ]
+      }
+    };
+
     const courses = {
       biology: [
         { fr: 'Cytologie', en: 'Cytology' },
@@ -195,6 +432,7 @@
 
     let currentLang = 'en';
     let currentCategory = null;
+    let selectedChapters = [];
 
     function showContent() {
       document.getElementById('categoryGrid').classList.add('hidden');
@@ -206,6 +444,7 @@
       document.getElementById('contentArea').classList.add('hidden');
       document.getElementById('contentBody').innerHTML = '';
       currentCategory = null;
+      selectedChapters = [];
     }
 
     function translateCategories() {
@@ -245,30 +484,96 @@
       document.getElementById('contentBody').innerHTML = html;
     }
 
+    function renderChapterSelector(category, courseEn) {
+      const courseChapters = chapters[category]?.[courseEn] || [];
+      if (courseChapters.length === 0) return '';
+
+      let html = '<div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Chapitres' : 'Chapters') + '</label>';
+      html += '<div class="chapter-actions">';
+      html += '<button type="button" class="chapter-action-btn" onclick="window.app.selectAllChapters()">' + (currentLang === 'fr' ? 'Tout sélectionner' : 'Select All') + '</button>';
+      html += '<button type="button" class="chapter-action-btn" onclick="window.app.deselectAllChapters()">' + (currentLang === 'fr' ? 'Tout désélectionner' : 'Deselect All') + '</button>';
+      html += '</div>';
+      html += '<div class="chapter-selector">';
+
+      courseChapters.forEach(function(chapter, idx) {
+        html += '<div class="chapter-item" onclick="window.app.toggleChapter(' + idx + ')">';
+        html += '<input type="checkbox" class="chapter-checkbox" id="chap-' + idx + '" ' + (selectedChapters.includes(idx) ? 'checked' : '') + ' onclick="event.stopPropagation(); window.app.toggleChapter(' + idx + ')">';
+        html += '<label class="chapter-label" for="chap-' + idx + '">' + chapter[currentLang] + '</label>';
+        html += '</div>';
+      });
+
+      html += '</div></div>';
+      return html;
+    }
+
     function openCourse(category, courseEn) {
+      currentCategory = category;
+      selectedChapters = [];
       const courseData = courses[category].find(function(c) { return c.en === courseEn; });
       if (!courseData) return;
 
       const courseName = courseData[currentLang];
       let html = '<h2 class="mb-3">' + courseName + '</h2>';
 
+      // Create Test section
       html += '<div class="card mb-3"><h3 class="mb-3">' + (currentLang === 'fr' ? 'Créer un Test' : 'Create Test') + '</h3>';
+      html += renderChapterSelector(category, courseData.en);
       html += '<div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Banque de Questions' : 'Question Pool') + '</label><select id="poolSelect" class="form-select"><option value="all">' + (currentLang === 'fr' ? 'Tout' : 'All') + '</option><option value="unused">' + (currentLang === 'fr' ? 'Inutilisées' : 'Unused') + '</option><option value="incorrect">' + (currentLang === 'fr' ? 'Incorrectes/Ommises' : 'Incorrect/Omitted') + '</option><option value="marked">' + (currentLang === 'fr' ? 'Marquées' : 'Marked') + '</option></select></div>';
       html += '<div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Nombre de Questions' : 'Number of Questions') + ': <span id="qCountLabel">25</span></label><input type="range" id="qCount" min="1" max="100" value="25" class="form-input" oninput="document.getElementById(\'qCountLabel\').textContent=this.value"></div>';
       html += '<div class="form-group"><label class="form-label">' + (currentLang === 'fr' ? 'Mode Tuteur' : 'Tutor Mode') + '</label><select id="tutorSelect" class="form-select"><option value="on">' + (currentLang === 'fr' ? 'ON (continuer après le temps)' : 'ON (continue after time)') + '</option><option value="off">' + (currentLang === 'fr' ? 'OFF (soumission auto)' : 'OFF (auto-submit)') + '</option></select></div>';
-      html += '<button class="btn btn-primary" onclick="window.app.startTest(\'' + category + '\',\'' + courseEn + '\')">' + (currentLang === 'fr' ? 'Commencer le Test' : 'Start Test') + '</button>';
+      html += '<button class="btn btn-primary" onclick="window.app.startTest(\'' + category + '\',\'' + courseData.en + '\')">' + (currentLang === 'fr' ? 'Commencer le Test' : 'Start Test') + '</button>';
       html += '</div>';
 
-      html += '<div class="card mb-3"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Performance' : 'Performance') + '</h3><p class="text-secondary">' + (currentLang === 'fr' ? 'Bientôt...' : 'Coming soon...') + '</p></div>';
+      // Performance section
+      html += '<div class="card mb-3"><h3 class="mb-2">Performance</h3><p class="text-secondary">' + (currentLang === 'fr' ? 'Bientôt...' : 'Coming soon...') + '</p></div>';
+
+      // Review Previous Tests section
       html += '<div class="card"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Tests Précédents' : 'Review Previous Tests') + '</h3><p class="text-secondary">' + (currentLang === 'fr' ? 'Aucun test complété' : 'No tests completed yet') + '</p></div>';
 
       document.getElementById('contentBody').innerHTML = html;
+    }
+
+    function selectAllChapters() {
+      const courseEn = courses[currentCategory].find(function(c) { 
+        return document.querySelector('.card h3') && document.querySelector('.card h3').textContent.includes(c[currentLang]);
+      });
+      const courseChapters = chapters[currentCategory]?.[courseEn?.en || ''] || [];
+      selectedChapters = courseChapters.map(function(_, idx) { return idx; });
+      updateChapterCheckboxes();
+    }
+
+    function deselectAllChapters() {
+      selectedChapters = [];
+      updateChapterCheckboxes();
+    }
+
+    function toggleChapter(idx) {
+      const pos = selectedChapters.indexOf(idx);
+      if (pos > -1) {
+        selectedChapters.splice(pos, 1);
+      } else {
+        selectedChapters.push(idx);
+      }
+      updateChapterCheckboxes();
+    }
+
+    function updateChapterCheckboxes() {
+      document.querySelectorAll('.chapter-checkbox').forEach(function(cb, idx) {
+        cb.checked = selectedChapters.includes(idx);
+        cb.closest('.chapter-item').classList.toggle('selected', selectedChapters.includes(idx));
+      });
     }
 
     function startCourseTest(category, courseEn) {
       const pool = document.getElementById('poolSelect').value;
       const numQ = parseInt(document.getElementById('qCount').value);
       const tutorMode = document.getElementById('tutorSelect').value;
+      const courseChapters = chapters[category]?.[courseEn] || [];
+
+      // Get selected chapter names
+      const selectedChapterNames = selectedChapters.map(function(idx) {
+        return courseChapters[idx] ? courseChapters[idx][currentLang] : null;
+      }).filter(Boolean);
 
       const testConfig = {
         type: 'course',
@@ -277,6 +582,7 @@
         pool: pool,
         numQuestions: numQ,
         tutorMode: tutorMode,
+        chapters: selectedChapterNames,
         lang: currentLang
       };
 
@@ -287,17 +593,14 @@
     async function openConcours() {
       showContent();
       
-      // Get user's concours type from signup
       const userConcoursType = await getUserConcoursType();
-      
-      // If user is not admin and has a saved concours type, skip selection
       const user = await getCurrentUser();
+      
       if (user.email !== ADMIN_EMAIL && userConcoursType) {
         selectConcoursType(userConcoursType);
         return;
       }
       
-      // Admin or no saved type - show selection
       let html = '<h2 class="mb-3">' + (currentLang === 'fr' ? 'Examen Concours' : 'Concours Exam') + '</h2>';
       html += '<div class="card mb-3"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Sélectionner le Type' : 'Select Exam Type') + '</h3>';
       html += '<div class="category-grid" style="grid-template-columns: 1fr 1fr;">';
@@ -321,7 +624,7 @@
 
       cats.forEach(function(cat) {
         const struct = concoursStructure[type][cat.key];
-        html += '<button class="btn btn-' + cat.cls + '" onclick="window.app.generateConcours(\'' + type + '\',\'' + cat.key + '\')" style="padding:20px;text-align:center;"><strong>' + cat.label[currentLang] + '</strong><br><small>' + struct.total + ' ' + (currentLang === 'fr' ? 'questions' : 'questions') + ' · ' + struct.duration + ' ' + (currentLang === 'fr' ? 'min' : 'min') + '</small></button>';
+        html += '<button class="btn btn-' + cat.cls + '" onclick="window.app.generateConcours(\'' + type + '\',\'' + cat.key + '\')" style="padding:20px;text-align:center;"><strong>' + cat.label[currentLang] + '</strong><br><small>' + struct.total + (currentLang === 'fr' ? ' questions' : ' questions') + ' · ' + struct.duration + ' ' + (currentLang === 'fr' ? 'min' : 'min') + '</small></button>';
       });
 
       html += '</div></div>';
@@ -337,7 +640,7 @@
       html += '<p><strong>' + (currentLang === 'fr' ? 'Durée' : 'Duration') + ':</strong> ' + struct.duration + ' ' + (currentLang === 'fr' ? 'minutes' : 'minutes') + '</p>';
       html += '<h4 class="mt-2 mb-1">' + (currentLang === 'fr' ? 'Distribution' : 'Distribution') + ':</h4><ul style="margin-left:20px;">';
       struct.courses.forEach(function(c) {
-        html += '<li>' + c[currentLang] + ' — ' + c.count + ' ' + (currentLang === 'fr' ? 'questions' : 'questions') + '</li>';
+        html += '<li>' + c[currentLang] + ' — ' + c.count + (currentLang === 'fr' ? ' questions' : ' questions') + '</li>';
       });
       html += '</ul></div>';
       html += '<button class="btn btn-concours btn-block" onclick="window.app.startConcoursTest(\'' + type + '\',\'' + category + '\')">' + (currentLang === 'fr' ? 'Générer l\'Examen' : 'Generate Exam') + '</button>';
@@ -354,6 +657,7 @@
         duration: struct.duration,
         courses: struct.courses,
         tutorMode: 'off',
+        chapters: [],
         lang: currentLang
       };
       sessionStorage.setItem('testConfig', JSON.stringify(testConfig));
@@ -452,7 +756,10 @@
       generateConcours: generateConcours,
       startConcoursTest: startConcoursTest,
       checkAdminPwd: checkAdminPwd,
-      saveLanguage: saveLanguage
+      saveLanguage: saveLanguage,
+      selectAllChapters: selectAllChapters,
+      deselectAllChapters: deselectAllChapters,
+      toggleChapter: toggleChapter
     };
 
     init();
