@@ -384,12 +384,12 @@
 
       let imported = 0;
       let errors = 0;
+      let errorMessages = [];
 
       for (let i = 0; i < valid.length; i++) {
         const q = valid[i];
         try {
           const doc = {
-            id: q._id,
             category: q.category,
             course: JSON.stringify(q.course),
             topic: JSON.stringify(q.topic || {}),
@@ -403,6 +403,8 @@
           imported++;
         } catch (err) {
           errors++;
+          errorMessages.push(`Question ${i+1}: ${err.message}`);
+          console.error('Import error for question ' + (i+1), err);
         }
 
         const progress = Math.round(((i + 1) / valid.length) * 100);
@@ -412,9 +414,17 @@
 
       statusText.textContent = `Complete! Imported: ${imported}, Errors: ${errors}`;
       
+      if (errors > 0) {
+        console.error('Import errors:', errorMessages);
+      }
+      
       setTimeout(() => {
         modal.classList.add('hidden');
-        alert(`Import complete!\nImported: ${imported}\nErrors: ${errors}`);
+        let msg = `Import complete!\nImported: ${imported}\nErrors: ${errors}`;
+        if (errors > 0 && errorMessages.length > 0) {
+          msg += `\n\nFirst error: ${errorMessages[0]}`;
+        }
+        alert(msg);
         loadExistingQuestions();
         loadDbStats();
       }, 1500);
