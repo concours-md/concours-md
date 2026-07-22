@@ -281,7 +281,10 @@
     }
 
     function validateQuestions() {
-      const existingStems = new Set(existingQuestions.map(q => q.en?.stem?.toLowerCase().trim()));
+      const existingStems = new Set(existingQuestions.map(q => {
+        const en = safeParse(q.en, {});
+        return (en.stem || '').toLowerCase().trim();
+      }));
       const seenStems = new Set();
 
       parsedQuestions.forEach((q, idx) => {
@@ -289,6 +292,7 @@
         q._id = generateId();
         q._status = 'valid';
         q._errors = [];
+        q._isDuplicate = false;
 
         // Check required fields
         if (!q.category) q._errors.push('Missing category');
@@ -297,21 +301,30 @@
         if (!q.correct) q._errors.push('Missing correct answer');
         if (!q.en?.choices?.length && !q.fr?.choices?.length) q._errors.push('Missing choices');
 
-        // Check for duplicates
+        // Check for duplicates within this batch
         const stem = (q.en?.stem || q.fr?.stem || '').toLowerCase().trim();
-        if (existingStems.has(stem)) {
-          q._status = 'duplicate';
-          q._errors.push('Duplicate: already in database');
-        } else if (seenStems.has(stem)) {
+        if (seenStems.has(stem)) {
+          q._isDuplicate = true;
           q._status = 'duplicate';
           q._errors.push('Duplicate: appears multiple times in this batch');
         }
         seenStems.add(stem);
 
+        // Check against existing database
+        if (existingStems.has(stem)) {
+          q._isDuplicate = true;
+          q._status = 'duplicate';
+          q._errors.push('Duplicate: already in database');
+        }
+
         if (q._errors.length > 0 && q._status !== 'duplicate') {
           q._status = 'flawed';
         }
       });
+    }
+
+    function safeParse(str, defaultVal) {
+      try { return JSON.parse(str); } catch { return defaultVal; }
     }
 
     function generateId() {
@@ -386,12 +399,17 @@
     // ===== IMPORT =====
     async function importValid() {
       const valid = parsedQuestions.filter(q => q._status === 'valid');
-      if (valid.length === 0) {
+      const duplicates = parsedQuestions.filter(q => q._status === 'duplicate');
+      
+      if (valid.length === 0 && duplicates.length === 0) {
         alert('No valid questions to import');
         return;
       }
 
-      if (!confirm(`Import ${valid.length} questions?`)) return;
+      let msg = '';
+      if (valid.length > 0) msg += `Import ${valid.length} questions?`;
+      if (duplicates.length > 0) msg += `\n\n${duplicates.length} duplicates will be skipped.`;
+      if (!confirm(msg)) return;
 
       const modal = document.getElementById('importModal');
       const progressBar = document.getElementById('importProgress');
@@ -400,10 +418,18 @@
 
       let imported = 0;
       let errors = 0;
+      let skipped = 0;
       let errorMessages = [];
 
-      for (let i = 0; i < valid.length; i++) {
-        const q = valid[i];
+      for (let i = 0; i < parsedQuestions.length; i++) {
+        const q = parsedQuestions[i];
+        
+        // Skip duplicates and flawed questions
+        if (q._status === 'duplicate' || q._status === 'flawed') {
+          skipped++;
+          continue;
+        }
+        
         try {
           const doc = {
             category: q.category,
@@ -426,12 +452,12 @@
           console.error('Import error for question ' + (i+1), err);
         }
 
-        const progress = Math.round(((i + 1) / valid.length) * 100);
+        const progress = Math.round(((i + 1) / parsedQuestions.length) * 100);
         progressBar.style.width = progress + '%';
-        statusText.textContent = `Imported ${i + 1} of ${valid.length}...`;
+        statusText.textContent = `Imported ${i + 1} of ${parsedQuestions.length}...`;
       }
 
-      statusText.textContent = `Complete! Imported: ${imported}, Errors: ${errors}`;
+      statusText.textContent = `Complete! Imported: ${imported}, Skipped: ${skipped}, Errors: ${errors}`;
       
       if (errors > 0) {
         console.error('Import errors:', errorMessages);
@@ -439,7 +465,7 @@
       
       setTimeout(() => {
         modal.classList.add('hidden');
-        let msg = `Import complete!\nImported: ${imported}\nErrors: ${errors}`;
+        let msg = `Import complete!\nImported: ${imported}\nSkipped: ${skipped}\nErrors: ${errors}`;
         if (errors > 0 && errorMessages.length > 0) {
           msg += `\n\nFirst error: ${errorMessages[0]}`;
         }
@@ -661,5 +687,5 @@
 
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ec502af997e30d',t:'MTc4NDY1OTAwNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
