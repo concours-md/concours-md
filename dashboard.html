@@ -60,6 +60,10 @@
       border-color: var(--phys-blue);
       color: var(--phys-blue);
     }
+    .course-count {
+      font-size: 0.8rem;
+      margin-left: 4px;
+    }
   </style>
   <script>
     window.MathJax = {
@@ -476,12 +480,45 @@
       html += '<div class="card mb-3"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Sélectionner un Cours' : 'Select a Course') + '</h3><div class="category-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">';
 
       catCourses.forEach(function(course) {
-        html += '<button class="btn btn-outline" onclick="window.app.openCourse(\'' + category + '\',\'' + course.en + '\')" style="text-align:left;">' + course[currentLang] + '</button>';
+        html += '<button class="btn btn-outline" onclick="window.app.openCourse(\'' + category + '\',\'' + course.en + '\')" style="text-align:left;">' + course[currentLang] + ' <span class="course-count" data-course="' + course.en + '" style="color:var(--text-secondary);font-size:0.8rem;">...</span></button>';
       });
 
       html += '</div></div>';
 
       document.getElementById('contentBody').innerHTML = html;
+      
+      // Load question counts for each course
+      loadCourseQuestionCounts(category);
+    }
+
+    async function loadCourseQuestionCounts(category) {
+      try {
+        const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
+          Query.equal('category', category),
+          Query.limit(500)
+        ]);
+        
+        const questions = result.documents;
+        const catCourses = courses[category];
+        
+        // Count questions per course
+        catCourses.forEach(function(course) {
+          const count = questions.filter(q => {
+            try {
+              const courseData = JSON.parse(q.course || '{}');
+              return courseData.en === course.en || courseData.fr === course.fr;
+            } catch { return false; }
+          }).length;
+          
+          const badge = document.querySelector(`.course-count[data-course="${course.en}"]`);
+          if (badge) {
+            badge.textContent = `(${count})`;
+            badge.style.color = count > 0 ? 'var(--success)' : 'var(--text-secondary)';
+          }
+        });
+      } catch (err) {
+        console.error('Failed to load course counts:', err);
+      }
     }
 
     function renderChapterSelector(category, courseEn) {
@@ -791,7 +828,8 @@
       selectAllChapters: selectAllChapters,
       deselectAllChapters: deselectAllChapters,
       toggleChapter: toggleChapter,
-      loadQuestionCounts: loadQuestionCounts
+      loadQuestionCounts: loadQuestionCounts,
+      loadCourseQuestionCounts: loadCourseQuestionCounts
     };
 
     init();
