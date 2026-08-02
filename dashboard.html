@@ -491,14 +491,45 @@
       loadCourseQuestionCounts(category);
     }
 
+    // Dashboard uses lowercase keys ('biology'); questions are stored
+    // capitalized ('Biology'). Query every spelling and de-duplicate.
+    function categoryVariants(category) {
+      const raw = String(category || '').trim();
+      if (!raw) return [];
+      const lower = raw.toLowerCase();
+      const title = lower.charAt(0).toUpperCase() + lower.slice(1);
+      return [...new Set([raw, lower, title, raw.toUpperCase()])];
+    }
+
+    async function fetchCategoryQuestions(category) {
+      const byId = new Map();
+      const PAGE = 100;
+
+      for (const variant of categoryVariants(category)) {
+        let offset = 0;
+        while (offset < 5000) {
+          let result;
+          try {
+            result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
+              Query.equal('category', variant),
+              Query.limit(PAGE),
+              Query.offset(offset)
+            ]);
+          } catch (e) {
+            console.warn('Category query failed for "' + variant + '":', e.message);
+            break;
+          }
+          result.documents.forEach(d => byId.set(d.$id, d));
+          if (result.documents.length < PAGE) break;
+          offset += PAGE;
+        }
+      }
+      return [...byId.values()];
+    }
+
     async function loadCourseQuestionCounts(category) {
       try {
-        const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
-          Query.equal('category', category),
-          Query.limit(500)
-        ]);
-        
-        const questions = result.documents;
+        const questions = await fetchCategoryQuestions(category);
         const catCourses = courses[category];
         
         // Count questions per course
@@ -581,17 +612,21 @@
 
     async function loadQuestionCounts(category, courseEn) {
       try {
-        const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
-          Query.equal('category', category),
-          Query.limit(500)
-        ]);
-        
-        const questions = result.documents;
+        const questions = await fetchCategoryQuestions(category);
         const courseChapters = chapters[category]?.[courseEn] || [];
         
+        // Only count questions belonging to this course, so chapter names
+        // shared between courses don't inflate each other's totals.
+        const courseQuestions = questions.filter(q => {
+          try {
+            const c = JSON.parse(q.course || '{}');
+            return c.en === courseEn || c.fr === courseEn;
+          } catch { return false; }
+        });
+
         // Count questions per chapter
         courseChapters.forEach(function(chapter, idx) {
-          const count = questions.filter(q => {
+          const count = courseQuestions.filter(q => {
             try {
               const metadata = JSON.parse(q.metadata || '{}');
               const topic = metadata.topic || {};
@@ -834,5 +869,5 @@
 
     init();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a24d93ed3b06e30b',t:'MTc4NTY3ODkwMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

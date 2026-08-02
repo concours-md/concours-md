@@ -14,16 +14,64 @@
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <style>
     .test-body { background: #f0f2f5; }
-    .test-navigator { 
-      position: sticky; 
-      bottom: 0; 
+
+    /* Two-column layout: question on the left, navigator docked right */
+    .test-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 24px;
+      align-items: start;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 20px 20px 40px;
+    }
+    .test-main { min-width: 0; }
+
+    .test-navigator {
+      position: sticky;
+      top: 90px;
       background: var(--bg-secondary);
       padding: 16px;
       border-radius: 12px;
-      margin-top: 20px;
       box-shadow: var(--shadow);
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
     }
-    .nav-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .test-navigator .nav-title {
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .nav-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.78rem;
+      margin-bottom: 14px;
+      color: var(--text-secondary);
+    }
+    .nav-legend span.swatch {
+      display: inline-block; width: 12px; height: 12px;
+      border-radius: 3px; margin-right: 6px; vertical-align: -1px;
+    }
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    /* Stack on narrower screens so nothing is cramped */
+    @media (max-width: 1024px) {
+      .test-layout { grid-template-columns: minmax(0, 1fr); }
+      .test-navigator {
+        position: static;
+        max-height: none;
+        margin-top: 20px;
+      }
+      .nav-grid { grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); }
+      .nav-legend { flex-direction: row; flex-wrap: wrap; gap: 12px; }
+    }
     .nav-box {
       width: 40px; height: 40px;
       border-radius: 8px;
@@ -120,7 +168,7 @@
 </head>
 <body class="test-body">
   <div class="test-header">
-    <div class="container" style="max-width: 1000px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="container" style="max-width: 1320px; display: flex; justify-content: space-between; align-items: center;">
       <div>
         <strong id="testTitle">Test</strong>
         <span id="questionCounter" style="margin-left: 15px; color: var(--text-secondary);">1 / 25</span>
@@ -132,39 +180,39 @@
     </div>
   </div>
 
-  <div class="container" style="max-width: 1000px; padding-top: 20px;">
-    <div class="question-card" id="questionCard">
-      <div class="question-number" id="questionNum">Question 1</div>
-      <div class="question-stem" id="questionStem">Loading question...</div>
-      <div id="answerChoices"></div>
-    </div>
-    
-    <div id="explanationArea" class="hidden">
-      <div class="explanation-box">
-        <h4>📝 Explanation</h4>
-        <div id="explanationContent"></div>
+  <div class="test-layout">
+    <div class="test-main">
+      <div class="question-card" id="questionCard">
+        <div class="question-number" id="questionNum">Question 1</div>
+        <div class="question-stem" id="questionStem">Loading question...</div>
+        <div id="answerChoices"></div>
       </div>
-    </div>
 
-    <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
-      <button class="btn btn-outline btn-sm" id="markBtn">★ Mark</button>
-      <button class="btn btn-outline btn-sm" id="prevBtn">← Previous</button>
-      <button class="btn btn-primary btn-sm" id="nextBtn">Next →</button>
-      <button class="btn btn-danger btn-sm" id="suspendBtn" style="margin-left: auto;">Suspend</button>
-      <button class="btn btn-concours btn-sm" id="submitBtn">Submit</button>
-    </div>
-
-    <div class="question-navigator test-navigator">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <strong>Question Navigator</strong>
-        <div style="display: flex; gap: 12px; font-size: 0.8rem;">
-          <span><span style="display:inline-block;width:12px;height:12px;background:var(--success);border-radius:3px;margin-right:4px;"></span>Correct</span>
-          <span><span style="display:inline-block;width:12px;height:12px;background:var(--danger);border-radius:3px;margin-right:4px;"></span>Wrong</span>
-          <span><span style="display:inline-block;width:12px;height:12px;background:var(--warning);border-radius:3px;margin-right:4px;"></span>Marked</span>
+      <div id="explanationArea" class="hidden">
+        <div class="explanation-box">
+          <h4>📝 Explanation</h4>
+          <div id="explanationContent"></div>
         </div>
       </div>
-      <div class="nav-grid" id="questionNav"></div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+        <button class="btn btn-outline btn-sm" id="markBtn">★ Mark</button>
+        <button class="btn btn-outline btn-sm" id="prevBtn">← Previous</button>
+        <button class="btn btn-primary btn-sm" id="nextBtn">Next →</button>
+        <button class="btn btn-danger btn-sm" id="suspendBtn" style="margin-left: auto;">Suspend</button>
+        <button class="btn btn-concours btn-sm" id="submitBtn">Submit</button>
+      </div>
     </div>
+
+    <aside class="question-navigator test-navigator">
+      <strong class="nav-title" style="display:block;">Question Navigator</strong>
+      <div class="nav-legend">
+        <span><span class="swatch" style="background:var(--success);"></span>Answered / Correct</span>
+        <span><span class="swatch" style="background:var(--danger);"></span>Incorrect</span>
+        <span><span class="swatch" style="background:var(--warning);"></span>Marked</span>
+      </div>
+      <div class="nav-grid" id="questionNav"></div>
+    </aside>
   </div>
 
   <div id="submitModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
@@ -267,9 +315,11 @@
       testConfig = JSON.parse(configStr);
       
       if (testConfig.type === 'concours') {
+        // Concours keeps its official blueprint duration
         timeRemaining = testConfig.duration * 60;
       } else {
-        timeRemaining = (testConfig.numQuestions || 25) * 90;
+        // Custom tests: 1 minute per question
+        timeRemaining = (testConfig.numQuestions || 25) * 60;
       }
 
       setupEventListeners();
@@ -296,23 +346,45 @@
       document.getElementById('reviewIncorrect').addEventListener('click', reviewIncorrect);
     }
 
+    // The dashboard uses lowercase keys ('biology') but questions are stored
+    // capitalized ('Biology'), so query both spellings and de-duplicate.
+    function categoryVariants(category) {
+      const raw = String(category || '').trim();
+      if (!raw) return [];
+      const lower = raw.toLowerCase();
+      const title = lower.charAt(0).toUpperCase() + lower.slice(1);
+      const upper = raw.toUpperCase();
+      return [...new Set([raw, lower, title, upper])];
+    }
+
     // Fetch every question in a category (Appwrite caps listDocuments at 100/page)
     async function fetchCategoryQuestions(category) {
-      const all = [];
-      let offset = 0;
+      const byId = new Map();
       const PAGE = 100;
       const MAX = 5000;
 
-      while (offset < MAX) {
-        const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
-          Query.equal('category', category),
-          Query.limit(PAGE),
-          Query.offset(offset)
-        ]);
-        all.push(...result.documents);
-        if (result.documents.length < PAGE) break;
-        offset += PAGE;
+      for (const variant of categoryVariants(category)) {
+        let offset = 0;
+        while (offset < MAX) {
+          let result;
+          try {
+            result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
+              Query.equal('category', variant),
+              Query.limit(PAGE),
+              Query.offset(offset)
+            ]);
+          } catch (e) {
+            console.warn('Category query failed for "' + variant + '":', e.message);
+            break;
+          }
+          result.documents.forEach(d => byId.set(d.$id, d));
+          if (result.documents.length < PAGE) break;
+          offset += PAGE;
+        }
       }
+
+      const all = [...byId.values()];
+      console.log('Loaded ' + all.length + ' questions for category "' + category + '"');
       return all;
     }
 
@@ -367,6 +439,11 @@
         } else {
           // Course mode — filter by course, then by selected chapters
           let matching = pool.filter(q => matchesName(questionCourse(q), testConfig.course));
+
+          console.log('Requested course:', testConfig.course);
+          console.log('Courses present in this category:',
+            [...new Set(pool.map(q => questionCourse(q).en || '(none)'))].sort());
+          console.log('Matched ' + matching.length + ' question(s) for this course');
 
           if (matching.length === 0) {
             showNoQuestions(noQuestionsForCourse(testConfig.course));
