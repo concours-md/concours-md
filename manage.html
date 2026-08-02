@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concours.md — Question Manager</title>
+<style>
+:root{--primary:#1a1a2e;--secondary:#16213e;--accent:#f39c12;--accent-dark:#e67e22;
+--success:#27ae60;--danger:#e74c3c;--info:#3498db;--warning:#f1c40f;
+--text:#2c3e50;--text-light:#7f8c8d;--bg:#f0f2f5;--white:#fff;--border:#e0e0e0;
+--radius:12px;--shadow:0 2px 10px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+header{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;padding:18px 24px;
+display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+header h1{font-size:1.25rem}header h1 span{color:var(--accent)}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap}
+.layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:20px;padding:20px;max-width:1500px;margin:0 auto;align-items:start}
+@media(max-width:980px){.layout{grid-template-columns:1fr}}
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.sidebar{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow-y:auto}
+@media(max-width:980px){.sidebar{position:static;max-height:none}}
+h3{font-size:.95rem;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--bg)}
+.form-label{display:block;font-weight:600;font-size:.8rem;margin:12px 0 4px}
+select,input[type=text],input[type=search],textarea{width:100%;padding:8px 10px;border:2px solid var(--border);
+border-radius:8px;font-size:.88rem;font-family:inherit;background:var(--white)}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--info)}
+textarea{resize:vertical;min-height:70px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border:none;
+border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:var(--primary)}.btn-primary:hover:not(:disabled){background:var(--accent-dark)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover:not(:disabled){opacity:.88}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover:not(:disabled){opacity:.88}
+.btn-ghost{background:var(--bg);color:var(--text);border:2px solid var(--border)}
+.btn-ghost:hover:not(:disabled){border-color:var(--info)}
+.btn-sm{padding:5px 10px;font-size:.78rem}
+.btn-block{width:100%}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--white);border-radius:10px;padding:12px;text-align:center;box-shadow:var(--shadow)}
+.stat-v{font-size:1.5rem;font-weight:800;color:var(--primary)}
+.stat-l{font-size:.7rem;color:var(--text-light)}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.toolbar .grow{flex:1;min-width:180px}
+.qlist{display:flex;flex-direction:column;gap:10px}
+.qrow{border:2px solid var(--border);border-radius:10px;padding:12px;transition:.15s;background:var(--white)}
+.qrow:hover{border-color:var(--info)}
+.qrow.sel{border-color:var(--accent);background:rgba(243,156,18,.05)}
+.qhead{display:flex;gap:10px;align-items:flex-start}
+.qhead input[type=checkbox]{margin-top:5px;width:17px;height:17px;flex-shrink:0;cursor:pointer}
+.qbody{flex:1;min-width:0;cursor:pointer}
+.qstem{font-weight:600;font-size:.9rem;margin-bottom:6px;word-break:break-word}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:.72rem;color:var(--text-light)}
+.chip.cat{background:rgba(52,152,219,.12);color:var(--info);border-color:transparent}
+.chip.ok{background:rgba(39,174,96,.12);color:var(--success);border-color:transparent}
+.chip.bad{background:rgba(231,76,60,.12);color:var(--danger);border-color:transparent}
+.qactions{display:flex;gap:6px;flex-shrink:0}
+.detail{margin-top:12px;padding-top:12px;border-top:1px dashed var(--border);display:none}
+.detail.open{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.choice-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.choice-row .letter{width:26px;height:26px;border-radius:6px;background:var(--bg);display:flex;
+align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0}
+.choice-row .letter.correct{background:var(--success);color:#fff}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.85rem;display:none}
+.alert.show{display:block}
+.alert-info{background:rgba(52,152,219,.1);color:var(--info)}
+.alert-error{background:rgba(231,76,60,.1);color:var(--danger)}
+.alert-success{background:rgba(39,174,96,.1);color:var(--success)}
+.alert-warn{background:rgba(241,196,15,.15);color:#a67c00}
+.empty{text-align:center;padding:44px 20px;color:var(--text-light)}
+.spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--info);
+border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal.open{display:flex}
+.modal-box{background:var(--white);border-radius:var(--radius);padding:22px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto}
+.modal-box h3{border:none;font-size:1.05rem}
+.bulkbar{background:var(--primary);color:#fff;border-radius:10px;padding:10px 14px;display:none;
+align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.bulkbar.show{display:flex}
+.bulkbar .count{font-weight:700}
+.pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.tree-item{padding:6px 9px;border-radius:7px;cursor:pointer;font-size:.84rem;display:flex;
+justify-content:space-between;gap:8px;align-items:center}
+.tree-item:hover{background:var(--bg)}
+.tree-item.active{background:var(--accent);color:var(--primary);font-weight:700}
+.tree-item .n{font-size:.72rem;opacity:.75}
+.tree-sub{margin-left:10px;border-left:2px solid var(--border);padding-left:8px}
+.warn-box{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:12px;margin:12px 0;font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>Concours<span>.md</span> — Question Manager</h1>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" id="btnReload">↻ Reload</button>
+    <button class="btn btn-ghost btn-sm" id="btnExport">⬇ Export JSON</button>
+    <a class="btn btn-ghost btn-sm" href="import.html">← Importer</a>
+    <a class="btn btn-ghost btn-sm" href="dashboard.html">Dashboard</a>
+  </div>
+</header>
+
+<div class="alert" id="alert" style="margin:14px 20px 0"></div>
+
+<div class="layout">
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="card sidebar">
+    <h3>Browse</h3>
+    <div id="tree"><div class="empty"><div class="spinner"></div>Loading…</div></div>
+
+    <h3 style="margin-top:18px">Danger zone</h3>
+    <p style="font-size:.76rem;color:var(--text-light);margin-bottom:8px">
+      Deletes everything currently shown by the filter.
+    </p>
+    <button class="btn btn-danger btn-block btn-sm" id="btnDeleteScope" disabled>
+      Delete filtered questions
+    </button>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main>
+    <div class="stats" id="stats"></div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div class="grow">
+          <input type="search" id="search" placeholder="Search question text…">
+        </div>
+        <select id="pageSize" style="width:auto">
+          <option value="25">25 / page</option>
+          <option value="50" selected>50 / page</option>
+          <option value="100">100 / page</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" id="btnSelectPage">Select page</button>
+        <button class="btn btn-ghost btn-sm" id="btnClearSel">Clear</button>
+      </div>
+
+      <div class="bulkbar" id="bulkbar">
+        <span class="count" id="bulkCount">0 selected</span>
+        <button class="btn btn-primary btn-sm" id="btnBulkMove">Move to…</button>
+        <button class="btn btn-danger btn-sm" id="btnBulkDelete">Delete selected</button>
+      </div>
+
+      <div id="list"><div class="empty"><div class="spinner"></div>Loading questions…</div></div>
+      <div class="pager" id="pager"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ================= MOVE MODAL ================= -->
+<div class="modal" id="moveModal">
+  <div class="modal-box">
+    <h3 id="moveTitle">Move questions</h3>
+    <p style="font-size:.84rem;color:var(--text-light);margin-bottom:6px" id="moveSub"></p>
+
+    <label class="form-label">Subject</label>
+    <select id="mvSubject"></select>
+    <label class="form-label">Course</label>
+    <select id="mvCourse"></select>
+    <label class="form-label">Chapter</label>
+    <select id="mvChapter"></select>
+
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-ghost" id="mvCancel">Cancel</button>
+      <button class="btn btn-success" id="mvConfirm">Move</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CONFIRM MODAL ================= -->
+<div class="modal" id="confirmModal">
+  <div class="modal-box">
+    <h3 id="cfTitle">Confirm</h3>
+    <div id="cfBody" style="font-size:.88rem"></div>
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+      <button class="btn btn-ghost" id="cfCancel">Cancel</button>
+      <button class="btn btn-danger" id="cfConfirm">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { databases, DB_ID, COLLECTIONS, Query } from './appwrite.js';
+import { courses, chapters, categoryVariants, safeParse, courseOf, topicOf, categoryKey } from './curriculum.js';
+
+// ---------------- state ----------------
+let ALL = [];                 // every question document
+let view = [];                // after filter + search
+let selected = new Set();
+let filter = { cat:'', course:'', chapter:'' };
+let page = 1, pageSize = 50;
+let openId = null;
+let confirmFn = null;
+let moveTargets = [];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function alertMsg(msg,type='info',ms=4000){
+  const a=$('alert'); a.textContent=msg; a.className='alert show alert-'+type;
+  if(ms) setTimeout(()=>{ if(a.textContent===msg) a.className='alert'; }, ms);
+}
+
+// ---------------- load ----------------
+async function loadAll(){
+  $('list').innerHTML = '<div class="empty"><div class="spinner"></div>Loading questions…</div>';
+  const byId = new Map();
+  const cats = ['biology','chemistry','physics','maths'];
+  const seen = new Set();
+
+  for(const c of cats){
+    for(const variant of categoryVariants(c)){
+      if(seen.has(variant)) continue;
+      seen.add(variant);
+      let offset = 0;
+      while(offset < 10000){
+        let r;
+        try{
+          r = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
+            Query.equal('category', variant), Query.limit(100), Query.offset(offset)
+          ]);
+        }catch(e){ console.warn('query failed', variant, e.message); break; }
+        r.documents.forEach(d=>byId.set(d.$id,d));
+        if(r.documents.length < 100) break;
+        offset += 100;
+      }
+    }
+  }
+
+  // Safety net: catch anything whose category isn't one of the four keys
+  try{
+    let offset=0;
+    while(offset<10000){
+      const r = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS,
+        [Query.limit(100), Query.offset(offset)]);
+      r.documents.forEach(d=>byId.set(d.$id,d));
+      if(r.documents.length<100) break;
+      offset+=100;
+    }
+  }catch(e){ /* listing without filter may be denied; ignore */ }
+
+  ALL = [...byId.values()].map(d=>{
+    const co = courseOf(d), tp = topicOf(d);
+    const en = safeParse(d.en,{}), fr = safeParse(d.fr,{});
+    return {
+      id:d.$id, raw:d,
+      category:d.category||'',
+      catKey:categoryKey(d.category),
+      courseEn:co.en||'', courseFr:co.fr||'',
+      topicEn:tp.en||'', topicFr:tp.fr||'',
+      correct:d.correct||'',
+      stem:en.stem||fr.stem||'',
+      en, fr,
+      meta:safeParse(d.metadata,{})
+    };
+  });
+
+  console.log('Loaded '+ALL.length+' questions');
+  console.log('Categories present:', [...new Set(ALL.map(q=>q.category))]);
+  console.log('Courses present:', [...new Set(ALL.map(q=>q.courseEn))].sort());
+
+  buildTree(); apply();
+  if(ALL.length===0) alertMsg('No questions found in the database.','warn',0);
+}
+
+// ---------------- sidebar tree ----------------
+function buildTree(){
+  const t=$('tree'); t.innerHTML='';
+
+  const all=document.createElement('div');
+  all.className='tree-item'+(!filter.cat?' active':'');
+  all.innerHTML='<span>All questions</span><span class="n">'+ALL.length+'</span>';
+  all.onclick=()=>{ filter={cat:'',course:'',chapter:''}; page=1; buildTree(); apply(); };
+  t.appendChild(all);
+
+  for(const catKey of Object.keys(courses)){
+    const inCat=ALL.filter(q=>q.catKey===catKey);
+    const row=document.createElement('div');
+    row.className='tree-item'+(filter.cat===catKey&&!filter.course?' active':'');
+    row.innerHTML='<span>'+esc(catKey[0].toUpperCase()+catKey.slice(1))+'</span><span class="n">'+inCat.length+'</span>';
+    row.onclick=()=>{ filter={cat:catKey,course:'',chapter:''}; page=1; buildTree(); apply(); };
+    t.appendChild(row);
+
+    if(filter.cat!==catKey) continue;
+
+    const sub=document.createElement('div'); sub.className='tree-sub';
+    // known courses, plus any unexpected ones found in the data
+    const known=courses[catKey].map(c=>c.en);
+    const found=[...new Set(inCat.map(q=>q.courseEn).filter(Boolean))];
+    const list=[...new Set([...known,...found])];
+
+    for(const cEn of list){
+      const inCourse=inCat.filter(q=>q.courseEn===cEn);
+      const unknown=!known.includes(cEn);
+      const cr=document.createElement('div');
+      cr.className='tree-item'+(filter.course===cEn&&!filter.chapter?' active':'');
+      cr.innerHTML='<span>'+esc(cEn||'(no course)')+(unknown?' ⚠':'')+'</span><span class="n">'+inCourse.length+'</span>';
+      cr.onclick=e=>{ e.stopPropagation(); filter={cat:catKey,course:cEn,chapter:''}; page=1; buildTree(); apply(); };
+      sub.appendChild(cr);
+
+      if(filter.course!==cEn) continue;
+      const sub2=document.createElement('div'); sub2.className='tree-sub';
+      const knownCh=(chapters[catKey]?.[cEn]||[]).map(c=>c.en);
+      const foundCh=[...new Set(inCourse.map(q=>q.topicEn).filter(Boolean))];
+      for(const chEn of [...new Set([...knownCh,...foundCh])]){
+        const n=inCourse.filter(q=>q.topicEn===chEn).length;
+        const chr=document.createElement('div');
+        chr.className='tree-item'+(filter.chapter===chEn?' active':'');
+        chr.innerHTML='<span>'+esc(chEn)+(!knownCh.includes(chEn)?' ⚠':'')+'</span><span class="n">'+n+'</span>';
+        chr.onclick=e=>{ e.stopPropagation(); filter={cat:catKey,course:cEn,chapter:chEn}; page=1; buildTree(); apply(); };
+        sub2.appendChild(chr);
+      }
+      sub.appendChild(sub2);
+    }
+    t.appendChild(sub);
+  }
+}
+
+// ---------------- filter + render ----------------
+function apply(){
+  const q=$('search').value.trim().toLowerCase();
+  view=ALL.filter(x=>{
+    if(filter.cat && x.catKey!==filter.cat) return false;
+    if(filter.course && x.courseEn!==filter.course) return false;
+    if(filter.chapter && x.topicEn!==filter.chapter) return false;
+    if(q && !(x.stem.toLowerCase().includes(q) || (x.fr.stem||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const maxPage=Math.max(1,Math.ceil(view.length/pageSize));
+  if(page>maxPage) page=maxPage;
+  $('btnDeleteScope').disabled = view.length===0;
+  renderStats(); renderList(); renderPager(); renderBulk();
+}
+
+function renderStats(){
+  const cats=new Set(view.map(v=>v.catKey||'?')).size;
+  const crs=new Set(view.map(v=>v.courseEn)).size;
+  const chs=new Set(view.map(v=>v.topicEn)).size;
+  $('stats').innerHTML=
+    stat(view.length,'Showing')+stat(ALL.length,'Total')+
+    stat(cats,'Subjects')+stat(crs,'Courses')+stat(chs,'Chapters')+
+    stat(selected.size,'Selected');
+}
+const stat=(v,l)=>'<div class="stat"><div class="stat-v">'+v+'</div><div class="stat-l">'+l+'</div></div>';
+
+function renderList(){
+  const el=$('list');
+  if(view.length===0){ el.innerHTML='<div class="empty">No questions match this filter.</div>'; return; }
+  const start=(page-1)*pageSize;
+  const rows=view.slice(start,start+pageSize);
+  el.innerHTML='<div class="qlist">'+rows.map(rowHtml).join('')+'</div>';
+
+  el.querySelectorAll('[data-check]').forEach(cb=>{
+    cb.onchange=()=>{ const id=cb.dataset.check;
+      cb.checked?selected.add(id):selected.delete(id);
+      cb.closest('.qrow').classList.toggle('sel',cb.checked);
+      renderBulk(); renderStats(); };
+  });
+  el.querySelectorAll('[data-toggle]').forEach(b=>{
+    b.onclick=()=>{ const id=b.dataset.toggle; openId = openId===id?null:id; renderList(); };
+  });
+  el.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>saveOne(b.dataset.save));
+  el.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>askDeleteOne(b.dataset.del));
+  el.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>openMove([b.dataset.move]));
+  el.querySelectorAll('[data-mvsub]').forEach(s=>s.onchange=()=>syncRowSelects(s.dataset.mvsub));
+  el.querySelectorAll('[data-mvcourse]').forEach(s=>s.onchange=()=>syncRowSelects(s.dataset.mvcourse,true));
+}
+
+function rowHtml(q){
+  const open = openId===q.id;
+  const known = courses[q.catKey]?.some(c=>c.en===q.courseEn);
+  return '<div class="qrow'+(selected.has(q.id)?' sel':'')+'">'+
+    '<div class="qhead">'+
+      '<input type="checkbox" data-check="'+q.id+'"'+(selected.has(q.id)?' checked':'')+'>'+
+      '<div class="qbody" data-toggle="'+q.id+'">'+
+        '<div class="qstem">'+esc(q.stem.slice(0,160)||'(no text)')+(q.stem.length>160?'…':'')+'</div>'+
+        '<div class="chips">'+
+          '<span class="chip cat">'+esc(q.category||'?')+'</span>'+
+          '<span class="chip'+(known?'':' bad')+'">'+esc(q.courseEn||'(no course)')+'</span>'+
+          '<span class="chip">'+esc(q.topicEn||'(no chapter)')+'</span>'+
+          '<span class="chip ok">'+esc(q.correct||'?')+'</span>'+
+          '<span class="chip" style="font-family:monospace">#'+esc(q.id.slice(-6))+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="qactions">'+
+        '<button class="btn btn-ghost btn-sm" data-toggle="'+q.id+'">'+(open?'Close':'Edit')+'</button>'+
+        '<button class="btn btn-danger btn-sm" data-del="'+q.id+'">🗑</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="detail'+(open?' open':'')+'">'+(open?detailHtml(q):'')+'</div>'+
+  '</div>';
+}
+
+function detailHtml(q){
+  const catKey=q.catKey||'biology';
+  const courseList=courses[catKey]||[];
+  const chList=chapters[catKey]?.[q.courseEn]||[];
+  const opt=(v,sel,label)=>'<option value="'+esc(v)+'"'+(v===sel?' selected':'')+'>'+esc(label||v)+'</option>';
+
+  let subOpts=Object.keys(courses).map(k=>opt(k,catKey,k[0].toUpperCase()+k.slice(1))).join('');
+  let crsOpts='<option value="">— none —</option>'+courseList.map(c=>opt(c.en,q.courseEn)).join('');
+  if(q.courseEn && !courseList.some(c=>c.en===q.courseEn))
+    crsOpts+=opt(q.courseEn,q.courseEn,q.courseEn+' (unrecognised)');
+  let chOpts='<option value="">— none —</option>'+chList.map(c=>opt(c.en,q.topicEn)).join('');
+  if(q.topicEn && !chList.some(c=>c.en===q.topicEn))
+    chOpts+=opt(q.topicEn,q.topicEn,q.topicEn+' (unrecognised)');
+
+  const choices=(lang)=>{
+    const arr=(q[lang].choices)||[];
+    return arr.map((c,i)=>{
+      const L='ABCDE'[i];
+      return '<div class="choice-row"><span class="letter'+(L===q.correct?' correct':'')+'">'+L+'</span>'+
+        '<input type="text" data-f="'+lang+'.choices.'+i+'" value="'+esc(c)+'"></div>';
+    }).join('')||'<em style="font-size:.8rem;color:var(--text-light)">no choices</em>';
+  };
+
+  return ''+
+  '<div class="grid2">'+
+    '<div><label class="form-label">Subject</label><select data-f="category" data-mvsub="'+q.id+'">'+subOpts+'</select></div>'+
+    '<div><label class="form-label">Correct answer</label>'+
+      '<select data-f="correct">'+['A','B','C','D','E'].map(l=>opt(l,q.correct)).join('')+'</select></div>'+
+    '<div><label class="form-label">Course</label><select data-f="course" data-mvcourse="'+q.id+'">'+crsOpts+'</select></div>'+
+    '<div><label class="form-label">Chapter</label><select data-f="topic">'+chOpts+'</select></div>'+
+  '</div>'+
+  '<div class="grid2" style="margin-top:12px">'+
+    '<div><label class="form-label">Stem (EN)</label><textarea data-f="en.stem">'+esc(q.en.stem||'')+'</textarea>'+
+      '<label class="form-label">Choices (EN)</label>'+choices('en')+
+      '<label class="form-label">Rationale (EN)</label><textarea data-f="en.rationale">'+esc(q.en.rationale||'')+'</textarea></div>'+
+    '<div><label class="form-label">Stem (FR)</label><textarea data-f="fr.stem">'+esc(q.fr.stem||'')+'</textarea>'+
+      '<label class="form-label">Choices (FR)</label>'+choices('fr')+
+      '<label class="form-label">Rationale (FR)</label><textarea data-f="fr.rationale">'+esc(q.fr.rationale||'')+'</textarea></div>'+
+  '</div>'+
+  '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">'+
+    '<button class="btn btn-success btn-sm" data-save="'+q.id+'">💾 Save changes</button>'+
+    '<button class="btn btn-primary btn-sm" data-move="'+q.id+'">→ Move</button>'+
+    '<span style="flex:1"></span>'+
+    '<button class="btn btn-danger btn-sm" data-del="'+q.id+'">🗑 Delete</button>'+
+  '</div>';
+}
+
+// keep the inline course/chapter dropdowns consistent
+function syncRowSelects(id, courseChanged){
+  const row=[...document.querySelectorAll('.qrow')].find(r=>r.querySelector('[data-check="'+id+'"]'));
+  if(!row) return;
+  const subSel=row.querySelector('[data-f="category"]');
+  const crsSel=row.querySelector('[data-f="course"]');
+  const chSel=row.querySelector('[data-f="topic"]');
+  const catKey=subSel.value;
+  if(!courseChanged){
+    crsSel.innerHTML='<option value="">— none —</option>'+
+      (courses[catKey]||[]).map(c=>'<option value="'+esc(c.en)+'">'+esc(c.en)+'</option>').join('');
+  }
+  const chList=chapters[catKey]?.[crsSel.value]||[];
+  chSel.innerHTML='<option value="">— none —</option>'+
+    chList.map(c=>'<option value="'+esc(c.en)+'">'+esc(c.en)+'</option>').join('');
+}
+
+function renderPager(){
+  const maxPage=Math.max(1,Math.ceil(view.length/pageSize));
+  if(maxPage<=1){ $('pager').innerHTML=''; return; }
+  $('pager').innerHTML=
+    '<button class="btn btn-ghost btn-sm" '+(page<=1?'disabled':'')+' id="pPrev">← Prev</button>'+
+    '<span style="font-size:.85rem">Page '+page+' of '+maxPage+'</span>'+
+    '<button class="btn btn-ghost btn-sm" '+(page>=maxPage?'disabled':'')+' id="pNext">Next →</button>';
+  const p=$('pPrev'), n=$('pNext');
+  if(p) p.onclick=()=>{ page--; renderList(); renderPager(); window.scrollTo({top:0,behavior:'smooth'}); };
+  if(n) n.onclick=()=>{ page++; renderList(); renderPager(); window.scrollTo({top:0,behavior:'smooth'}); };
+}
+
+function renderBulk(){
+  $('bulkbar').classList.toggle('show', selected.size>0);
+  $('bulkCount').textContent=selected.size+' selected';
+}
+
+// ---------------- persistence ----------------
+function readRow(id){
+  const row=[...document.querySelectorAll('.qrow')].find(r=>r.querySelector('[data-check="'+id+'"]'));
+  if(!row) return null;
+  const get=sel=>row.querySelector('[data-f="'+sel+'"]');
+  const q=ALL.find(x=>x.id===id);
+  const catKey=get('category').value;
+  const courseEn=get('course').value;
+  const topicEn=get('topic').value;
+
+  const findFr=(list,en)=>{ const m=(list||[]).find(x=>x.en===en); return m?m.fr:en; };
+  const courseFr=findFr(courses[catKey],courseEn);
+  const topicFr=findFr(chapters[catKey]?.[courseEn],topicEn);
+
+  const collect=lang=>{
+    const out={...q[lang]};
+    const st=get(lang+'.stem'); if(st) out.stem=st.value;
+    const ra=get(lang+'.rationale'); if(ra) out.rationale=ra.value;
+    const ch=[...row.querySelectorAll('[data-f^="'+lang+'.choices."]')].map(i=>i.value);
+    if(ch.length) out.choices=ch;
+    return out;
+  };
+
+  return {
+    category: catKey.charAt(0).toUpperCase()+catKey.slice(1),
+    course: JSON.stringify({en:courseEn, fr:courseFr}),
+    correct: get('correct').value,
+    en: JSON.stringify(collect('en')),
+    fr: JSON.stringify(collect('fr')),
+    metadata: JSON.stringify({ ...q.meta, topic:{en:topicEn, fr:topicFr} })
+  };
+}
+
+async function saveOne(id){
+  const payload=readRow(id);
+  if(!payload) return;
+  try{
+    await databases.updateDocument(DB_ID, COLLECTIONS.QUESTIONS, id, payload);
+    alertMsg('Saved.','success');
+    openId=null;
+    await loadAll();
+  }catch(e){ alertMsg('Save failed: '+e.message,'error',8000); }
+}
+
+function askDeleteOne(id){
+  const q=ALL.find(x=>x.id===id);
+  showConfirm('Delete this question?',
+    '<div class="warn-box">'+esc((q?.stem||'').slice(0,180))+'</div><p>This cannot be undone.</p>',
+    async ()=>{
+      try{
+        await databases.deleteDocument(DB_ID, COLLECTIONS.QUESTIONS, id);
+        alertMsg('Deleted.','success'); selected.delete(id); await loadAll();
+      }catch(e){ alertMsg('Delete failed: '+e.message,'error',8000); }
+    });
+}
+
+async function deleteMany(ids,label){
+  let ok=0,fail=0;
+  for(let i=0;i<ids.length;i++){
+    try{ await databases.deleteDocument(DB_ID, COLLECTIONS.QUESTIONS, ids[i]); ok++; }
+    catch(e){ fail++; console.warn('delete failed',ids[i],e.message); }
+    if(i%10===0) alertMsg('Deleting… '+(i+1)+' / '+ids.length,'info',0);
+  }
+  selected.clear();
+  alertMsg('Deleted '+ok+' '+label+(fail?' ('+fail+' failed)':''), fail?'warn':'success');
+  await loadAll();
+}
+
+// ---------------- move ----------------
+function openMove(ids){
+  moveTargets=ids;
+  $('moveSub').textContent=ids.length+' question(s) will be re-assigned.';
+  $('mvSubject').innerHTML=Object.keys(courses)
+    .map(k=>'<option value="'+k+'">'+k[0].toUpperCase()+k.slice(1)+'</option>').join('');
+  syncMove(); $('moveModal').classList.add('open');
+}
+function syncMove(){
+  const cat=$('mvSubject').value;
+  $('mvCourse').innerHTML=(courses[cat]||[])
+    .map(c=>'<option value="'+esc(c.en)+'">'+esc(c.en)+'</option>').join('');
+  syncMoveCh();
+}
+function syncMoveCh(){
+  const cat=$('mvSubject').value, crs=$('mvCourse').value;
+  const list=chapters[cat]?.[crs]||[];
+  $('mvChapter').innerHTML='<option value="">— none —</option>'+
+    list.map(c=>'<option value="'+esc(c.en)+'">'+esc(c.en)+'</option>').join('');
+}
+async function doMove(){
+  const cat=$('mvSubject').value, crsEn=$('mvCourse').value, chEn=$('mvChapter').value;
+  const crs=(courses[cat]||[]).find(c=>c.en===crsEn)||{en:crsEn,fr:crsEn};
+  const ch=(chapters[cat]?.[crsEn]||[]).find(c=>c.en===chEn)||{en:chEn,fr:chEn};
+  $('moveModal').classList.remove('open');
+
+  let ok=0,fail=0;
+  for(let i=0;i<moveTargets.length;i++){
+    const id=moveTargets[i];
+    const q=ALL.find(x=>x.id===id);
+    if(!q){ fail++; continue; }
+    try{
+      await databases.updateDocument(DB_ID, COLLECTIONS.QUESTIONS, id, {
+        category: cat.charAt(0).toUpperCase()+cat.slice(1),
+        course: JSON.stringify({en:crs.en, fr:crs.fr}),
+        metadata: JSON.stringify({ ...q.meta, topic:{en:ch.en, fr:ch.fr} })
+      });
+      ok++;
+    }catch(e){ fail++; console.warn('move failed',id,e.message); }
+    if(i%10===0) alertMsg('Moving… '+(i+1)+' / '+moveTargets.length,'info',0);
+  }
+  selected.clear();
+  alertMsg('Moved '+ok+' question(s)'+(fail?' ('+fail+' failed)':''), fail?'warn':'success');
+  await loadAll();
+}
+
+// ---------------- confirm helper ----------------
+function showConfirm(title, bodyHtml, fn){
+  $('cfTitle').textContent=title; $('cfBody').innerHTML=bodyHtml;
+  confirmFn=fn; $('confirmModal').classList.add('open');
+}
+
+// ---------------- export ----------------
+function exportJSON(){
+  const out=view.map(q=>({
+    category:q.category,
+    course:{en:q.courseEn,fr:q.courseFr},
+    topic:{en:q.topicEn,fr:q.topicFr},
+    difficulty:q.meta.difficulty||'medium',
+    correct:q.correct, en:q.en, fr:q.fr
+  }));
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='questions_export_'+Date.now()+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  alertMsg('Exported '+out.length+' question(s).','success');
+}
+
+// ---------------- wiring ----------------
+$('search').oninput=()=>{ page=1; apply(); };
+$('pageSize').onchange=e=>{ pageSize=+e.target.value; page=1; apply(); };
+$('btnReload').onclick=loadAll;
+$('btnExport').onclick=exportJSON;
+$('btnSelectPage').onclick=()=>{
+  view.slice((page-1)*pageSize, page*pageSize).forEach(q=>selected.add(q.id));
+  renderList(); renderBulk(); renderStats();
+};
+$('btnClearSel').onclick=()=>{ selected.clear(); renderList(); renderBulk(); renderStats(); };
+$('btnBulkDelete').onclick=()=>{
+  const ids=[...selected];
+  showConfirm('Delete '+ids.length+' question(s)?',
+    '<p>This permanently removes the selected questions.</p><div class="warn-box">This cannot be undone.</div>',
+    ()=>deleteMany(ids,'question(s)'));
+};
+$('btnBulkMove').onclick=()=>openMove([...selected]);
+$('btnDeleteScope').onclick=()=>{
+  const ids=view.map(q=>q.id);
+  const what = filter.chapter ? 'chapter “'+filter.chapter+'”'
+             : filter.course  ? 'course “'+filter.course+'”'
+             : filter.cat     ? 'subject “'+filter.cat+'”'
+             : 'the entire database';
+  showConfirm('Delete all questions in '+what+'?',
+    '<p><strong>'+ids.length+'</strong> question(s) will be permanently deleted.</p>'+
+    '<div class="warn-box">This cannot be undone.</div>',
+    ()=>deleteMany(ids,'question(s)'));
+};
+$('mvSubject').onchange=syncMove;
+$('mvCourse').onchange=syncMoveCh;
+$('mvCancel').onclick=()=>$('moveModal').classList.remove('open');
+$('mvConfirm').onclick=doMove;
+$('cfCancel').onclick=()=>{ $('confirmModal').classList.remove('open'); confirmFn=null; };
+$('cfConfirm').onclick=()=>{ $('confirmModal').classList.remove('open'); if(confirmFn) confirmFn(); confirmFn=null; };
+[$('moveModal'),$('confirmModal')].forEach(m=>{
+  m.onclick=e=>{ if(e.target===m) m.classList.remove('open'); };
+});
+
+loadAll();
+</script>
+</body>
+</html>

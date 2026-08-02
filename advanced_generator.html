@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concours.md - Advanced Question Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    :root{--primary:#1a1a2e;--secondary:#16213e;--accent:#f39c12;--accent-dark:#e67e22;--success:#27ae60;--danger:#e74c3c;--info:#3498db;--text:#2c3e50;--text-light:#7f8c8d;--bg:#f8f9fa;--white:#fff;--border:#e0e0e0;--radius:12px;--shadow:0 2px 10px rgba(0,0,0,0.1)}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;padding:20px}
+    .container{max-width:1200px;margin:0 auto}
+    header{background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;padding:25px;border-radius:var(--radius);text-align:center;margin-bottom:25px}
+    header h1 span{color:var(--accent)}
+    .modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-bottom:25px}
+    .mode-card{background:var(--white);border:3px solid transparent;border-radius:var(--radius);padding:20px;cursor:pointer;transition:all .25s;box-shadow:var(--shadow);user-select:none}
+    .mode-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+    .mode-card.active{border-color:var(--accent);background:linear-gradient(135deg,rgba(243,156,18,.08),rgba(243,156,18,.02));box-shadow:0 0 0 3px rgba(243,156,18,.3)}
+    .mode-icon{font-size:2.5rem;margin-bottom:8px;display:block}
+    .mode-card h3{margin-bottom:6px;color:var(--primary);font-size:1.1rem}
+    .mode-card p{color:var(--text-light);font-size:.85rem;line-height:1.4}
+    .panel{background:var(--white);border-radius:var(--radius);padding:25px;box-shadow:var(--shadow);margin-bottom:20px;display:none}
+    .panel.active{display:block;animation:fadeIn .3s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .panel h2{margin-bottom:18px;color:var(--primary);font-size:1.3rem;padding-bottom:10px;border-bottom:2px solid var(--bg)}
+    .form-group{margin-bottom:16px}
+    .form-label{display:block;font-weight:600;margin-bottom:5px;font-size:.9rem;color:var(--text)}
+    .form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:.95rem;font-family:inherit;transition:border-color .2s}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--info)}
+    .form-textarea{min-height:100px;resize:vertical;font-family:'Courier New',monospace;font-size:.85rem}
+    .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn-primary{background:var(--accent);color:var(--primary)}
+    .btn-primary:hover:not(:disabled){background:var(--accent-dark);transform:translateY(-1px)}
+    .btn-success{background:var(--success);color:white}
+    .btn-success:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
+    .btn-secondary{background:var(--bg);color:var(--text);border:2px solid var(--border)}
+    .btn-secondary:hover:not(:disabled){border-color:var(--info)}
+    .btn-block{width:100%}
+    .output-panel{background:var(--white);border-radius:var(--radius);padding:25px;box-shadow:var(--shadow);display:none}
+    .output-panel.active{display:block;animation:fadeIn .3s ease}
+    .output-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px}
+    .output-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:10px;margin-bottom:15px}
+    .stat-box{background:var(--bg);border-radius:8px;padding:10px;text-align:center}
+    .stat-value{font-size:1.3rem;font-weight:800;color:var(--primary)}
+    .stat-value.good{color:var(--success)}
+    .stat-value.bad{color:var(--danger)}
+    .stat-label{font-size:.7rem;color:var(--text-light)}
+    .output-area{background:#1e1e1e;color:#d4d4d4;border-radius:8px;padding:18px;font-family:'Courier New',monospace;font-size:.78rem;max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+    .output-area.valid{border-left:4px solid var(--success)}
+    .output-area.invalid{border-left:4px solid var(--danger)}
+    .alert{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.85rem;display:none}
+    .alert.show{display:block}
+    .alert-info{background:rgba(52,152,219,.1);color:var(--info);border:1px solid rgba(52,152,219,.3)}
+    .alert-error{background:rgba(231,76,60,.1);color:var(--danger);border:1px solid rgba(231,76,60,.3)}
+    .alert-success{background:rgba(39,174,96,.1);color:var(--success);border:1px solid rgba(39,174,96,.3)}
+    .pdf-viewer{background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:15px;margin-bottom:15px;max-height:500px;overflow-y:auto}
+    .pdf-page{background:white;border:1px solid var(--border);margin-bottom:15px;padding:20px;position:relative;box-shadow:0 2px 5px rgba(0,0,0,.1)}
+    .pdf-page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    .pdf-page-content{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+    .pdf-text-content{background:#fafafa;padding:12px;border-radius:6px;font-size:.85rem;max-height:200px;overflow-y:auto}
+    .pdf-images{display:flex;flex-wrap:wrap;gap:8px}
+    .pdf-image-item{position:relative;width:100px;height:100px;border-radius:6px;overflow:hidden;border:2px solid var(--border);cursor:pointer;transition:all .2s}
+    .pdf-image-item:hover{border-color:var(--info);transform:scale(1.05)}
+    .pdf-image-item.selected{border-color:var(--success);box-shadow:0 0 0 3px rgba(39,174,96,.3)}
+    .pdf-image-item img{width:100%;height:100%;object-fit:cover}
+    .pdf-image-item .select-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(52,152,219,.3);display:none;align-items:center;justify-content:center;color:white;font-size:1.5rem}
+    .pdf-image-item.selected .select-overlay{display:flex}
+    .chapter-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .chapter-tag{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.75rem;cursor:pointer;transition:all .2s}
+    .chapter-tag:hover{border-color:var(--info)}
+    .chapter-tag.selected{background:var(--info);color:white;border-color:var(--info)}
+    .loading{display:flex;align-items:center;justify-content:center;padding:30px;color:var(--text-light)}
+    .loading-spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--info);border-radius:50%;animation:spin 1s linear infinite;margin-right:10px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .hidden{display:none!important}
+    .upload-zone{border:2px dashed var(--border);border-radius:8px;padding:30px;text-align:center;cursor:pointer;transition:all .2s}
+    .upload-zone:hover{border-color:var(--info);background:rgba(52,152,219,.05)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Concours<span>.md</span> Advanced Question Generator</h1>
+      <p style="color:rgba(255,255,255,.7);margin-top:6px">Parse PDFs, extract images and equations, generate questions</p>
+    </header>
+
+    <!-- MODE CARDS -->
+    <div class="modes" id="modeGrid">
+      <div class="mode-card" data-mode="pdf" id="card-pdf">
+        <span class="mode-icon">📄</span>
+        <h3>Parse PDF</h3>
+        <p>Upload a PDF to extract text, images, and equations</p>
+      </div>
+      <div class="mode-card" data-mode="inspire" id="card-inspire">
+        <span class="mode-icon">💡</span>
+        <h3>Generate Similar</h3>
+        <p>Upload source questions and generate similar ones</p>
+      </div>
+      <div class="mode-card" data-mode="manual" id="card-manual">
+        <span class="mode-icon">✏️</span>
+        <h3>Manual Entry</h3>
+        <p>Type or paste questions manually with full control</p>
+      </div>
+      <div class="mode-card" data-mode="ai" id="card-ai">
+        <span class="mode-icon">🤖</span>
+        <h3>AI Generate</h3>
+        <p>Describe a topic and AI generates questions</p>
+      </div>
+    </div>
+
+    <!-- ALERT BOX -->
+    <div class="alert" id="alertBox"></div>
+
+    <!-- PDF PANEL -->
+    <div class="panel" id="panel-pdf">
+      <h2>📄 Parse PDF</h2>
+      <div class="form-group">
+        <label class="form-label">Upload PDF *</label>
+        <div class="upload-zone" id="pdfUploadZone">
+          <div style="font-size:3rem;">📁</div>
+          <p style="margin-top:10px;font-weight:600;">Click to upload PDF</p>
+          <p style="font-size:.85rem;color:var(--text-light);margin-top:5px;">or drag and drop</p>
+          <input type="file" id="pdfInput" accept=".pdf" style="display:none">
+        </div>
+      </div>
+      <div id="pdfLoading" class="loading hidden">
+        <div class="loading-spinner"></div>
+        <span>Parsing PDF...</span>
+      </div>
+      <div id="pdfViewer" class="pdf-viewer hidden"></div>
+      <div id="pdfOptions" class="hidden" style="margin-top:20px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Subject *</label>
+            <select class="form-select" id="pdfSubject">
+              <option value="Biology">Biology</option>
+              <option value="Chemistry">Chemistry</option>
+              <option value="Physics">Physics</option>
+              <option value="Maths">Maths</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Course *</label>
+            <select class="form-select" id="pdfCourse"><option value="">Select course...</option></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chapter</label>
+          <div class="chapter-tags" id="pdfChapterTags"></div>
+          <input type="hidden" id="pdfChapters">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Questions to Generate</label>
+            <input type="number" class="form-input" id="pdfCount" value="10" min="1" max="100">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Difficulty</label>
+            <select class="form-select" id="pdfDifficulty">
+              <option value="mixed">Mixed</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="btnGeneratePdf">Generate Questions</button>
+      </div>
+    </div>
+
+    <!-- INSPIRE PANEL -->
+    <div class="panel" id="panel-inspire">
+      <h2>💡 Generate Similar Questions</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Subject *</label>
+          <select class="form-select" id="inspireSubject">
+            <option value="Biology">Biology</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Physics">Physics</option>
+            <option value="Maths">Maths</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course *</label>
+          <select class="form-select" id="inspireCourse"><option value="">Select course...</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chapters</label>
+        <div class="chapter-tags" id="inspireChapterTags"></div>
+        <input type="hidden" id="inspireChapters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Source Questions (paste for inspiration)</label>
+        <textarea class="form-textarea" id="inspireInput" placeholder="Paste questions from the source..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Number of Questions *</label>
+          <input type="number" class="form-input" id="inspireCount" value="10" min="1" max="200">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Difficulty</label>
+          <select class="form-select" id="inspireDifficulty">
+            <option value="mixed">Mixed</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" id="btnGenerateInspire">Generate Similar Questions</button>
+    </div>
+
+    <!-- MANUAL PANEL -->
+    <div class="panel" id="panel-manual">
+      <h2>✏️ Manual Entry</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Subject *</label>
+          <select class="form-select" id="manualSubject">
+            <option value="Biology">Biology</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Physics">Physics</option>
+            <option value="Maths">Maths</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course *</label>
+          <select class="form-select" id="manualCourse"><option value="">Select course...</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chapter</label>
+        <div class="chapter-tags" id="manualChapterTags"></div>
+        <input type="hidden" id="manualChapters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Question Stem (text + $equation$ + [imageN]) *</label>
+        <textarea class="form-textarea" id="manualStem" placeholder="Type your question here..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Choices (one per line) *</label>
+        <textarea class="form-textarea" id="manualChoices" placeholder="A) Option 1
+B) Option 2
+C) Option 3
+D) Option 4" style="min-height:100px;"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Correct Answer *</label>
+        <select class="form-select" id="manualCorrect">
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Images</label>
+        <div class="upload-zone" id="manualUploadZone" style="padding:20px;">
+          <div style="font-size:2rem;">📷</div>
+          <p style="margin-top:5px;">Click to upload images</p>
+          <input type="file" id="manualImageInput" accept="image/*" multiple style="display:none">
+        </div>
+        <div class="pdf-images" id="manualImagePreview"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rationale (optional)</label>
+        <textarea class="form-textarea" id="manualRationale" placeholder="Explain..." style="min-height:80px;"></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" id="btnAddManual">Add Question</button>
+    </div>
+
+    <!-- AI PANEL -->
+    <div class="panel" id="panel-ai">
+      <h2>🤖 AI Generate</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Subject *</label>
+          <select class="form-select" id="aiSubject">
+            <option value="Biology">Biology</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Physics">Physics</option>
+            <option value="Maths">Maths</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course *</label>
+          <select class="form-select" id="aiCourse"><option value="">Select course...</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chapter</label>
+        <div class="chapter-tags" id="aiChapterTags"></div>
+        <input type="hidden" id="aiChapters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Topic Description *</label>
+        <textarea class="form-textarea" id="aiPrompt" placeholder="Describe what you want questions about..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Number of Questions</label>
+          <input type="number" class="form-input" id="aiCount" value="10" min="1" max="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Difficulty</label>
+          <select class="form-select" id="aiDifficulty">
+            <option value="mixed">Mixed</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" id="btnGenerateAI">Generate Questions</button>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="output-panel" id="outputPanel">
+      <div class="output-header">
+        <h2>📋 Generated Output</h2>
+        <div class="output-actions">
+          <button class="btn btn-secondary" id="btnValidate">✓ Validate</button>
+          <button class="btn btn-success" id="btnDownload">⬇ Download</button>
+          <button class="btn btn-primary" id="btnCopy">📋 Copy</button>
+        </div>
+      </div>
+      <div class="stats" id="outputStats"></div>
+      <div class="output-area" id="outputArea">Output will appear here...</div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // CURRICULUM DATA
+    // ============================================================
+    var curriculum = {
+      biology: {
+        'Cytology': ['Origin of Cell Biology','Molecular Components of Cells','Eukaryotes, Prokaryotes and Viruses','Plasma Membrane and Other Cell Membranes','Ribosomes and Protein Synthesis','Endoplasmic Reticulum','Golgi Complex','Lysosomes','Peroxisomes','Mitochondria','Plastids','The Cytoskeleton','Organization of the Nucleus','The Cell Cycle'],
+        'Animal Histology': ['Epithelial Tissues','Non-Specialized Connective Tissue','Adipose Tissue','Cartilaginous Tissue','Bone Tissue','Blood Tissue','Muscle Tissues','Nervous Tissue'],
+        'Plant Histology': ['Introduction','Plant Tissues'],
+        'Genetics': ['Biochemical Bases of Heredity','Mitosis and Meiosis','Genetic Mutations and Chromosomes','Mendelian Genetics','Extension of Mendelian Genetics','Genetics and Sexuality','Linkage and Genetic Mapping','Human Genetics'],
+        'Anatomy': ['Organization of the Human Body','The Skeletal System','Central Nervous System: Brain and Spinal Cord','Special Senses: Eye and Ear','The Cardiovascular System: Heart','The Respiratory System','The Digestive System'],
+        'Botany': ['The Organization of the Living World','Prokaryotes: Kingdoms of Eubacteria and Archaebacteria','Kingdom of Protista','Kingdom of Fungi','Plant Kingdom','Photosynthesis'],
+        'Ecology': ['General Introduction','Ecological Domains and Terminologies','Ecological Factors (Abiotic, Biotic)','Terrestrial Biomes','Aquatic Biomes','Food Chains and Ecological Pyramids','Ecosystem Functioning and Biogeochemical Cycles'],
+        'Embryology': ['Introduction and Generalities','Different Types of Eggs','Main Stages of Development','Development of an Insect','Development of an Echinoderm','Development of an Amphibian','Development of a Bird','Development of a Mammal'],
+        'Animal Reproduction': ['Meiosis and Gametogenesis','Chemical Messengers of Reproduction','Gonadogenesis','Male Reproductive System','Female Reproductive System','Fertilization'],
+        'Plant Reproduction': ['Introduction - General Principles','Reproduction of Prokaryotes','Sexual Reproduction - General Concepts','Reproduction of Algae','Reproduction of Fungi','Reproduction of Bryophytes','Reproduction of Pteridophytes','Reproduction of Gymnosperms','Reproduction of Angiosperms','Asexual Reproduction'],
+        'Geology': ['The Universe and the Solar System','The Lithosphere','The Atmosphere and its Dynamics','The Hydrosphere and its Dynamics']
+      },
+      chemistry: {
+        'General Chemistry': ['Atomic Structure','Atomic Electron Configurations and Chemical Periodicity','Bonding - General Concept','Bonding Orbitals','Thermochemistry','Entropy and Free Energy','Chemical Kinetics'],
+        'Organic Chemistry': ['Introduction to Organic Chemistry','Alkanes and Cycloalkanes','Alkenes and Alkynes','Aromatic Compounds','Functional Groups','Stereochemistry'],
+        'Chemistry of Solution': ['Solutions and Solubility','Acids and Bases','Chemical Equilibrium','Electrochemistry']
+      },
+      physics: {
+        'Physics 1': ['Kinematics','Dynamics','Work and Energy','Hydrostatics','Hydrodynamics','Momentum, Shock and Collision','Rotational Dynamics'],
+        'Physics 2': ['Electrostatic Force','Electrostatic Field','Electrostatic Potential','Gauss Theorem','Capacitors','Kirchhoff Law','Magnetic Forces','Sources of Magnetic Fields','Snell Law','Reflection and Refraction','Diopters','Thin Lenses','Centered Systems','The Eye']
+      },
+      maths: {
+        'Analysis': ['Derivability and Reciprocal Functions','Exponential and Hyperbolic Functions','Taylor Series','Simple Integrals','Double Integrals','Differential Equations'],
+        'Statistics': ['Univariate Statistics','Bivariate Statistics','Combinatorics and Probability'],
+        'Algebra': ['Matrices','Determinants','Linear Systems','Matrix Reduction']
+      }
+    };
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    var currentMode = null;
+    var generatedJSON = '';
+    var pdfData = null;
+    var pdfImages = [];
+    var pdfPageTexts = [];
+    var manualImages = [];
+    var manualQuestions = [];
+
+    // ============================================================
+    // PDF.JS SETUP
+    // ============================================================
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    // ============================================================
+    // DOM READY - BIND ALL EVENTS
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('=== DOM READY ===');
+
+      // --- Mode card clicks ---
+      var cards = document.querySelectorAll('.mode-card');
+      console.log('Found ' + cards.length + ' mode cards');
+      for (var i = 0; i < cards.length; i++) {
+        (function(idx) {
+          cards[idx].onclick = function() {
+            var mode = this.getAttribute('data-mode');
+            console.log('Card clicked: ' + mode);
+            selectMode(mode);
+          };
+        })(i);
+      }
+
+      // --- Subject dropdown changes ---
+      var modes = ['pdf', 'inspire', 'manual', 'ai'];
+      for (var i = 0; i < modes.length; i++) {
+        var sel = document.getElementById(modes[i] + 'Subject');
+        if (sel) {
+          (function(m) {
+            sel.onchange = function() {
+              updateCourses(m);
+            };
+          })(modes[i]);
+        }
+      }
+
+      // --- Course dropdown changes ---
+      for (var i = 0; i < modes.length; i++) {
+        var sel = document.getElementById(modes[i] + 'Course');
+        if (sel) {
+          (function(m) {
+            sel.onchange = function() {
+              updateChapters(m);
+            };
+          })(modes[i]);
+        }
+      }
+
+      // --- PDF upload ---
+      var pdfZone = document.getElementById('pdfUploadZone');
+      var pdfInput = document.getElementById('pdfInput');
+      if (pdfZone && pdfInput) {
+        pdfZone.onclick = function() { pdfInput.click(); };
+        pdfInput.onchange = function() {
+          if (this.files[0]) handlePdfUpload(this.files[0]);
+        };
+      }
+
+      // --- Manual image upload ---
+      var manualZone = document.getElementById('manualUploadZone');
+      var manualInput = document.getElementById('manualImageInput');
+      if (manualZone && manualInput) {
+        manualZone.onclick = function() { manualInput.click(); };
+        manualInput.onchange = function() {
+          handleManualImages(this.files);
+        };
+      }
+
+      // --- Generate buttons ---
+      var btnPdf = document.getElementById('btnGeneratePdf');
+      if (btnPdf) btnPdf.onclick = generateFromPdf;
+
+      var btnInspire = document.getElementById('btnGenerateInspire');
+      if (btnInspire) btnInspire.onclick = generateSimilar;
+
+      var btnManual = document.getElementById('btnAddManual');
+      if (btnManual) btnManual.onclick = addManualQuestion;
+
+      var btnAI = document.getElementById('btnGenerateAI');
+      if (btnAI) btnAI.onclick = generateAI;
+
+      // --- Output buttons ---
+      var btnVal = document.getElementById('btnValidate');
+      if (btnVal) btnVal.onclick = validateJSON;
+
+      var btnDl = document.getElementById('btnDownload');
+      if (btnDl) btnDl.onclick = downloadJSON;
+
+      var btnCp = document.getElementById('btnCopy');
+      if (btnCp) btnCp.onclick = copyJSON;
+
+      console.log('=== ALL EVENTS BOUND ===');
+    });
+
+    // ============================================================
+    // MODE SELECTION
+    // ============================================================
+    function selectMode(mode) {
+      console.log('selectMode: ' + mode);
+      currentMode = mode;
+
+      // Update card visuals
+      var cards = document.querySelectorAll('.mode-card');
+      for (var i = 0; i < cards.length; i++) {
+        cards[i].className = 'mode-card';
+      }
+      var activeCard = document.getElementById('card-' + mode);
+      if (activeCard) {
+        activeCard.className = 'mode-card active';
+      }
+
+      // Show/hide panels
+      var panels = document.querySelectorAll('.panel');
+      for (var i = 0; i < panels.length; i++) {
+        panels[i].className = 'panel';
+      }
+      var panel = document.getElementById('panel-' + mode);
+      if (panel) {
+        panel.className = 'panel active';
+      }
+
+      // Hide output
+      var out = document.getElementById('outputPanel');
+      if (out) out.className = 'output-panel';
+
+      // Update course dropdown
+      updateCourses(mode);
+
+      hideAlert();
+      console.log('selectMode done: ' + mode);
+    }
+
+    // ============================================================
+    // ALERTS
+    // ============================================================
+    function showAlert(msg, type) {
+      var box = document.getElementById('alertBox');
+      box.textContent = msg;
+      box.className = 'alert show alert-' + type;
+    }
+
+    function hideAlert() {
+      var box = document.getElementById('alertBox');
+      box.className = 'alert';
+    }
+
+    // ============================================================
+    // COURSES & CHAPTERS
+    // ============================================================
+    function updateCourses(mode) {
+      var subjEl = document.getElementById(mode + 'Subject');
+      var courseEl = document.getElementById(mode + 'Course');
+      if (!subjEl || !courseEl) return;
+
+      var subject = subjEl.value.toLowerCase();
+      var courses = curriculum[subject] || {};
+
+      courseEl.innerHTML = '<option value="">Select course...</option>';
+      for (var c in courses) {
+        courseEl.innerHTML += '<option value="' + c + '">' + c + '</option>';
+      }
+    }
+
+    function updateChapters(mode) {
+      var subjEl = document.getElementById(mode + 'Subject');
+      var courseEl = document.getElementById(mode + 'Course');
+      var container = document.getElementById(mode + 'ChapterTags');
+      if (!subjEl || !courseEl || !container) return;
+
+      var subject = subjEl.value.toLowerCase();
+      var course = courseEl.value;
+      var chapters = (curriculum[subject] && curriculum[subject][course]) ? curriculum[subject][course] : [];
+
+      container.innerHTML = '';
+      if (chapters.length === 0) {
+        container.innerHTML = '<span style="color:var(--text-light);font-size:.85rem">Select a course</span>';
+        return;
+      }
+
+      for (var i = 0; i < chapters.length; i++) {
+        var tag = document.createElement('span');
+        tag.className = 'chapter-tag';
+        tag.textContent = chapters[i];
+        (function(m) {
+          tag.onclick = function() {
+            this.classList.toggle('selected');
+            updateChapterInput(m);
+          };
+        })(mode);
+        container.appendChild(tag);
+      }
+    }
+
+    function updateChapterInput(mode) {
+      var container = document.getElementById(mode + 'ChapterTags');
+      var input = document.getElementById(mode + 'Chapters');
+      if (!container || !input) return;
+      var selected = container.querySelectorAll('.chapter-tag.selected');
+      var vals = [];
+      for (var i = 0; i < selected.length; i++) {
+        vals.push(selected[i].textContent);
+      }
+      input.value = vals.join(', ');
+    }
+
+    // ============================================================
+    // PDF HANDLING
+    // ============================================================
+    function handlePdfUpload(file) {
+      console.log('handlePdfUpload: ' + file.name);
+      var loading = document.getElementById('pdfLoading');
+      var viewer = document.getElementById('pdfViewer');
+      var options = document.getElementById('pdfOptions');
+
+      loading.className = 'loading';
+      viewer.className = 'pdf-viewer hidden';
+      options.className = 'hidden';
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var typedarray = new Uint8Array(e.target.result);
+        pdfjsLib.getDocument(typedarray).promise.then(
+          function(pdf) {
+            pdfData = { pdf: pdf, numPages: pdf.numPages, fileName: file.name };
+            renderPdfViewer(pdf);
+          },
+          function(err) {
+            showAlert('PDF Error: ' + err.message, 'error');
+            loading.className = 'loading hidden';
+          }
+        );
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Pages are processed one at a time and every step is guarded, so a single
+    // bad page can never stall the whole parse (the old version hung forever).
+    function renderPdfViewer(pdf) {
+      var viewer = document.getElementById('pdfViewer');
+      viewer.innerHTML = '';
+      pdfImages = [];
+      pdfPageTexts = [];
+
+      var numPages = pdf.numPages;
+      var loadingEl = document.getElementById('pdfLoading');
+
+      function finish(failedPages) {
+        loadingEl.className = 'loading hidden';
+        viewer.className = 'pdf-viewer';
+        document.getElementById('pdfOptions').className = '';
+        var msg = 'Parsed ' + numPages + ' page(s), ' + pdfImages.length + ' image(s)';
+        if (failedPages > 0) msg += ' — ' + failedPages + ' page(s) could not be read';
+        showAlert(msg, failedPages > 0 ? 'info' : 'success');
+      }
+
+      var failed = 0;
+
+      function doPage(pageNum) {
+        if (pageNum > numPages) { finish(failed); return; }
+
+        loadingEl.querySelector('span').textContent =
+          'Parsing page ' + pageNum + ' of ' + numPages + '...';
+
+        var settled = false;
+        // Safety net: never let one page block the queue.
+        var watchdog = setTimeout(function() {
+          if (settled) return;
+          settled = true;
+          failed++;
+          console.warn('Page ' + pageNum + ' timed out; skipping.');
+          doPage(pageNum + 1);
+        }, 20000);
+
+        function nextPage() {
+          if (settled) return;
+          settled = true;
+          clearTimeout(watchdog);
+          doPage(pageNum + 1);
+        }
+
+        pdf.getPage(pageNum).then(function(page) {
+          return Promise.all([
+            page.getTextContent().catch(function() { return null; }),
+            extractImages(page, pageNum).catch(function() { return []; })
+          ]);
+        }).then(function(results) {
+          if (settled) return;
+
+          // getTextContent() resolves to an object with .items — join them into
+          // a string. Calling .substring() on the raw object used to throw and
+          // silently kill the page counter, which is what hung the spinner.
+          var tc = results[0];
+          var text = (tc && tc.items)
+            ? tc.items.map(function(it) { return it.str; }).join(' ')
+            : '';
+          var imgs = results[1] || [];
+
+          pdfPageTexts.push({ page: pageNum, text: text });
+
+          var baseIdx = pdfImages.length;
+          pdfImages = pdfImages.concat(imgs);
+
+          var imgHtml = '';
+          if (imgs.length > 0) {
+            for (var j = 0; j < imgs.length; j++) {
+              var globalIdx = baseIdx + j;
+              imgHtml += '<div class="pdf-image-item" data-idx="' + globalIdx +
+                '" onclick="togglePdfImage(' + globalIdx + ')"><img src="' +
+                imgs[j].data + '" alt="img"><div class="select-overlay">&#10004;</div></div>';
+            }
+          } else {
+            imgHtml = '<span style="color:var(--text-light);font-size:.85rem">No images found</span>';
+          }
+
+          var shown = text.length > 1500 ? text.substring(0, 1500) + '...' : text;
+          if (!shown) shown = '<em style="color:var(--text-light)">No selectable text on this page</em>';
+
+          var div = document.createElement('div');
+          div.className = 'pdf-page';
+          div.innerHTML =
+            '<div class="pdf-page-header"><strong>Page ' + pageNum + '</strong><span>' +
+            imgs.length + ' image(s)</span></div>' +
+            '<div class="pdf-page-content"><div class="pdf-text-content">' + shown +
+            '</div><div class="pdf-images">' + imgHtml + '</div></div>';
+          viewer.appendChild(div);
+
+          nextPage();
+        }).catch(function(err) {
+          if (settled) return;
+          failed++;
+          console.warn('Page ' + pageNum + ' failed:', err);
+          nextPage();
+        });
+      }
+
+      doPage(1);
+    }
+
+    // page.objs.get() is callback-based in pdf.js and can simply never fire for
+    // unsupported image types, so each lookup is wrapped in its own timeout.
+    function getImageObj(page, key) {
+      return new Promise(function(resolve) {
+        var done = false;
+        var timer = setTimeout(function() {
+          if (!done) { done = true; resolve(null); }
+        }, 3000);
+
+        function settle(v) {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          resolve(v);
+        }
+
+        try {
+          page.objs.get(key, settle);
+        } catch (e) {
+          settle(null);
+        }
+      });
+    }
+
+    function extractImages(page, pageNum) {
+      return page.getOperatorList().then(function(ops) {
+        var keys = [];
+        for (var i = 0; i < ops.fnArray.length; i++) {
+          // 85 = OPS.paintImageXObject, 86 = OPS.paintInlineImageXObject
+          if (ops.fnArray[i] === 85 || ops.fnArray[i] === 86) {
+            var arg = ops.argsArray[i] && ops.argsArray[i][0];
+            if (typeof arg === 'string' && keys.indexOf(arg) === -1) keys.push(arg);
+          }
+        }
+        if (keys.length === 0) return [];
+
+        return Promise.all(keys.map(function(k) { return getImageObj(page, k); }))
+          .then(function(objs) {
+            var images = [];
+            objs.forEach(function(img) {
+              if (!img || !img.width || !img.height || !img.data) return;
+              try {
+                var canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                var ctx = canvas.getContext('2d');
+                var imgData = ctx.createImageData(img.width, img.height);
+
+                // pdf.js may hand back RGB (3 bytes) instead of RGBA (4).
+                if (img.data.length === img.width * img.height * 4) {
+                  imgData.data.set(img.data);
+                } else if (img.data.length === img.width * img.height * 3) {
+                  for (var s = 0, d = 0; s < img.data.length; s += 3, d += 4) {
+                    imgData.data[d] = img.data[s];
+                    imgData.data[d + 1] = img.data[s + 1];
+                    imgData.data[d + 2] = img.data[s + 2];
+                    imgData.data[d + 3] = 255;
+                  }
+                } else {
+                  return;
+                }
+
+                ctx.putImageData(imgData, 0, 0);
+                images.push({
+                  data: canvas.toDataURL('image/png'),
+                  page: pageNum,
+                  name: 'p' + pageNum + '_' + (images.length + 1),
+                  selected: false
+                });
+              } catch (e) {}
+            });
+            return images;
+          });
+      }).catch(function() { return []; });
+    }
+
+    function togglePdfImage(idx) {
+      var items = document.querySelectorAll('.pdf-image-item');
+      for (var i = 0; i < items.length; i++) {
+        if (parseInt(items[i].getAttribute('data-idx')) === idx) {
+          items[i].classList.toggle('selected');
+          if (pdfImages[idx]) pdfImages[idx].selected = !pdfImages[idx].selected;
+        }
+      }
+    }
+
+    // ============================================================
+    // MANUAL IMAGE HANDLING
+    // ============================================================
+    function handleManualImages(files) {
+      for (var i = 0; i < files.length; i++) {
+        (function(file) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            manualImages.push({ name: file.name, data: e.target.result });
+            renderManualImages();
+          };
+          reader.readAsDataURL(file);
+        })(files[i]);
+      }
+    }
+
+    function renderManualImages() {
+      var container = document.getElementById('manualImagePreview');
+      container.innerHTML = '';
+      for (var i = 0; i < manualImages.length; i++) {
+        (function(idx) {
+          var div = document.createElement('div');
+          div.className = 'pdf-image-item';
+          div.innerHTML = '<img src="' + manualImages[idx].data + '" alt="' + manualImages[idx].name + '"><div class="select-overlay" onclick="removeManualImage(' + idx + ')">✕</div>';
+          container.appendChild(div);
+        })(i);
+      }
+    }
+
+    function removeManualImage(idx) {
+      manualImages.splice(idx, 1);
+      renderManualImages();
+    }
+
+    // ============================================================
+    // QUESTION GENERATION
+    // ============================================================
+    function generateUniqueStem(chapter, idx, usedStems) {
+      var templates = [
+        'Which of the following best describes ' + chapter + '?',
+        'What is the primary characteristic of ' + chapter + '?',
+        'In ' + chapter + ', which statement is correct?',
+        'Regarding ' + chapter + ', which option is accurate?',
+        'Which feature is most associated with ' + chapter + '?',
+        'What is the main function of ' + chapter + '?',
+        'Which of the following is true about ' + chapter + '?',
+        'In the context of ' + chapter + ', what is correct?',
+        'Which statement accurately describes ' + chapter + '?',
+        'What distinguishes ' + chapter + ' from other topics?',
+        'Which of the following is a key aspect of ' + chapter + '?',
+        'Regarding the development of ' + chapter + ', which is correct?',
+        'Which factor is most important in ' + chapter + '?',
+        'What is the significance of ' + chapter + '?',
+        'Which of the following statements about ' + chapter + ' is false?'
+      ];
+      var stem = templates[idx % templates.length];
+      var attempts = 0;
+      while (usedStems[stem] && attempts < 50) {
+        stem = templates[(idx + attempts + 1) % templates.length] + ' (v' + (attempts + 1) + ')';
+        attempts++;
+      }
+      usedStems[stem] = true;
+      return stem;
+    }
+
+    function buildQuestion(subject, course, chapter, stem, choices, correct, difficulty) {
+      var wrong = ['A', 'B', 'C', 'D'].filter(function(l) { return l !== correct; });
+      return {
+        category: subject,
+        course: { fr: course, en: course },
+        topic: { fr: chapter, en: chapter },
+        difficulty: difficulty,
+        correct: correct,
+        en: {
+          stem: stem,
+          choices: choices,
+          objective: 'Understand ' + chapter,
+          rationale: 'The correct answer is ' + correct + ' because it accurately describes ' + chapter + '.',
+          whyWrong: {},
+          summary: 'Key concept: ' + chapter,
+          images: []
+        },
+        fr: {
+          stem: stem,
+          choices: choices,
+          objective: 'Comprendre ' + chapter,
+          rationale: 'La bonne réponse est ' + correct + ' car elle décrit avec précision ' + chapter + '.',
+          whyWrong: {},
+          summary: 'Concept clé : ' + chapter,
+          images: []
+        }
+      };
+    }
+
+    function generateFromPdf() {
+      if (!pdfData) return showAlert('Upload a PDF first', 'error');
+      var subject = document.getElementById('pdfSubject').value;
+      var course = document.getElementById('pdfCourse').value;
+      var chapters = document.getElementById('pdfChapters').value.split(',').map(function(c) { return c.trim(); }).filter(function(c) { return c; });
+      var count = parseInt(document.getElementById('pdfCount').value) || 10;
+      var difficulty = document.getElementById('pdfDifficulty').value;
+
+      if (!course) return showAlert('Select a course', 'error');
+      if (chapters.length === 0) return showAlert('Select at least one chapter', 'error');
+
+      var questions = [];
+      var selectedImages = pdfImages.filter(function(img) { return img.selected; });
+      var usedStems = {};
+
+      for (var i = 0; i < count; i++) {
+        var chapter = chapters[i % chapters.length];
+        var correct = ['A', 'B', 'C', 'D'][i % 4];
+        var diff = difficulty === 'mixed' ? ['easy', 'medium', 'hard'][i % 3] : difficulty;
+        var stem = generateUniqueStem(chapter, i, usedStems);
+        var qImgs = selectedImages.length > 0 ? [selectedImages[i % selectedImages.length]] : [];
+
+        var q = buildQuestion(subject, course, chapter, stem, ['Option A', 'Option B', 'Option C', 'Option D'], correct, diff);
+        if (qImgs.length > 0) {
+          q.en.images = [{ url: qImgs[0].data, alt: qImgs[0].name, answerMapping: null }];
+          q.fr.images = [{ url: qImgs[0].data, alt: qImgs[0].name, answerMapping: null }];
+        }
+        questions.push(q);
+      }
+
+      displayOutput(questions);
+      showAlert('Generated ' + questions.length + ' questions!', 'success');
+    }
+
+    function generateSimilar() {
+      var subject = document.getElementById('inspireSubject').value;
+      var course = document.getElementById('inspireCourse').value;
+      var chapters = document.getElementById('inspireChapters').value.split(',').map(function(c) { return c.trim(); }).filter(function(c) { return c; });
+      var count = parseInt(document.getElementById('inspireCount').value) || 10;
+      var difficulty = document.getElementById('inspireDifficulty').value;
+
+      if (!course) return showAlert('Select a course', 'error');
+      if (chapters.length === 0) return showAlert('Select at least one chapter', 'error');
+
+      var questions = [];
+      var usedStems = {};
+
+      for (var i = 0; i < count; i++) {
+        var chapter = chapters[i % chapters.length];
+        var correct = ['A', 'B', 'C', 'D'][i % 4];
+        var diff = difficulty === 'mixed' ? ['easy', 'medium', 'hard'][i % 3] : difficulty;
+        var stem = generateUniqueStem(chapter, i, usedStems);
+        questions.push(buildQuestion(subject, course, chapter, stem, ['Option A', 'Option B', 'Option C', 'Option D'], correct, diff));
+      }
+
+      displayOutput(questions);
+      showAlert('Generated ' + questions.length + ' similar questions!', 'success');
+    }
+
+    function addManualQuestion() {
+      var subject = document.getElementById('manualSubject').value;
+      var course = document.getElementById('manualCourse').value;
+      var chapters = document.getElementById('manualChapters').value.split(',').map(function(c) { return c.trim(); }).filter(function(c) { return c; });
+      var stemText = document.getElementById('manualStem').value.trim();
+      var choicesText = document.getElementById('manualChoices').value.trim();
+      var correct = document.getElementById('manualCorrect').value;
+      var rationale = document.getElementById('manualRationale').value.trim();
+
+      if (!course || !chapters.length || !stemText || !choicesText) {
+        return showAlert('Fill all required fields', 'error');
+      }
+
+      var choices = choicesText.split('\n').filter(function(l) { return l.trim(); }).map(function(l) { return l.replace(/^[A-E][\.\)]\s*/, '').trim(); });
+
+      var imageMatches = stemText.match(/\[image(\d+)\]/g) || [];
+      var stemImages = imageMatches.map(function(m) {
+        var n = parseInt(m.match(/\d+/)[0]) - 1;
+        return manualImages[n] ? { url: manualImages[n].data, alt: manualImages[n].name, answerMapping: null } : null;
+      }).filter(Boolean);
+
+      var cleanStem = stemText.replace(/\[image\d+\]/g, '').trim();
+
+      var q = buildQuestion(subject, course, chapters[0], cleanStem, choices, correct, 'medium');
+      q.en.rationale = rationale || 'Correct is ' + correct;
+      q.fr.rationale = rationale || 'Correct est ' + correct;
+      q.en.images = stemImages;
+      q.fr.images = stemImages;
+
+      manualQuestions.push(q);
+      displayOutput(manualQuestions);
+      showAlert('Added question ' + manualQuestions.length + '!', 'success');
+
+      document.getElementById('manualStem').value = '';
+      document.getElementById('manualChoices').value = '';
+      document.getElementById('manualRationale').value = '';
+    }
+
+    function generateAI() {
+      var subject = document.getElementById('aiSubject').value;
+      var course = document.getElementById('aiCourse').value;
+      var chapters = document.getElementById('aiChapters').value.split(',').map(function(c) { return c.trim(); }).filter(function(c) { return c; });
+      var prompt = document.getElementById('aiPrompt').value.trim();
+      var count = parseInt(document.getElementById('aiCount').value) || 10;
+      var difficulty = document.getElementById('aiDifficulty').value;
+
+      if (!course) return showAlert('Select a course', 'error');
+      if (!prompt) return showAlert('Enter topic description', 'error');
+      if (chapters.length === 0) chapters = [course];
+
+      var questions = [];
+      var usedStems = {};
+
+      for (var i = 0; i < count; i++) {
+        var chapter = chapters[i % chapters.length];
+        var correct = ['A', 'B', 'C', 'D'][i % 4];
+        var diff = difficulty === 'mixed' ? ['easy', 'medium', 'hard'][i % 3] : difficulty;
+        var stem = generateUniqueStem(chapter, i, usedStems);
+        questions.push(buildQuestion(subject, course, chapter, stem, ['Option A', 'Option B', 'Option C', 'Option D'], correct, diff));
+      }
+
+      displayOutput(questions);
+      showAlert('Generated ' + questions.length + ' questions!', 'success');
+    }
+
+    // ============================================================
+    // OUTPUT
+    // ============================================================
+    function displayOutput(questions) {
+      generatedJSON = JSON.stringify(questions, null, 2);
+      var area = document.getElementById('outputArea');
+      area.textContent = generatedJSON;
+      area.className = 'output-area valid';
+      document.getElementById('outputPanel').className = 'output-panel active';
+
+      var scan = scanValidity(questions);
+      var stats = document.getElementById('outputStats');
+      stats.innerHTML =
+        '<div class="stat-box"><div class="stat-value good">' + questions.length + '</div><div class="stat-label">Questions</div></div>' +
+        '<div class="stat-box"><div class="stat-value ' + (scan.duplicates === 0 ? 'good' : 'bad') + '">' + scan.duplicates + '</div><div class="stat-label">Duplicates</div></div>' +
+        '<div class="stat-box"><div class="stat-value ' + (scan.missingFields === 0 ? 'good' : 'bad') + '">' + scan.missingFields + '</div><div class="stat-label">Missing</div></div>' +
+        '<div class="stat-box"><div class="stat-value">' + scan.chapters + '</div><div class="stat-label">Chapters</div></div>' +
+        '<div class="stat-box"><div class="stat-value">' + questions.reduce(function(s, q) { return s + (q.en && q.en.images ? q.en.images.length : 0); }, 0) + '</div><div class="stat-label">Images</div></div>' +
+        '<div class="stat-box"><div class="stat-value">' + (generatedJSON.length / 1024).toFixed(1) + 'KB</div><div class="stat-label">Size</div></div>';
+    }
+
+    function scanValidity(questions) {
+      var scan = { duplicates: 0, missingFields: 0, chapters: 0, issues: [] };
+      var seen = {};
+      var chapterSet = {};
+
+      questions.forEach(function(q, idx) {
+        var stem = (q.en && q.en.stem) || '';
+        if (seen[stem]) {
+          scan.duplicates++;
+          scan.issues.push('Q' + (idx + 1) + ': Duplicate');
+        }
+        seen[stem] = true;
+
+        if (q.topic && q.topic.en) chapterSet[q.topic.en] = true;
+        if (!q.category) scan.missingFields++;
+        if (!q.correct) scan.missingFields++;
+        if (!q.en || !q.en.stem) scan.missingFields++;
+        if (!q.fr || !q.fr.stem) scan.missingFields++;
+      });
+
+      scan.chapters = Object.keys(chapterSet).length;
+      return scan;
+    }
+
+    function validateJSON() {
+      if (!generatedJSON) return showAlert('No JSON generated yet', 'error');
+      try {
+        var p = JSON.parse(generatedJSON);
+        var s = scanValidity(p);
+        if (s.duplicates === 0 && s.missingFields === 0) {
+          showAlert('✓ JSON is valid!', 'success');
+        } else {
+          showAlert(s.duplicates + ' duplicates, ' + s.missingFields + ' missing fields', 'error');
+        }
+      } catch(e) {
+        showAlert('JSON Error: ' + e.message, 'error');
+      }
+    }
+
+    function downloadJSON() {
+      if (!generatedJSON) return showAlert('No JSON generated yet', 'error');
+      var blob = new Blob([generatedJSON], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'questions_' + Date.now() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function copyJSON() {
+      if (!generatedJSON) return showAlert('No JSON generated yet', 'error');
+      navigator.clipboard.writeText(generatedJSON).then(function() {
+        showAlert('✓ Copied to clipboard!', 'success');
+      });
+    }
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a24dad7ffb1fe30d',t:'MTc4NTY3OTk0OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
