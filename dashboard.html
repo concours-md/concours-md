@@ -864,6 +864,11 @@
       }
     }
 
+    // Build stamp — lets you confirm which version the browser actually loaded.
+    const BUILD = '2026-08-02-b';
+    console.log('%cConcours.md dashboard build ' + BUILD,
+      'background:#1a1a2e;color:#f39c12;padding:3px 8px;border-radius:4px;font-weight:700');
+
     async function init() {
       const user = await getCurrentUser();
       if (!user) {
