@@ -296,36 +296,107 @@
       document.getElementById('reviewIncorrect').addEventListener('click', reviewIncorrect);
     }
 
+    // Fetch every question in a category (Appwrite caps listDocuments at 100/page)
+    async function fetchCategoryQuestions(category) {
+      const all = [];
+      let offset = 0;
+      const PAGE = 100;
+      const MAX = 5000;
+
+      while (offset < MAX) {
+        const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
+          Query.equal('category', category),
+          Query.limit(PAGE),
+          Query.offset(offset)
+        ]);
+        all.push(...result.documents);
+        if (result.documents.length < PAGE) break;
+        offset += PAGE;
+      }
+      return all;
+    }
+
+    // course / topic are stored as JSON strings, so they must be filtered in JS
+    function questionCourse(q) {
+      return safeParse(q.course, {});
+    }
+
+    function questionTopic(q) {
+      const meta = safeParse(q.metadata, {});
+      return meta.topic || {};
+    }
+
+    // Match a stored {en, fr} object against a name that may be in either language
+    function matchesName(obj, name) {
+      if (!obj || !name) return false;
+      const target = String(name).trim().toLowerCase();
+      return String(obj.en || '').trim().toLowerCase() === target
+          || String(obj.fr || '').trim().toLowerCase() === target;
+    }
+
+    function matchesAnyName(obj, names) {
+      if (!names || names.length === 0) return false;
+      return names.some(n => matchesName(obj, n));
+    }
+
     async function loadQuestions() {
       try {
-        let allQuestions = [];
+        const pool = await fetchCategoryQuestions(testConfig.category);
 
-        if (testConfig.type === 'concours') {
-          for (const course of testConfig.courses) {
-            try {
-              const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
-                Query.equal('category', testConfig.category),
-                Query.limit(course.count)
-              ]);
-              allQuestions = allQuestions.concat(result.documents);
-            } catch (e) { console.warn('Could not load course questions:', e); }
-          }
-        } else {
-          const result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
-            Query.equal('category', testConfig.category),
-            Query.limit(testConfig.numQuestions || 25)
-          ]);
-          allQuestions = result.documents;
-        }
-
-        if (allQuestions.length === 0) {
-          document.getElementById('questionStem').textContent = t('noQuestions');
+        if (pool.length === 0) {
+          showNoQuestions(t('noQuestions'));
           return;
         }
 
-        questions = allQuestions.map(q => ({
+        let selected = [];
+
+        if (testConfig.type === 'concours') {
+          // Take `count` questions from each course in the blueprint
+          for (const course of testConfig.courses) {
+            const courseNames = [course.en, course.fr].filter(Boolean);
+            const matching = pool.filter(q => matchesAnyName(questionCourse(q), courseNames));
+
+            if (matching.length === 0) {
+              console.warn('No questions found for course:', course.en);
+              continue;
+            }
+
+            shuffleArray(matching);
+            selected = selected.concat(matching.slice(0, course.count));
+          }
+        } else {
+          // Course mode — filter by course, then by selected chapters
+          let matching = pool.filter(q => matchesName(questionCourse(q), testConfig.course));
+
+          if (matching.length === 0) {
+            showNoQuestions(noQuestionsForCourse(testConfig.course));
+            return;
+          }
+
+          // Narrow to selected chapters when the user picked some
+          if (testConfig.chapters && testConfig.chapters.length > 0) {
+            const byChapter = matching.filter(q => matchesAnyName(questionTopic(q), testConfig.chapters));
+
+            if (byChapter.length === 0) {
+              showNoQuestions(noQuestionsForChapters());
+              return;
+            }
+            matching = byChapter;
+          }
+
+          shuffleArray(matching);
+          selected = matching.slice(0, testConfig.numQuestions || 25);
+        }
+
+        if (selected.length === 0) {
+          showNoQuestions(noQuestionsForCourse(testConfig.course || testConfig.category));
+          return;
+        }
+
+        questions = selected.map(q => ({
           ...q,
           course: safeParse(q.course, {}),
+          metadata: safeParse(q.metadata, {}),
           en: safeParse(q.en, {}),
           fr: safeParse(q.fr, {})
         }));
@@ -336,8 +407,42 @@
         startTimer();
       } catch (err) {
         console.error('Failed to load questions:', err);
-        document.getElementById('questionStem').textContent = t('errorLoading') + err.message;
+        showNoQuestions(t('errorLoading') + err.message);
       }
+    }
+
+    function noQuestionsForCourse(courseName) {
+      return currentLang === 'fr'
+        ? 'Aucune question disponible pour « ' + courseName +' ». Choisissez un autre cours.'
+        : 'No questions available for "' + courseName + '". Please choose another course.';
+    }
+
+    function noQuestionsForChapters() {
+      return currentLang === 'fr'
+        ? 'Aucune question pour les chapitres sélectionnés. Essayez d\'autres chapitres.'
+        : 'No questions for the selected chapters. Try different chapters.';
+    }
+
+    // Show an empty-state message instead of a broken test screen
+    function showNoQuestions(message) {
+      const stem = document.getElementById('questionStem');
+      if (stem) stem.textContent = message;
+
+      const choices = document.getElementById('answerChoices');
+      if (choices) choices.innerHTML = '';
+
+      const nav = document.getElementById('questionNav');
+      if (nav) nav.innerHTML = '';
+
+      ['markBtn', 'prevBtn', 'nextBtn', 'submitBtn', 'suspendBtn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = true;
+      });
+
+      if (timerInterval) clearInterval(timerInterval);
+
+      const timerEl = document.getElementById('timer');
+      if (timerEl) timerEl.textContent = '--:--';
     }
 
     function safeParse(str, defaultVal) {
