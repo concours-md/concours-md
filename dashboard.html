@@ -158,6 +158,41 @@
       </div>
     </div>
 
+    <!-- Admin-only tools: revealed in init() when the admin account is signed in -->
+    <div id="adminSection" class="hidden" style="margin-top: 34px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <h2 id="adminTitle" style="font-size:1.05rem;margin:0;">Admin Tools</h2>
+        <span class="badge badge-warning" style="font-size:.7rem;">Admin only</span>
+        <div style="flex:1;height:1px;background:var(--border-color);"></div>
+      </div>
+
+      <div class="category-grid">
+        <div class="category-card" data-action="manage" style="border-color: var(--accent);">
+          <div class="category-icon">🗂️</div>
+          <div>
+            <div class="card-title" id="cat-manage">Manage Questions</div>
+            <div class="card-desc" id="cat-manage-desc">Browse, edit, move &amp; delete</div>
+          </div>
+        </div>
+
+        <div class="category-card" data-action="import" style="border-color: var(--success);">
+          <div class="category-icon">📥</div>
+          <div>
+            <div class="card-title" id="cat-import">Import Questions</div>
+            <div class="card-desc" id="cat-import-desc">Bulk import from JSON</div>
+          </div>
+        </div>
+
+        <div class="category-card" data-action="generator" style="border-color: var(--info);">
+          <div class="category-icon">⚙️</div>
+          <div>
+            <div class="card-title" id="cat-generator">Advanced Generator</div>
+            <div class="card-desc" id="cat-generator-desc">Parse PDFs &amp; build questions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="contentArea" class="hidden" style="margin-top: 30px;">
       <button class="btn btn-outline btn-sm mb-3" id="backBtn">← Back to Dashboard</button>
       <div id="contentBody"></div>
@@ -469,6 +504,19 @@
       document.getElementById('cat-prevtests-desc').textContent = currentLang === 'fr' ? 'Revoir votre historique' : 'Review your history';
       document.getElementById('cat-settings').textContent = currentLang === 'fr' ? 'Paramètres' : 'Settings';
       document.getElementById('cat-settings-desc').textContent = currentLang === 'fr' ? 'Préférences et langue' : 'Preferences & language';
+
+      // Admin tools (present only for the admin account)
+      const setTxt = function(id, txt) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = txt;
+      };
+      setTxt('adminTitle', currentLang === 'fr' ? 'Outils Administrateur' : 'Admin Tools');
+      setTxt('cat-manage', currentLang === 'fr' ? 'Gérer les Questions' : 'Manage Questions');
+      setTxt('cat-manage-desc', currentLang === 'fr' ? 'Parcourir, modifier, déplacer et supprimer' : 'Browse, edit, move & delete');
+      setTxt('cat-import', currentLang === 'fr' ? 'Importer des Questions' : 'Import Questions');
+      setTxt('cat-import-desc', currentLang === 'fr' ? 'Import en masse depuis JSON' : 'Bulk import from JSON');
+      setTxt('cat-generator', currentLang === 'fr' ? 'Générateur Avancé' : 'Advanced Generator');
+      setTxt('cat-generator-desc', currentLang === 'fr' ? 'Analyser des PDF et créer des questions' : 'Parse PDFs & build questions');
     }
 
     function openCategory(category) {
@@ -829,6 +877,7 @@
       if (user.email === ADMIN_EMAIL) {
         document.getElementById('navImport').classList.remove('hidden');
         document.getElementById('navManage')?.classList.remove('hidden');
+        document.getElementById('adminSection')?.classList.remove('hidden');
       }
 
       translateCategories();
@@ -848,6 +897,9 @@
           else if (action === 'notebook') openNotebook();
           else if (action === 'prevtests') openPreviousTests();
           else if (action === 'settings') openSettings();
+          else if (action === 'manage') window.location.href = 'manage.html';
+          else if (action === 'import') window.location.href = 'import.html';
+          else if (action === 'generator') window.location.href = 'advanced_generator.html';
           else openCategory(action);
         });
       });
@@ -871,5 +923,5 @@
 
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a24dadbdf95ae30d',t:'MTc4NTY3OTk1OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
