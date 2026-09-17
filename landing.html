@@ -3,1028 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concours.md - Ace the Lebanese University Concours</title>
+  <meta name="description" content="Concours.md is the bilingual question bank and exam simulator built for Lebanese University CSVT students preparing for the Medicine, Dentistry, and Pharmacy Concours.">
+  <meta name="theme-color" content="#10a7aa">
+  <title>Concours.md — Turn practice into progress</title>
   <link rel="stylesheet" href="style.css">
-  <script>
-    window.MathJax = {
-      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-      svg: { fontCache: 'global' }
-    };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <style>
-    :root {
-      --primary: #1a1a2e;
-      --secondary: #16213e;
-      --accent: #f39c12;
-      --accent-dark: #e67e22;
-      --bio-green: #2ecc71;
-      --chem-purple: #9b59b6;
-      --phys-blue: #3498db;
-      --math-orange: #e67e22;
-      --text-dark: #2c3e50;
-      --text-light: #7f8c8d;
-      --white: #ffffff;
-      --bg-light: #f8f9fa;
-      --gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      color: var(--text-dark);
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    /* Navigation */
-    .nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: all 0.3s ease;
-      background: transparent;
-    }
-
-    .nav.scrolled {
-      background: rgba(26, 26, 46, 0.95);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-      padding: 0.75rem 2rem;
-    }
-
-    .nav-logo {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--white);
-      text-decoration: none;
-    }
-
-    .nav-logo span { color: var(--accent); }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-    }
-
-    .nav-links a {
-      color: rgba(255,255,255,0.8);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover { color: var(--accent); }
-
-    .lang-toggle {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: var(--white);
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-
-    .lang-toggle:hover {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-
-    /* Hero Section */
-    .hero {
-      min-height: 100vh;
-      background: var(--gradient);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      padding: 6rem 2rem 4rem;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    }
-
-    .hero-content {
-      max-width: 900px;
-      text-align: center;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-badge {
-      display: inline-block;
-      background: rgba(243, 156, 18, 0.15);
-      border: 1px solid rgba(243, 156, 18, 0.3);
-      color: var(--accent);
-      padding: 0.5rem 1.25rem;
-      border-radius: 50px;
-      font-size: 0.875rem;
-    font-weight: 600;
-      margin-bottom: 1.5rem;
-      letter-spacing: 0.5px;
-    }
-
-    .hero h1 {
-      font-size: 3.5rem;
-      font-weight: 800;
-      color: var(--white);
-      line-height: 1.2;
-      margin-bottom: 1.5rem;
-    }
-
-    .hero h1 span { color: var(--accent); }
-
-    .hero-subtitle {
-      font-size: 1.25rem;
-      color: rgba(255,255,255,0.7);
-      max-width: 700px;
-      margin: 0 auto 2.5rem;
-      line-height: 1.8;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn-hero {
-      padding: 1rem 2.5rem;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: all 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .btn-primary-hero {
-      background: var(--accent);
-      color: var(--primary);
-    }
-
-    .btn-primary-hero:hover {
-      background: var(--accent-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(243, 156, 18, 0.3);
-    }
-
-    .btn-outline-hero {
-      background: transparent;
-      color: var(--white);
-      border: 2px solid rgba(255,255,255,0.3);
-    }
-
-    .btn-outline-hero:hover {
-      border-color: var(--white);
-      background: rgba(255,255,255,0.1);
-    }
-
-    /* Stats Bar */
-    .stats-bar {
-      background: var(--white);
-      padding: 3rem 2rem;
-      display: flex;
-      justify-content: center;
-      gap: 4rem;
-      flex-wrap: wrap;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    }
-
-    .stat-item {
-      text-align: center;
-    }
-
-    .stat-number {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
-
-    .stat-label {
-      color: var(--text-light);
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    /* Section Styles */
-    .section {
-      padding: 6rem 2rem;
-    }
-
-    .section-dark {
-      background: var(--bg-light);
-    }
-
-    .section-header {
-      text-align: center;
-      max-width: 700px;
-      margin: 0 auto 4rem;
-    }
-
-    .section-label {
-      display: inline-block;
-      background: rgba(52, 152, 219, 0.1);
-      color: var(--phys-blue);
-      padding: 0.4rem 1rem;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 1rem;
-    }
-
-    .section-title {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 1rem;
-    }
-
-    .section-desc {
-      color: var(--text-light);
-      font-size: 1.1rem;
-    }
-
-    /* Features Grid */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .feature-card {
-      background: var(--white);
-      border-radius: 16px;
-      padding: 2.5rem;
-      border: 1px solid rgba(0,0,0,0.05);
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    }
-
-    .feature-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .feature-card h3 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-      color: var(--primary);
-    }
-
-    .feature-card p {
-      color: var(--text-light);
-      line-height: 1.7;
-    }
-
-    /* Subjects Section */
-    .subjects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .subject-card {
-      background: var(--white);
-      border-radius: 16px;
-      padding: 2rem;
-      text-align: center;
-      border: 2px solid transparent;
-      transition: all 0.3s;
-      cursor: default;
-    }
-
-    .subject-card:hover {
-      transform: translateY(-3px);
-    }
-
-    .subject-card.biology { border-color: var(--bio-green); }
-    .subject-card.chemistry { border-color: var(--chem-purple); }
-    .subject-card.physics { border-color: var(--phys-blue); }
-    .subject-card.maths { border-color: var(--math-orange); }
-
-    .subject-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    .subject-card h3 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .subject-card p {
-      color: var(--text-light);
-      font-size: 0.9rem;
-    }
-
-    /* Pricing Section */
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .pricing-card {
-      background: var(--white);
-      border-radius: 20px;
-      padding: 3rem 2rem;
-      text-align: center;
-      border: 2px solid rgba(0,0,0,0.05);
-      position: relative;
-      transition: all 0.3s;
-    }
-
-    .pricing-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    }
-
-    .pricing-card.popular {
-      border-color: var(--accent);
-      transform: scale(1.05);
-    }
-
-    .pricing-card.popular:hover {
-      transform: scale(1.05) translateY(-5px);
-    }
-
-    .popular-badge {
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--accent);
-      color: var(--primary);
-      padding: 0.4rem 1.5rem;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-
-    .pricing-card h3 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 0.5rem;
-    }
-
-    .pricing-period {
-      color: var(--text-light);
-      font-size: 0.9rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .pricing-price {
-      font-size: 3rem;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 0.5rem;
-    }
-
-    .pricing-price span {
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--text-light);
-    }
-
-    .pricing-features {
-      list-style: none;
-      margin: 2rem 0;
-      text-align: left;
-    }
-
-    .pricing-features li {
-      padding: 0.6rem 0;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: var(--text-dark);
-    }
-
-    .pricing-features li:last-child {
-      border-bottom: none;
-    }
-
-    .check-icon {
-      color: var(--bio-green);
-      font-weight: bold;
-    }
-
-    .btn-pricing {
-      display: block;
-      width: 100%;
-      padding: 1rem;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: all 0.3s;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-pricing-primary {
-      background: var(--accent);
-      color: var(--primary);
-    }
-
-    .btn-pricing-primary:hover {
-      background: var(--accent-dark);
-    }
-
-    .btn-pricing-outline {
-      background: transparent;
-      color: var(--primary);
-      border: 2px solid var(--primary);
-    }
-
-    .btn-pricing-outline:hover {
-      background: var(--primary);
-      color: var(--white);
-    }
-
-    /* CTA Section */
-    .cta-section {
-      background: var(--gradient);
-      padding: 6rem 2rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .cta-section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    }
-
-    .cta-content {
-      position: relative;
-      z-index: 1;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    .cta-section h2 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: var(--white);
-      margin-bottom: 1rem;
-    }
-
-    .cta-section p {
-      color: rgba(255,255,255,0.7);
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-    }
-
-    /* Footer */
-    .footer {
-      background: var(--primary);
-      color: var(--white);
-      padding: 4rem 2rem 2rem;
-    }
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 3rem;
-      max-width: 1200px;
-      margin: 0 auto 3rem;
-    }
-
-    .footer-col h4 {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 1.5rem;
-      color: var(--accent);
-    }
-
-    .footer-col a {
-      display: block;
-      color: rgba(255,255,255,0.6);
-      text-decoration: none;
-      padding: 0.4rem 0;
-      transition: color 0.2s;
-    }
-
-    .footer-col a:hover {
-      color: var(--white);
-    }
-
-    .footer-bottom {
-      border-top: 1px solid rgba(255,255,255,0.1);
-      padding-top: 2rem;
-      text-align: center;
-      color: rgba(255,255,255,0.4);
-      font-size: 0.9rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .hero h1 { font-size: 2.5rem; }
-      .hero-subtitle { font-size: 1rem; }
-      .section-title { font-size: 2rem; }
-      .pricing-card.popular { transform: none; }
-      .pricing-card.popular:hover { transform: translateY(-5px); }
-      .stats-bar { gap: 2rem; }
-      .nav { padding: 1rem; }
-      .nav-links { gap: 1rem; }
-    }
+    body{overflow-x:hidden;background:#fbfffe}
+    .landing-page{--land-max:1200px;position:relative;overflow:hidden}
+    .land-blob{position:absolute;border-radius:50%;filter:blur(65px);opacity:.19;pointer-events:none;z-index:0}
+    .land-blob.one{width:410px;height:410px;background:var(--mint);top:-190px;left:-180px}
+    .land-blob.two{width:390px;height:390px;background:var(--yellow);top:690px;right:-260px;opacity:.12}
+    .land-blob.three{width:330px;height:330px;background:var(--violet);top:1850px;left:-250px;opacity:.08}
+
+    .land-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:13px 22px;border-bottom:2px solid transparent;transition:.2s}
+    .land-nav.scrolled{background:rgba(255,255,255,.91);backdrop-filter:blur(16px);border-color:var(--line);box-shadow:0 5px 25px rgba(19,46,62,.05)}
+    .land-nav-inner{width:min(var(--land-max),100%);margin:auto;display:flex;align-items:center;gap:24px}
+    .land-logo{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-size:1.25rem;font-weight:900;letter-spacing:-.55px;white-space:nowrap}
+    .land-logo:hover{text-decoration:none}.land-logo span:last-child span{color:var(--teal)}
+    .land-logo-mark{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,var(--teal),var(--mint));box-shadow:0 4px 0 var(--teal-dark),0 10px 24px rgba(16,167,170,.20)}
+    .land-logo-mark svg{width:23px;height:23px}
+    .land-links{margin-left:auto;display:flex;align-items:center;gap:3px}
+    .land-links>a{padding:9px 12px;border-radius:12px;color:var(--ink-soft);font-size:.82rem;font-weight:900;transition:.15s}
+    .land-links>a:hover{background:var(--teal-soft);color:var(--teal-dark);text-decoration:none}
+    .land-lang{height:40px;min-width:46px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--teal-dark);font-weight:900;font-size:.78rem;cursor:pointer;margin-left:4px}
+    .land-login{height:40px!important;border:2px solid var(--line)!important;background:#fff!important;padding:8px 15px!important;color:var(--ink)!important;box-shadow:0 3px 0 rgba(19,46,62,.07)}
+    .land-signup{height:40px!important;background:var(--teal)!important;color:#fff!important;padding:9px 17px!important;box-shadow:0 4px 0 var(--teal-dark)}
+    .land-signup:hover{transform:translateY(-1px)}
+    .menu-toggle{display:none;margin-left:auto;width:42px;height:42px;border:2px solid var(--line);border-radius:13px;background:#fff;color:var(--ink);cursor:pointer;place-items:center}.menu-toggle svg{width:23px;height:23px}
+
+    .land-hero{position:relative;z-index:1;width:min(var(--land-max),calc(100% - 44px));margin:0 auto;padding:155px 0 105px;display:grid;grid-template-columns:1.05fr .95fr;gap:70px;align-items:center;min-height:760px}
+    .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:2px solid #b7e9e4;border-radius:999px;background:var(--teal-soft);color:var(--teal-dark);font-size:.76rem;font-weight:900;margin-bottom:20px;box-shadow:0 3px 0 rgba(16,167,170,.09)}
+    .eyebrow-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 5px rgba(16,167,170,.12);animation:pulseDot 1.8s ease-in-out infinite}
+    @keyframes pulseDot{50%{transform:scale(.72);opacity:.65}}
+    .hero-copy h1{font-size:clamp(2.65rem,5.4vw,4.65rem);line-height:1.02;letter-spacing:-2.3px;font-weight:900;margin-bottom:21px;max-width:690px}
+    .hero-copy h1 .gradient{background:linear-gradient(120deg,var(--teal-dark),#16bfc0 55%,#6b58db);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero-copy>p{max-width:615px;color:var(--ink-soft);font-size:1.13rem;line-height:1.68;font-weight:700;margin-bottom:29px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+    .land-btn{min-height:54px;padding:14px 23px;border:2px solid transparent;border-radius:17px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:.95rem;font-weight:900;text-decoration:none;cursor:pointer;transition:.16s}
+    .land-btn:hover{text-decoration:none;transform:translateY(-2px)}
+    .land-btn.primary{background:var(--teal);color:#fff;box-shadow:0 5px 0 var(--teal-dark),0 12px 26px rgba(16,167,170,.20)}
+    .land-btn.primary:hover{box-shadow:0 7px 0 var(--teal-dark),0 16px 30px rgba(16,167,170,.25)}
+    .land-btn.secondary{background:#fff;color:var(--ink);border-color:var(--line);box-shadow:0 4px 0 rgba(19,46,62,.08)}
+    .land-btn.secondary:hover{border-color:#8dd8d5;color:var(--teal-dark)}
+    .hero-proof{display:flex;align-items:center;gap:17px;flex-wrap:wrap;margin-top:30px;color:var(--muted);font-size:.75rem;font-weight:900}
+    .proof-item{display:flex;align-items:center;gap:6px}.proof-check{width:20px;height:20px;border-radius:7px;display:grid;place-items:center;background:#def8e9;color:var(--green-dark);font-size:.7rem}
+
+    .hero-visual{position:relative;min-height:530px;display:grid;place-items:center}
+    .visual-glow{position:absolute;width:440px;height:440px;border-radius:50%;background:linear-gradient(145deg,rgba(86,219,197,.23),rgba(16,167,170,.04));border:2px dashed rgba(16,167,170,.18);animation:slowSpin 40s linear infinite}
+    @keyframes slowSpin{to{transform:rotate(360deg)}}
+    .app-preview{position:relative;z-index:2;width:min(475px,100%);background:#fff;border:2px solid var(--line);border-radius:30px;box-shadow:0 8px 0 rgba(19,46,62,.09),0 32px 80px rgba(10,87,91,.16);overflow:hidden;transform:rotate(1.2deg);transition:.35s}
+    .app-preview:hover{transform:rotate(0) translateY(-5px)}
+    .preview-top{padding:15px 17px;background:#f7fbfb;border-bottom:2px solid var(--line);display:flex;align-items:center;gap:8px}
+    .window-dot{width:10px;height:10px;border-radius:50%;background:#dce6e8}.window-dot:nth-child(1){background:#ff7a85}.window-dot:nth-child(2){background:#f7c948}.window-dot:nth-child(3){background:#56d38e}
+    .preview-url{margin-left:5px;height:27px;flex:1;border:1px solid var(--line);border-radius:9px;background:#fff;display:flex;align-items:center;padding:0 10px;color:#9aa8ac;font-size:.62rem;font-weight:800}
+    .preview-body{padding:18px}
+    .preview-greeting{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.preview-greeting strong{font-size:.88rem}.preview-streak{padding:5px 9px;border-radius:10px;background:#fff2dc;color:#ad6514;font-size:.65rem;font-weight:900}
+    .preview-banner{position:relative;overflow:hidden;min-height:132px;border-radius:20px;padding:20px;background:linear-gradient(120deg,var(--teal),#55d8c3);color:#fff;display:flex;align-items:center}
+    .preview-banner h3{font-size:1.12rem;max-width:220px;line-height:1.16}.preview-banner p{font-size:.65rem;opacity:.9;max-width:215px;margin-top:6px;line-height:1.45}.preview-banner button{border:0;border-radius:10px;background:#fff;color:var(--teal-dark);padding:7px 10px;font-size:.61rem;font-weight:900;margin-top:10px;box-shadow:0 3px 0 rgba(5,99,102,.22)}
+    .preview-mascot{position:absolute;width:128px;height:128px;right:2px;bottom:-3px;filter:drop-shadow(0 9px 9px rgba(5,99,102,.16))}
+    .preview-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.preview-stat{padding:10px;border:1px solid var(--line);border-radius:12px}.preview-stat span{display:block;color:var(--muted);font-size:.5rem;font-weight:800}.preview-stat strong{font-size:.87rem}.preview-subjects{display:grid;grid-template-columns:1fr 1fr;gap:8px}.preview-subject{padding:10px;border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:8px;font-size:.62rem;font-weight:900}.preview-subject i{width:29px;height:29px;border-radius:9px;display:grid;place-items:center;font-style:normal}.preview-subject.bio i{background:#def8e9}.preview-subject.chem i{background:#eee8ff}.preview-subject.phys i{background:#e4efff}.preview-subject.math i{background:#fff0df}
+    .float-card{position:absolute;z-index:4;background:#fff;border:2px solid var(--line);border-radius:17px;padding:11px 14px;box-shadow:0 4px 0 rgba(19,46,62,.08),0 16px 30px rgba(19,46,62,.10);font-size:.7rem;font-weight:900;animation:floatCard 4s ease-in-out infinite}.float-card.one{top:33px;right:-35px;color:var(--violet)}.float-card.two{left:-42px;bottom:53px;color:var(--green-dark);animation-delay:-2s}.float-card span{font-size:1.12rem;margin-right:5px}
+    @keyframes floatCard{50%{transform:translateY(-8px)}}
+
+    .fact-strip{position:relative;z-index:3;border-top:2px solid var(--line);border-bottom:2px solid var(--line);background:rgba(255,255,255,.86)}
+    .fact-inner{width:min(var(--land-max),calc(100% - 44px));margin:auto;display:grid;grid-template-columns:repeat(4,1fr)}
+    .fact{padding:27px 22px;text-align:center;border-left:1px solid var(--line)}.fact:first-child{border-left:0}.fact strong{display:block;font-size:1.6rem;line-height:1.1;font-weight:900;color:var(--teal-dark)}.fact span{display:block;margin-top:5px;color:var(--muted);font-size:.72rem;font-weight:900}
+
+    .land-section{position:relative;z-index:2;padding:100px 22px}.land-section.alt{background:#f5fbfa;border-top:1px solid #ebf3f3;border-bottom:1px solid #ebf3f3}.section-inner{width:min(var(--land-max),100%);margin:auto}.section-heading{max-width:715px;margin:0 auto 52px;text-align:center}.section-kicker{display:inline-flex;padding:7px 13px;border-radius:999px;background:var(--teal-soft);color:var(--teal-dark);font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.8px;margin-bottom:13px}.section-heading h2{font-size:clamp(2rem,4vw,3.1rem);line-height:1.1;letter-spacing:-1.4px;font-weight:900}.section-heading p{color:var(--muted);font-size:1rem;line-height:1.65;font-weight:700;margin-top:13px}
+
+    .path{max-width:1040px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:25px;position:relative}.path::before{content:'';position:absolute;left:15%;right:15%;top:42px;border-top:3px dashed #b9dedb}.path-card{text-align:center;position:relative;z-index:1}.path-number{width:84px;height:84px;border:3px solid #9dded9;border-radius:27px;background:#fff;margin:0 auto 18px;display:grid;place-items:center;color:var(--teal-dark);font-size:1.45rem;font-weight:900;box-shadow:0 5px 0 rgba(16,167,170,.14)}.path-card:nth-child(2) .path-number{border-color:#d1c3fa;color:#7152d3;box-shadow:0 5px 0 rgba(113,82,211,.12)}.path-card:nth-child(3) .path-number{border-color:#f3da83;color:#9d6b00;box-shadow:0 5px 0 rgba(208,154,21,.13)}.path-card h3{font-size:1.08rem;font-weight:900}.path-card p{color:var(--muted);font-size:.81rem;font-weight:700;line-height:1.6;margin-top:7px;padding:0 12px}
+
+    .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:19px}.land-feature{min-height:235px;background:#fff;border:2px solid var(--line);border-radius:25px;padding:25px;box-shadow:var(--shadow);transition:.2s}.land-feature:hover{transform:translateY(-5px);border-color:#a3dbd8;box-shadow:var(--shadow-lg)}.land-feature-icon{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;margin-bottom:17px;color:var(--feature);background:var(--feature-soft)}.land-feature-icon svg{width:27px;height:27px}.land-feature h3{font-size:1.02rem;font-weight:900;margin-bottom:7px}.land-feature p{color:var(--muted);font-size:.8rem;font-weight:700;line-height:1.65}.f-teal{--feature:var(--teal-dark);--feature-soft:var(--teal-soft)}.f-green{--feature:var(--green-dark);--feature-soft:#def8e9}.f-violet{--feature:#6d42d8;--feature-soft:#eee8ff}.f-blue{--feature:#2563c5;--feature-soft:#e4efff}.f-orange{--feature:#c66712;--feature-soft:#fff0df}.f-pink{--feature:#c63f59;--feature-soft:#ffe8ed}
+
+    .demo-shell{display:grid;grid-template-columns:.8fr 1.2fr;gap:60px;align-items:center}.demo-copy .section-kicker{margin-bottom:15px}.demo-copy h2{font-size:clamp(2rem,4vw,3.05rem);line-height:1.08;letter-spacing:-1.35px;font-weight:900}.demo-copy>p{color:var(--muted);font-size:.96rem;font-weight:700;line-height:1.7;margin:15px 0 23px}.demo-points{display:flex;flex-direction:column;gap:11px}.demo-point{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-size:.81rem;font-weight:900}.demo-point i{width:28px;height:28px;border-radius:9px;background:var(--teal-soft);color:var(--teal-dark);display:grid;place-items:center;font-style:normal}
+    .question-demo{background:#fff;border:2px solid var(--line);border-radius:29px;padding:28px;box-shadow:0 7px 0 rgba(19,46,62,.08),0 26px 60px rgba(15,78,87,.12)}.demo-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:19px}.demo-top span:first-child{font-size:.72rem;color:var(--teal-dark);font-weight:900;text-transform:uppercase;letter-spacing:.55px}.demo-progress{width:145px;height:9px;border-radius:99px;background:#edf2f3;overflow:hidden}.demo-progress i{display:block;width:65%;height:100%;background:linear-gradient(90deg,var(--teal),var(--mint));border-radius:inherit}.question-demo h3{font-size:1rem;line-height:1.55;margin-bottom:18px}.demo-options{display:flex;flex-direction:column;gap:9px}.demo-option{width:100%;display:flex;align-items:center;gap:11px;border:2px solid var(--line);border-radius:14px;padding:11px 13px;background:#fff;color:var(--ink);font-size:.79rem;font-weight:800;text-align:left;cursor:pointer;box-shadow:0 3px 0 rgba(19,46,62,.06);transition:.15s}.demo-option:hover{border-color:#8dd8d5;transform:translateY(-1px)}.demo-letter{width:29px;height:29px;border-radius:9px;background:#f1f7f7;display:grid;place-items:center;flex:none;font-size:.7rem}.demo-option.correct{border-color:var(--green);background:#e9faef;color:#116e3e}.demo-option.wrong{border-color:var(--danger);background:#fff0f3;color:#a02d42}.demo-feedback{display:none;margin-top:15px;border-radius:14px;padding:13px 15px;background:var(--teal-soft);color:#276d70;font-size:.75rem;font-weight:800;line-height:1.55}.demo-feedback.show{display:block;animation:popIn .18s ease-out}@keyframes popIn{from{transform:translateY(5px);opacity:0}}
+
+    .subject-showcase{display:grid;grid-template-columns:repeat(4,1fr);gap:17px}.land-subject{position:relative;overflow:hidden;min-height:220px;background:#fff;border:2px solid var(--line);border-radius:25px;padding:23px;box-shadow:var(--shadow);transition:.18s}.land-subject:hover{transform:translateY(-5px);border-color:var(--subject);box-shadow:0 6px 0 var(--subject-soft),0 16px 35px rgba(19,46,62,.08)}.land-subject-icon{width:55px;height:55px;border-radius:17px;display:grid;place-items:center;background:var(--icon-bg);color:var(--subject);margin-bottom:28px}.land-subject-icon svg{width:29px;height:29px}.land-subject h3{font-size:1.12rem;font-weight:900}.land-subject p{color:var(--muted);font-size:.75rem;font-weight:700;line-height:1.55;margin-top:6px}.land-subject .subject-line{position:absolute;left:23px;right:23px;bottom:20px;height:7px;border-radius:99px;background:#edf2f3;overflow:hidden}.land-subject .subject-line i{display:block;height:100%;width:var(--fill);background:var(--subject);border-radius:inherit}.land-subject.bio{--subject:#21b96b;--subject-soft:rgba(33,185,107,.15);--icon-bg:#def8e9;--fill:84%}.land-subject.chem{--subject:#8b5cf6;--subject-soft:rgba(139,92,246,.13);--icon-bg:#eee8ff;--fill:66%}.land-subject.phys{--subject:#3b82f6;--subject-soft:rgba(59,130,246,.13);--icon-bg:#e4efff;--fill:52%}.land-subject.math{--subject:#f08c32;--subject-soft:rgba(240,140,50,.14);--icon-bg:#fff0df;--fill:71%}
+
+    .pricing-grid{max-width:1030px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:center}.price-card{position:relative;background:#fff;border:2px solid var(--line);border-radius:27px;padding:27px;box-shadow:var(--shadow)}.price-card.featured{border-color:#76d5ce;box-shadow:0 7px 0 rgba(16,167,170,.18),0 25px 55px rgba(14,116,120,.13);transform:scale(1.035)}.price-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);white-space:nowrap;border-radius:999px;padding:6px 13px;background:var(--teal);color:#fff;font-size:.65rem;font-weight:900;box-shadow:0 3px 0 var(--teal-dark)}.price-card h3{font-size:1.05rem;font-weight:900}.price-card>p{color:var(--muted);font-size:.75rem;font-weight:700;margin-top:4px}.price{font-size:2.55rem;font-weight:900;letter-spacing:-1px;margin:18px 0}.price span{font-size:.76rem;color:var(--muted);letter-spacing:0}.price-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:23px}.price-list li{display:flex;gap:8px;color:var(--ink-soft);font-size:.75rem;font-weight:800}.price-list li i{color:var(--green-dark);font-style:normal}.price-card .land-btn{width:100%;min-height:47px;font-size:.81rem;padding:11px}
+
+    .final-cta{padding:35px 22px 100px;position:relative;z-index:2}.cta-card{width:min(var(--land-max),100%);min-height:330px;margin:auto;border-radius:34px;padding:58px 38px;text-align:center;color:#fff;background:linear-gradient(120deg,#0b8f92,#16b8b8 58%,#55d8c3);box-shadow:0 8px 0 var(--teal-dark),0 28px 60px rgba(16,167,170,.20);position:relative;overflow:hidden}.cta-card::before,.cta-card::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.10)}.cta-card::before{width:330px;height:330px;top:-230px;right:-20px}.cta-card::after{width:220px;height:220px;bottom:-160px;left:4%}.cta-card>*{position:relative;z-index:2}.cta-card h2{font-size:clamp(2rem,4.5vw,3.25rem);line-height:1.08;letter-spacing:-1.4px;font-weight:900}.cta-card p{max-width:650px;margin:14px auto 25px;color:rgba(255,255,255,.9);font-size:.96rem;font-weight:700}.cta-card .land-btn{background:#fff;color:var(--teal-dark);box-shadow:0 5px 0 rgba(5,100,103,.28)}
+
+    .land-footer{position:relative;z-index:2;background:var(--navy);color:#b8c9d3;padding:57px 22px 27px;border-top:4px solid var(--mint)}.footer-inner{width:min(var(--land-max),100%);margin:auto}.footer-top{display:grid;grid-template-columns:1.35fr repeat(3,1fr);gap:45px;padding-bottom:38px}.footer-brand .land-logo{color:#fff}.footer-brand p{font-size:.75rem;line-height:1.65;margin-top:16px;max-width:280px;font-weight:700}.footer-col h4{color:#fff;font-size:.76rem;text-transform:uppercase;letter-spacing:.75px;margin-bottom:12px}.footer-col a{display:block;color:#aebfca;font-size:.74rem;font-weight:700;padding:5px 0}.footer-col a:hover{color:var(--mint)}.footer-bottom{padding-top:23px;border-top:1px solid rgba(255,255,255,.10);display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;font-size:.68rem;font-weight:700;color:#849aa8}
+
+    @media(max-width:1050px){.land-hero{grid-template-columns:1fr;text-align:center;padding-top:140px}.hero-copy>p{margin-left:auto;margin-right:auto}.hero-actions,.hero-proof{justify-content:center}.hero-visual{min-height:500px;max-width:620px;width:100%;margin:auto}.float-card.one{right:0}.float-card.two{left:0}.feature-grid{grid-template-columns:repeat(2,1fr)}.demo-shell{grid-template-columns:1fr;gap:40px}.demo-copy{text-align:center}.demo-points{max-width:460px;margin:auto;text-align:left}.question-demo{max-width:700px;margin:auto}.subject-showcase{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:820px){.land-nav{padding:11px 14px}.menu-toggle{display:grid}.land-links{position:absolute;left:14px;right:14px;top:68px;display:none;flex-direction:column;align-items:stretch;padding:13px;background:#fff;border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow-lg)}.land-links.open{display:flex}.land-links>a,.land-lang{text-align:center;width:100%;height:44px!important}.land-login,.land-signup{justify-content:center}.fact-inner{grid-template-columns:repeat(2,1fr)}.fact:nth-child(3){border-left:0;border-top:1px solid var(--line)}.fact:nth-child(4){border-top:1px solid var(--line)}.path{grid-template-columns:1fr;gap:30px}.path::before{display:none}.path-card p{max-width:430px;margin:7px auto 0}.pricing-grid{grid-template-columns:1fr;max-width:520px}.price-card.featured{transform:none;margin:8px 0}.footer-top{grid-template-columns:1.4fr 1fr 1fr}.footer-brand{grid-column:1/-1}}
+    @media(max-width:580px){.land-hero{width:calc(100% - 28px);padding:125px 0 75px;gap:35px}.hero-copy h1{font-size:2.4rem;letter-spacing:-1.2px}.hero-copy>p{font-size:.94rem}.hero-actions{display:grid}.land-btn{width:100%}.hero-proof{align-items:flex-start;flex-direction:column;margin-left:5px}.hero-visual{min-height:390px}.visual-glow{width:320px;height:320px}.app-preview{border-radius:23px}.preview-body{padding:12px}.preview-banner{min-height:120px;padding:15px}.preview-banner h3{font-size:.91rem;max-width:175px}.preview-banner p{max-width:170px}.preview-mascot{width:105px}.preview-stat{padding:7px}.float-card{display:none}.fact{padding:22px 8px}.fact strong{font-size:1.35rem}.land-section{padding:75px 14px}.section-heading{margin-bottom:38px}.feature-grid,.subject-showcase{grid-template-columns:1fr}.land-feature{min-height:0}.question-demo{padding:18px;border-radius:23px}.demo-progress{width:100px}.footer-top{grid-template-columns:1fr 1fr;gap:30px}.footer-brand{grid-column:1/-1}.cta-card{padding:45px 19px;min-height:300px;border-radius:27px}.final-cta{padding-left:14px;padding-right:14px}}
   </style>
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="nav" id="navbar">
-    <a href="#" class="nav-logo">Concours<span>.md</span></a>
-    <div class="nav-links">
-      <a href="#features" data-nav="features">Features</a>
-      <a href="#subjects" data-nav="subjects">Subjects</a>
-      <a href="#pricing" data-nav="pricing">Pricing</a>
-      <button class="lang-toggle" id="langToggle">FR</button>
-      <a href="login.html" data-nav="login">Login</a>
+<div class="landing-page">
+  <div class="land-blob one"></div><div class="land-blob two"></div><div class="land-blob three"></div>
+
+  <nav class="land-nav" id="landNav" aria-label="Main navigation">
+    <div class="land-nav-inner">
+      <a href="#top" class="land-logo" aria-label="Concours.md home">
+        <span class="land-logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v17H6.5A2.5 2.5 0 0 0 4 22z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v17h4.5a2.5 2.5 0 0 1 2.5 2z"/></svg></span>
+        <span>Concours<span>.md</span></span>
+      </a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="land-links" id="landLinks">
+        <a href="#how"><span data-en="How it works" data-fr="Comment ça marche">How it works</span></a>
+        <a href="#features"><span data-en="Features" data-fr="Fonctionnalités">Features</span></a>
+        <a href="#subjects"><span data-en="Subjects" data-fr="Matières">Subjects</span></a>
+        <a href="#pricing"><span data-en="Pricing" data-fr="Tarifs">Pricing</span></a>
+        <button class="land-lang" id="langToggle" aria-label="Switch language">FR</button>
+        <a href="login.html" class="land-login"><span data-en="Log in" data-fr="Connexion">Log in</span></a>
+        <a href="signup.html" class="land-signup"><span data-en="Start free" data-fr="Commencer">Start free</span></a>
+      </div>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <span class="hero-badge" id="heroBadge">🇱🇧 Made for Lebanese University Students</span>
-      <h1 id="heroTitle">Ace Your <span>Concours</span> With Confidence</h1>
-      <p class="hero-subtitle" id="heroSubtitle">
-        The ultimate QBank & exam simulator for CSVT students preparing for the Lebanese University medical entrance exam. Practice with real-style MCQs, master equations, and track your progress.
-      </p>
-      <div class="hero-buttons">
-        <a href="signup.html" class="btn-hero btn-primary-hero" id="heroCTA">Start Free Trial →</a>
-        <a href="#pricing" class="btn-hero btn-outline-hero" id="heroPricing">View Plans</a>
+  <main id="top">
+    <section class="land-hero">
+      <div class="hero-copy">
+        <div class="hero-eyebrow"><span class="eyebrow-dot"></span><span data-en="Built for Lebanese University CSVT students" data-fr="Conçu pour les étudiants CSVT de l’Université Libanaise">Built for Lebanese University CSVT students</span></div>
+        <h1 data-en-html="Turn Concours pressure into <span class='gradient'>daily progress.</span>" data-fr-html="Transformez la pression du Concours en <span class='gradient'>progrès quotidien.</span>">Turn Concours pressure into <span class="gradient">daily progress.</span></h1>
+        <p data-en="Practice real LU-style questions, understand every answer, and build the speed and confidence to walk into the Concours ready." data-fr="Entraînez-vous avec des questions au format LU, comprenez chaque réponse et développez la rapidité et la confiance nécessaires pour réussir le Concours.">Practice real LU-style questions, understand every answer, and build the speed and confidence to walk into the Concours ready.</p>
+        <div class="hero-actions">
+          <a href="signup.html" class="land-btn primary"><span data-en="Start practicing free" data-fr="Commencer gratuitement">Start practicing free</span><span>→</span></a>
+          <a href="#live-demo" class="land-btn secondary"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4z"/></svg><span data-en="Try a question" data-fr="Essayer une question">Try a question</span></a>
+        </div>
+        <div class="hero-proof">
+          <span class="proof-item"><i class="proof-check">✓</i><span data-en="Verified questions" data-fr="Questions vérifiées">Verified questions</span></span>
+          <span class="proof-item"><i class="proof-check">✓</i><span data-en="Official exam pacing" data-fr="Rythme officiel">Official exam pacing</span></span>
+          <span class="proof-item"><i class="proof-check">✓</i><span data-en="English + French" data-fr="Anglais + Français">English + French</span></span>
+        </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Stats Bar -->
-  <div class="stats-bar">
-    <div class="stat-item">
-      <div class="stat-number">4</div>
-      <div class="stat-label" data-stat="subjects">Core Subjects</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-number">19</div>
-      <div class="stat-label" data-stat="courses">Courses Covered</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-number">∞</div>
-      <div class="stat-label" data-stat="practice">Practice Tests</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-number">2</div>
-      <div class="stat-label" data-stat="languages">Languages (EN/FR)</div>
-    </div>
-  </div>
+      <div class="hero-visual" aria-label="Concours.md dashboard preview">
+        <div class="visual-glow"></div>
+        <div class="float-card one"><span>◆</span><span data-en="+120 XP this week" data-fr="+120 XP cette semaine">+120 XP this week</span></div>
+        <div class="float-card two"><span>🔥</span><span data-en="12-day streak" data-fr="Série de 12 jours">12-day streak</span></div>
+        <div class="app-preview">
+          <div class="preview-top"><i class="window-dot"></i><i class="window-dot"></i><i class="window-dot"></i><div class="preview-url">concours.md/dashboard</div></div>
+          <div class="preview-body">
+            <div class="preview-greeting"><strong data-en="Ready, Sarah?" data-fr="Prête, Sarah ?">Ready, Sarah?</strong><span class="preview-streak">🔥 12</span></div>
+            <div class="preview-banner">
+              <div><h3 data-en="Keep your Genetics momentum going!" data-fr="Continue sur ta lancée en Génétique !">Keep your Genetics momentum going!</h3><p data-en="8 questions left to reach today’s goal." data-fr="Encore 8 questions pour atteindre l’objectif du jour.">8 questions left to reach today’s goal.</p><button data-en="Continue →" data-fr="Continuer →">Continue →</button></div>
+              <svg class="preview-mascot" viewBox="0 0 150 145" aria-hidden="true"><ellipse cx="78" cy="136" rx="49" ry="7" fill="rgba(5,81,85,.18)"/><path d="M91 20c23 7 39 31 34 57-5 31-28 54-55 49-26-4-42-30-36-58 7-31 31-57 57-48Z" fill="#fff"/><path d="M89 30c17 7 28 23 25 41-4 24-21 41-41 37-18-3-30-22-26-42 5-22 24-43 42-36Z" fill="#dffaf7"/><circle cx="68" cy="63" r="3.8" fill="#17324d"/><circle cx="91" cy="63" r="3.8" fill="#17324d"/><path d="M71 76c6 6 13 6 18 0" fill="none" stroke="#17324d" stroke-width="3.7" stroke-linecap="round"/><path d="M53 46c14-13 39-16 56-3M56 53c9 5 17 6 26 1s17-5 26 0" fill="none" stroke="#56dbc5" stroke-width="5" stroke-linecap="round"/><path d="m43 94-15 11M116 94l16 10M55 119l-6 14M101 118l7 14" stroke="#fff" stroke-width="8" stroke-linecap="round"/><path d="M43 135h15M103 135h15" stroke="#17324d" stroke-width="6" stroke-linecap="round"/></svg>
+            </div>
+            <div class="preview-stats"><div class="preview-stat"><span data-en="QUESTIONS" data-fr="QUESTIONS">QUESTIONS</span><strong>1,247</strong></div><div class="preview-stat"><span data-en="ACCURACY" data-fr="PRÉCISION">ACCURACY</span><strong>82%</strong></div><div class="preview-stat"><span data-en="STUDY TIME" data-fr="ÉTUDE">STUDY TIME</span><strong>18.4h</strong></div></div>
+            <div class="preview-subjects"><div class="preview-subject bio"><i>🧬</i><span data-en="Biology" data-fr="Biologie">Biology</span></div><div class="preview-subject chem"><i>⚗</i><span data-en="Chemistry" data-fr="Chimie">Chemistry</span></div><div class="preview-subject phys"><i>⚡</i><span data-en="Physics" data-fr="Physique">Physics</span></div><div class="preview-subject math"><i>∑</i><span>Maths</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Features Section -->
-  <section class="section" id="features">
-    <div class="section-header">
-      <span class="section-label" id="featuresLabel">What We Offer</span>
-      <h2 class="section-title" id="featuresTitle">Everything You Need to Succeed</h2>
-      <p class="section-desc" id="featuresDesc">Stop paying for expensive tutors and outdated materials. Our platform gives you everything in one place.</p>
-    </div>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(46, 204, 113, 0.1);">📚</div>
-        <h3 data-feature="qbanks">Comprehensive QBanks</h3>
-        <p data-feature="qbanks-desc">Hundreds of MCQs across Biology, Chemistry, Physics, and Maths — all tailored to the LU Concours style.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(155, 89, 182, 0.1);">🎓</div>
-        <h3 data-feature="concours">Concours Simulation</h3>
-        <p data-feature="concours-desc">Take full-length practice exams that mirror the real thing — Medicine/Dentistry or Pharmacy tracks.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(52, 152, 219, 0.1);">⏱️</div>
-        <h3 data-feature="timer">Smart Timer & Tutor Mode</h3>
-        <p data-feature="timer-desc">Practice under real exam conditions or learn at your own pace with tutor mode.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(230, 126, 34, 0.1);">📊</div>
-        <h3 data-feature="progress">Progress Tracking</h3>
-        <p data-feature="progress-desc">See your scores, identify weak areas, and review incorrect answers with detailed explanations.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(243, 156, 18, 0.1);">📝</div>
-        <h3 data-feature="notebook">Personal Notebook</h3>
-        <p data-feature="notebook-desc">Save notes for any question, organized by subject and course. Your knowledge, always accessible.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon" style="background: rgba(231, 76, 60, 0.1);">🌐</div>
-        <h3 data-feature="bilingual">Bilingual (EN/FR)</h3>
-        <p data-feature="bilingual-desc">Full support for both English and French — because LU questions come in both languages.</p>
-      </div>
-    </div>
-  </section>
+    <section class="fact-strip" aria-label="Platform facts">
+      <div class="fact-inner"><div class="fact"><strong>4</strong><span data-en="Core subjects" data-fr="Matières principales">Core subjects</span></div><div class="fact"><strong>19</strong><span data-en="Courses covered" data-fr="Cours couverts">Courses covered</span></div><div class="fact"><strong>2</strong><span data-en="Concours tracks" data-fr="Filières du Concours">Concours tracks</span></div><div class="fact"><strong>EN + FR</strong><span data-en="Fully bilingual" data-fr="Entièrement bilingue">Fully bilingual</span></div></div>
+    </section>
 
-  <!-- Subjects Section -->
-  <section class="section section-dark" id="subjects">
-    <div class="section-header">
-      <span class="section-label" id="subjectsLabel">Subjects Covered</span>
-      <h2 class="section-title" id="subjectsTitle">All 4 Core Subjects</h2>
-      <p class="section-desc" id="subjectsDesc">Every course you need for the Concours, organized and ready to practice.</p>
-    </div>
-    <div class="subjects-grid">
-      <div class="subject-card biology">
-        <div class="subject-icon">🧬</div>
-        <h3>Biology</h3>
-        <p>11 courses including Cytology, Histology, Genetics, Anatomy, Botany, and more</p>
+    <section class="land-section" id="how">
+      <div class="section-inner">
+        <div class="section-heading"><span class="section-kicker" data-en="A clearer way to prepare" data-fr="Une préparation plus claire">A clearer way to prepare</span><h2 data-en="Know what to study. Practice it. Improve." data-fr="Sachez quoi étudier. Entraînez-vous. Progressez.">Know what to study. Practice it. Improve.</h2><p data-en="No scattered PDFs and no guessing what comes next. Concours.md turns the entire curriculum into a simple path you can follow every day." data-fr="Fini les PDF dispersés et les hésitations. Concours.md transforme tout le programme en un parcours simple à suivre chaque jour.">No scattered PDFs and no guessing what comes next. Concours.md turns the entire curriculum into a simple path you can follow every day.</p></div>
+        <div class="path"><article class="path-card"><div class="path-number">1</div><h3 data-en="Choose your target" data-fr="Choisissez votre objectif">Choose your target</h3><p data-en="Pick a subject, course, chapter, question pool, and session length." data-fr="Choisissez une matière, un cours, un chapitre, une banque et la durée de la session.">Pick a subject, course, chapter, question pool, and session length.</p></article><article class="path-card"><div class="path-number">2</div><h3 data-en="Practice actively" data-fr="Pratiquez activement">Practice actively</h3><p data-en="Answer under real pacing, eliminate choices, mark questions, and learn from instant explanations." data-fr="Répondez au rythme réel, éliminez des choix, marquez des questions et apprenez grâce aux explications.">Answer under real pacing, eliminate choices, mark questions, and learn from instant explanations.</p></article><article class="path-card"><div class="path-number">3</div><h3 data-en="Close your gaps" data-fr="Comblez vos lacunes">Close your gaps</h3><p data-en="Review mistakes and repeat weak chapters until exam pressure feels familiar." data-fr="Révisez vos erreurs et répétez les chapitres faibles jusqu’à maîtriser la pression de l’examen.">Review mistakes and repeat weak chapters until exam pressure feels familiar.</p></article></div>
       </div>
-      <div class="subject-card chemistry">
-        <div class="subject-icon">⚗️</div>
-        <h3>Chemistry</h3>
-        <p>General Chemistry, Organic Chemistry, and Chemistry of Solution</p>
+    </section>
+
+    <section class="land-section alt" id="features">
+      <div class="section-inner">
+        <div class="section-heading"><span class="section-kicker" data-en="Everything in one place" data-fr="Tout au même endroit">Everything in one place</span><h2 data-en="Built around the way you actually study" data-fr="Conçu autour de votre vraie façon d’étudier">Built around the way you actually study</h2><p data-en="Fast when you need repetition, detailed when you need understanding, and realistic when you need exam practice." data-fr="Rapide pour répéter, détaillé pour comprendre et réaliste pour vous entraîner à l’examen.">Fast when you need repetition, detailed when you need understanding, and realistic when you need exam practice.</p></div>
+        <div class="feature-grid">
+          <article class="land-feature f-teal"><div class="land-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M4 5a2 2 0 0 1 2-2h5v18H6a2 2 0 0 1-2-2zM20 5a2 2 0 0 0-2-2h-5v18h5a2 2 0 0 1 2 2z"/></svg></div><h3 data-en="Real question bank" data-fr="Vraie banque de questions">Real question bank</h3><p data-en="Questions organized by the exact LU subjects, courses, and chapters you need for the Concours." data-fr="Des questions organisées selon les matières, cours et chapitres exacts du programme LU.">Questions organized by the exact LU subjects, courses, and chapters you need for the Concours.</p></article>
+          <article class="land-feature f-green"><div class="land-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3 data-en="Official pacing" data-fr="Rythme officiel">Official pacing</h3><p data-en="Subject-specific timers train your speed without changing the official full-exam blueprints." data-fr="Des minuteurs adaptés à chaque matière développent votre vitesse tout en respectant les examens officiels.">Subject-specific timers train your speed without changing the official full-exam blueprints.</p></article>
+          <article class="land-feature f-violet"><div class="land-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M9 18h6M10 22h4M8.5 14.5A7 7 0 1 1 15.5 14.5C14.5 15.2 14 16 14 18h-4c0-2-.5-2.8-1.5-3.5Z"/></svg></div><h3 data-en="Explanations that teach" data-fr="Des explications pédagogiques">Explanations that teach</h3><p data-en="See why the correct choice works and why every distractor fails, immediately after answering." data-fr="Comprenez pourquoi la bonne réponse est juste et pourquoi chaque autre choix est faux.">See why the correct choice works and why every distractor fails, immediately after answering.</p></article>
+          <article class="land-feature f-blue"><div class="land-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M4 19V9M10 19V5M16 19v-7M22 19V3"/></svg></div><h3 data-en="Results you can use" data-fr="Des résultats utiles">Results you can use</h3><p data-en="Review correct, incorrect, and omitted answers, then turn weak areas into your next focused session." data-fr="Révisez les réponses correctes, incorrectes et omises, puis ciblez vos points faibles.">Review correct, incorrect, and omitted answers, then turn weak areas into your next focused session.</p></article>
+          <article class="land-feature f-orange"><div class="land-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M5 3h14v18H5zM9 3v18M12 8h4M12 12h4"/></svg></div><h3 data-en="Notebook and review" data-fr="Carnet et révision">Notebook and review</h3><p data-en="Save the details worth remembering and revisit marked, incorrect, or previously unused questions." data-fr="Sauvegardez les détails importants et retrouvez les questions marquées, incorrectes ou jamais utilisées.">Save the details worth remembering and revisit marked, incorrect, or previously unused questions.</p></article>
+          <article class="land-feature f-pink"><div class="land-feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><h3 data-en="English and French" data-fr="Anglais et français">English and French</h3><p data-en="Switch languages while keeping the same curriculum structure, tools, and exam experience." data-fr="Changez de langue tout en gardant la même structure, les mêmes outils et la même expérience.">Switch languages while keeping the same curriculum structure, tools, and exam experience.</p></article>
+        </div>
       </div>
-      <div class="subject-card physics">
-        <div class="subject-icon">⚡</div>
-        <h3>Physics</h3>
-        <p>Physique 1 & Physique 2 with full equation support</p>
+    </section>
+
+    <section class="land-section" id="live-demo">
+      <div class="section-inner demo-shell">
+        <div class="demo-copy"><span class="section-kicker" data-en="Try it now" data-fr="Essayez maintenant">Try it now</span><h2 data-en="One question can teach more than one page." data-fr="Une question peut enseigner plus qu’une page.">One question can teach more than one page.</h2><p data-en="Choose an answer. Concours.md responds immediately, so every mistake becomes useful instead of frustrating." data-fr="Choisissez une réponse. Concours.md vous répond immédiatement pour transformer chaque erreur en apprentissage.">Choose an answer. Concours.md responds immediately, so every mistake becomes useful instead of frustrating.</p><div class="demo-points"><span class="demo-point"><i>✓</i><span data-en="Instant correction" data-fr="Correction immédiate">Instant correction</span></span><span class="demo-point"><i>✓</i><span data-en="Clear rationale" data-fr="Raisonnement clair">Clear rationale</span></span><span class="demo-point"><i>✓</i><span data-en="Exam-style choices" data-fr="Choix au format examen">Exam-style choices</span></span></div></div>
+        <div class="question-demo">
+          <div class="demo-top"><span data-en="Genetics · Practice question" data-fr="Génétique · Question d’entraînement">Genetics · Practice question</span><div class="demo-progress"><i></i></div></div>
+          <h3 data-en="A test cross produces 83 [Ab], 14 [AB], 16 [ab], and 87 [aB] offspring. What is the recombination frequency?" data-fr="Un croisement-test produit 83 [Ab], 14 [AB], 16 [ab] et 87 [aB]. Quelle est la fréquence de recombinaison ?">A test cross produces 83 [Ab], 14 [AB], 16 [ab], and 87 [aB] offspring. What is the recombination frequency?</h3>
+          <div class="demo-options"><button class="demo-option" data-answer="wrong"><span class="demo-letter">A</span>30%</button><button class="demo-option" data-answer="correct"><span class="demo-letter">B</span>15%</button><button class="demo-option" data-answer="wrong"><span class="demo-letter">C</span>50%</button><button class="demo-option" data-answer="wrong"><span class="demo-letter">D</span>0%</button></div>
+          <div class="demo-feedback" id="demoFeedback"></div>
+        </div>
       </div>
-      <div class="subject-card maths">
-        <div class="subject-icon">📐</div>
-        <h3>Maths</h3>
-        <p>Analysis, Statistics, and Algebra with mathematical notation</p>
+    </section>
+
+    <section class="land-section alt" id="subjects">
+      <div class="section-inner">
+        <div class="section-heading"><span class="section-kicker" data-en="The full core" data-fr="Tout le programme principal">The full core</span><h2 data-en="Four subjects. One focused system." data-fr="Quatre matières. Un seul système ciblé.">Four subjects. One focused system.</h2><p data-en="Move from a complete subject to one precise chapter without losing your place or your momentum." data-fr="Passez d’une matière complète à un chapitre précis sans perdre votre progression.">Move from a complete subject to one precise chapter without losing your place or your momentum.</p></div>
+        <div class="subject-showcase">
+          <article class="land-subject bio"><div class="land-subject-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9M9 6h6M8 12h8M9 18h6"/></svg></div><h3 data-en="Biology" data-fr="Biologie">Biology</h3><p data-en="Cytology, Histology, Genetics, Anatomy, Botany, and more." data-fr="Cytologie, Histologie, Génétique, Anatomie, Botanique et plus.">Cytology, Histology, Genetics, Anatomy, Botany, and more.</p><div class="subject-line"><i></i></div></article>
+          <article class="land-subject chem"><div class="land-subject-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M9 3h6M10 3v6l-5.5 9.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7 15h10"/></svg></div><h3 data-en="Chemistry" data-fr="Chimie">Chemistry</h3><p data-en="General, Organic, and Solution Chemistry." data-fr="Chimie générale, organique et des solutions.">General, Organic, and Solution Chemistry.</p><div class="subject-line"><i></i></div></article>
+          <article class="land-subject phys"><div class="land-subject-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="m13 2-8 12h7l-1 8 8-12h-7z"/></svg></div><h3 data-en="Physics" data-fr="Physique">Physics</h3><p data-en="Mechanics, Electricity, Magnetism, and Optics." data-fr="Mécanique, Électricité, Magnétisme et Optique.">Mechanics, Electricity, Magnetism, and Optics.</p><div class="subject-line"><i></i></div></article>
+          <article class="land-subject math"><div class="land-subject-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M4 19 19 4M5 5h6M8 2v6M14 17h7M3 14h7v7"/></svg></div><h3>Maths</h3><p data-en="Analysis, Statistics, and Algebra with full notation." data-fr="Analyse, Statistique et Algèbre avec notation complète.">Analysis, Statistics, and Algebra with full notation.</p><div class="subject-line"><i></i></div></article>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Pricing Section -->
-  <section class="section" id="pricing">
-    <div class="section-header">
-      <span class="section-label" id="pricingLabel">Pricing Plans</span>
-      <h2 class="section-title" id="pricingTitle">Invest in Your Future</h2>
-      <p class="section-desc" id="pricingDesc">Less than the cost of one private tutoring session. Get unlimited access to everything.</p>
-    </div>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <h3 data-plan="1m">1 Month</h3>
-        <p class="pricing-period" data-plan="1m-desc">Perfect to try it out</p>
-        <div class="pricing-price">$15<span>/month</span></div>
-        <ul class="pricing-features">
-          <li><span class="check-icon">✓</span> All subjects & courses</li>
-          <li><span class="check-icon">✓</span> Unlimited practice tests</li>
-          <li><span class="check-icon">✓</span> Concours simulations</li>
-          <li><span class="check-icon">✓</span> Progress tracking</li>
-          <li><span class="check-icon">✓</span> Notebook access</li>
-        </ul>
-        <a href="signup.html" class="btn-pricing btn-pricing-outline" data-plan="1m-btn">Get Started</a>
+    <section class="land-section" id="pricing">
+      <div class="section-inner">
+        <div class="section-heading"><span class="section-kicker" data-en="Simple access" data-fr="Accès simple">Simple access</span><h2 data-en="Choose the runway you need" data-fr="Choisissez la durée qui vous convient">Choose the runway you need</h2><p data-en="Every plan unlocks the complete question bank, both languages, practice tools, and Concours simulations." data-fr="Chaque formule donne accès à toute la banque, aux deux langues, aux outils et aux simulations du Concours.">Every plan unlocks the complete question bank, both languages, practice tools, and Concours simulations.</p></div>
+        <div class="pricing-grid">
+          <article class="price-card"><h3 data-en="1 month" data-fr="1 mois">1 month</h3><p data-en="A focused final push" data-fr="Pour une dernière ligne droite">A focused final push</p><div class="price">$15 <span data-en="/ month" data-fr="/ mois">/ month</span></div><ul class="price-list"><li><i>✓</i><span data-en="All subjects and courses" data-fr="Toutes les matières et tous les cours">All subjects and courses</span></li><li><i>✓</i><span data-en="Unlimited practice tests" data-fr="Tests d’entraînement illimités">Unlimited practice tests</span></li><li><i>✓</i><span data-en="Concours simulations" data-fr="Simulations du Concours">Concours simulations</span></li><li><i>✓</i><span data-en="Notebook and answer review" data-fr="Carnet et révision des réponses">Notebook and answer review</span></li></ul><a href="signup.html" class="land-btn secondary"><span data-en="Get started" data-fr="Commencer">Get started</span></a></article>
+          <article class="price-card featured"><span class="price-badge" data-en="MOST POPULAR" data-fr="LE PLUS POPULAIRE">MOST POPULAR</span><h3 data-en="3 months" data-fr="3 mois">3 months</h3><p data-en="For serious preparation" data-fr="Pour une préparation sérieuse">For serious preparation</p><div class="price">$39 <span data-en="/ 3 months" data-fr="/ 3 mois">/ 3 months</span></div><ul class="price-list"><li><i>✓</i><span data-en="Everything in the 1-month plan" data-fr="Tout ce qui est inclus dans la formule 1 mois">Everything in the 1-month plan</span></li><li><i>✓</i><span data-en="Priority question updates" data-fr="Mises à jour prioritaires">Priority question updates</span></li><li><i>✓</i><span data-en="Performance analytics" data-fr="Analyse des performances">Performance analytics</span></li><li><i>✓</i><span data-en="Mistake and marked review" data-fr="Révision des erreurs et questions marquées">Mistake and marked review</span></li></ul><a href="signup.html" class="land-btn primary"><span data-en="Choose 3 months" data-fr="Choisir 3 mois">Choose 3 months</span><span>→</span></a></article>
+          <article class="price-card"><h3 data-en="9 months" data-fr="9 mois">9 months</h3><p data-en="The complete academic runway" data-fr="Pour toute l’année académique">The complete academic runway</p><div class="price">$99 <span data-en="/ 9 months" data-fr="/ 9 mois">/ 9 months</span></div><ul class="price-list"><li><i>✓</i><span data-en="Everything in the 3-month plan" data-fr="Tout ce qui est inclus dans la formule 3 mois">Everything in the 3-month plan</span></li><li><i>✓</i><span data-en="Early access to improvements" data-fr="Accès anticipé aux améliorations">Early access to improvements</span></li><li><i>✓</i><span data-en="Full-year continuity" data-fr="Continuité pendant toute l’année">Full-year continuity</span></li><li><i>✓</i><span data-en="Best long-term value" data-fr="Meilleur rapport qualité-prix">Best long-term value</span></li></ul><a href="signup.html" class="land-btn secondary"><span data-en="Get started" data-fr="Commencer">Get started</span></a></article>
+        </div>
       </div>
-      <div class="pricing-card popular">
-        <span class="popular-badge" data-popular="badge">Most Popular</span>
-        <h3 data-plan="3m">3 Months</h3>
-        <p class="pricing-period" data-plan="3m-desc">Best for serious preparation</p>
-        <div class="pricing-price">$39<span>/3 months</span></div>
-        <ul class="pricing-features">
-          <li><span class="check-icon">✓</span> Everything in 1 Month</li>
-          <li><span class="check-icon">✓</span> Priority question updates</li>
-          <li><span class="check-icon">✓</span> Performance analytics</li>
-          <li><span class="check-icon">✓</span> Marked questions review</li>
-          <li><span class="check-icon">✓</span> Incorrect/omitted review</li>
-        </ul>
-        <a href="signup.html" class="btn-pricing btn-pricing-primary" data-plan="3m-btn">Get Started</a>
-      </div>
-      <div class="pricing-card">
-        <h3 data-plan="9m">9 Months</h3>
-        <p class="pricing-period" data-plan="9m-desc">Full academic year coverage</p>
-        <div class="pricing-price">$99<span>/9 months</span></div>
-        <ul class="pricing-features">
-          <li><span class="check-icon">✓</span> Everything in 3 Months</li>
-          <li><span class="check-icon">✓</span> Early access to new features</li>
-          <li><span class="check-icon">✓</span> Exclusive Concours tips</li>
-          <li><span class="check-icon">✓</span> Save 30% vs monthly</li>
-          <li><span class="check-icon">✓</span> Cancel anytime</li>
-        </ul>
-        <a href="signup.html" class="btn-pricing btn-pricing-outline" data-plan="9m-btn">Get Started</a>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- CTA Section -->
-  <section class="cta-section">
-    <div class="cta-content">
-      <h2 id="ctaTitle">Ready to Ace the Concours?</h2>
-      <p id="ctaDesc">Join CSVT students who are already preparing smarter. Your future in medicine or pharmacy starts here.</p>
-      <a href="signup.html" class="btn-hero btn-primary-hero" id="ctaBtn">Create Free Account →</a>
-    </div>
-  </section>
+    <section class="final-cta"><div class="cta-card"><h2 data-en="Your future score is built one question at a time." data-fr="Votre futur score se construit une question à la fois.">Your future score is built one question at a time.</h2><p data-en="Start now, build consistency, and arrive at the Lebanese University Concours knowing exactly what you can do." data-fr="Commencez maintenant, restez régulier et présentez-vous au Concours de l’Université Libanaise en connaissant votre véritable niveau.">Start now, build consistency, and arrive at the Lebanese University Concours knowing exactly what you can do.</p><a href="signup.html" class="land-btn"><span data-en="Create your account" data-fr="Créer votre compte">Create your account</span><span>→</span></a></div></section>
+  </main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-grid">
-      <div class="footer-col">
-        <h4 data-footer="platform">Platform</h4>
-        <a href="login.html" data-footer="login">Login</a>
-        <a href="signup.html" data-footer="signup">Sign Up</a>
-        <a href="#pricing" data-footer="pricing">Pricing</a>
-        <a href="#features" data-footer="features">Features</a>
-      </div>
-      <div class="footer-col">
-        <h4 data-footer="resources">Resources</h4>
-        <a href="#subjects" data-footer="subjects">Subjects</a>
-        <a href="#features" data-footer="concours">Concours Prep</a>
-        <a href="#" data-footer="guide">Study Guide</a>
-        <a href="#" data-footer="faq">FAQ</a>
-      </div>
-      <div class="footer-col">
-        <h4 data-footer="legal">Legal</h4>
-        <a href="privacy.html" data-footer="privacy">Privacy Policy</a>
-        <a href="terms.html" data-footer="terms">Terms of Service</a>
-        <a href="#" data-footer="refund">Refund Policy</a>
-      </div>
-      <div class="footer-col">
-        <h4 data-footer="contact">Contact</h4>
-        <a href="/cdn-cgi/l/email-protection#5637323b3f38783539383539232425783b3216313b373f3a7835393b" data-footer="email"><span class="__cf_email__" data-cfemail="6c0d08010502420f03020f03191e1f4201082c0b010d0500420f0301">[email&#160;protected]</span></a>
-        <a href="#" data-footer="support">Support</a>
-        <a href="#" data-footer="feedback">Feedback</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p data-footer="copyright">© 2026 Concours.md — Made for Lebanese University Students 🇱🇧</p>
-    </div>
-  </footer>
+  <footer class="land-footer"><div class="footer-inner"><div class="footer-top"><div class="footer-brand"><a href="#top" class="land-logo"><span class="land-logo-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v17H6.5A2.5 2.5 0 0 0 4 22zM20 5.5A2.5 2.5 0 0 0 17.5 3H13v17h4.5a2.5 2.5 0 0 1 2.5 2z"/></svg></span><span>Concours<span>.md</span></span></a><p data-en="The bilingual preparation platform built specifically for Lebanese University CSVT students." data-fr="La plateforme bilingue conçue spécialement pour les étudiants CSVT de l’Université Libanaise.">The bilingual preparation platform built specifically for Lebanese University CSVT students.</p></div><div class="footer-col"><h4 data-en="Platform" data-fr="Plateforme">Platform</h4><a href="#features" data-en="Features" data-fr="Fonctionnalités">Features</a><a href="#subjects" data-en="Subjects" data-fr="Matières">Subjects</a><a href="#pricing" data-en="Pricing" data-fr="Tarifs">Pricing</a><a href="login.html" data-en="Log in" data-fr="Connexion">Log in</a></div><div class="footer-col"><h4 data-en="Prepare" data-fr="Préparation">Prepare</h4><a href="#how" data-en="How it works" data-fr="Comment ça marche">How it works</a><a href="#live-demo" data-en="Try a question" data-fr="Essayer une question">Try a question</a><a href="signup.html" data-en="Create account" data-fr="Créer un compte">Create account</a><a href="mailto:admin.concours.md@gmail.com" data-en="Contact support" data-fr="Contacter le support">Contact support</a></div><div class="footer-col"><h4 data-en="Legal" data-fr="Mentions légales">Legal</h4><a href="privacy.html" data-en="Privacy policy" data-fr="Politique de confidentialité">Privacy policy</a><a href="terms.html" data-en="Terms of service" data-fr="Conditions d’utilisation">Terms of service</a></div></div><div class="footer-bottom"><span data-en="© 2026 Concours.md. Built with care for LU students." data-fr="© 2026 Concours.md. Conçu avec soin pour les étudiants de la LU.">© 2026 Concours.md. Built with care for LU students.</span><span>admin.concours.md@gmail.com</span></div></div></footer>
+</div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-    // Translations
-    const translations = {
-      en: {
-        nav: { features: 'Features', subjects: 'Subjects', pricing: 'Pricing', login: 'Login' },
-        hero: {
-          badge: '🇱🇧 Made for Lebanese University Students',
-          title: 'Ace Your <span>Concours</span> With Confidence',
-          subtitle: 'The ultimate QBank & exam simulator for CSVT students preparing for the Lebanese University medical entrance exam. Practice with real-style MCQs, master equations, and track your progress.',
-          cta: 'Start Free Trial →',
-          pricing: 'View Plans'
-        },
-        stats: { subjects: 'Core Subjects', courses: 'Courses Covered', practice: 'Practice Tests', languages: 'Languages (EN/FR)' },
-        features: {
-          label: 'What We Offer',
-          title: 'Everything You Need to Succeed',
-          desc: 'Stop paying for expensive tutors and outdated materials. Our platform gives you everything in one place.',
-          qbanks: 'Comprehensive QBanks',
-          'qbanks-desc': 'Hundreds of MCQs across Biology, Chemistry, Physics, and Maths — all tailored to the LU Concours style.',
-          concours: 'Concours Simulation',
-          'concours-desc': 'Take full-length practice exams that mirror the real thing — Medicine/Dentistry or Pharmacy tracks.',
-          timer: 'Smart Timer & Tutor Mode',
-          'timer-desc': 'Practice under real exam conditions or learn at your own pace with tutor mode.',
-          progress: 'Progress Tracking',
-          'progress-desc': 'See your scores, identify weak areas, and review incorrect answers with detailed explanations.',
-          notebook: 'Personal Notebook',
-          'notebook-desc': 'Save notes for any question, organized by subject and course. Your knowledge, always accessible.',
-          bilingual: 'Bilingual (EN/FR)',
-          'bilingual-desc': 'Full support for both English and French — because LU questions come in both languages.'
-        },
-        subjects: {
-          label: 'Subjects Covered',
-          title: 'All 4 Core Subjects',
-          desc: 'Every course you need for the Concours, organized and ready to practice.'
-        },
-        pricing: {
-          label: 'Pricing Plans',
-          title: 'Invest in Your Future',
-          desc: 'Less than the cost of one private tutoring session. Get unlimited access to everything.',
-          '1m': '1 Month', '1m-desc': 'Perfect to try it out', '1m-btn': 'Get Started',
-          '3m': '3 Months', '3m-desc': 'Best for serious preparation', '3m-btn': 'Get Started',
-          '9m': '9 Months', '9m-desc': 'Full academic year coverage', '9m-btn': 'Get Started',
-          popular: 'Most Popular'
-        },
-        cta: {
-          title: 'Ready to Ace the Concours?',
-          desc: 'Join CSVT students who are already preparing smarter. Your future in medicine or pharmacy starts here.',
-          btn: 'Create Free Account →'
-        },
-        footer: {
-          platform: 'Platform', resources: 'Resources', legal: 'Legal', contact: 'Contact',
-          signup: 'Sign Up', guide: 'Study Guide', faq: 'FAQ',
-          privacy: 'Privacy Policy', terms: 'Terms of Service', refund: 'Refund Policy',
-          email: 'admin.concours.md@gmail.com', support: 'Support', feedback: 'Feedback',
-          copyright: '© 2026 Concours.md — Made for Lebanese University Students 🇱🇧'
-        }
-      },
-      fr: {
-        nav: { features: 'Fonctionnalités', subjects: 'Matières', pricing: 'Tarifs', login: 'Connexion' },
-        hero: {
-          badge: '🇱🇧 Conçu pour les Étudiants de l\'Université Libanaise',
-          title: 'Réussissez Votre <span>Concours</span> Avec Confiance',
-          subtitle: 'La plateforme QBank ultime pour les étudiants CSVT préparant l\'examen d\'entrée médical de l\'Université Libanaise. Entraînez-vous avec des QCM réels, maîtrisez les équations, et suivez vos progrès.',
-          cta: 'Essai Gratuit →',
-          pricing: 'Voir les Tarifs'
-        },
-        stats: { subjects: 'Matières Principales', courses: 'Cours Couverts', practice: 'Tests d\'Entraînement', languages: 'Langues (EN/FR)' },
-        features: {
-          label: 'Ce Que Nous Offrons',
-          title: 'Tout Ce Qu\'il Vous Faut Pour Réussir',
-          desc: 'Arrêtez de payer des tuteurs chers et des matériaux obsolètes. Notre plateforme vous donne tout en un seul endroit.',
-          qbanks: 'Banques de Questions Complètes',
-          'qbanks-desc': 'Des centaines de QCM en Biologie, Chimie, Physique et Maths — tous adaptés au style du Concours LU.',
-          concours: 'Simulation du Concours',
-          'concours-desc': 'Passez des examens complets qui reflètent le vrai — filières Médecine/Dentisterie ou Pharmacie.',
-          timer: 'Minuteur Intelligent & Mode Tuteur',
-          'timer-desc': 'Entraînez-vous dans les conditions réelles ou apprenez à votre rythme avec le mode tuteur.',
-          progress: 'Suivi des Progrès',
-          'progress-desc': 'Voyez vos scores, identifiez vos faiblesses, et révisez les réponses incorrectes avec des explications détaillées.',
-          notebook: 'Carnet Personnel',
-          'notebook-desc': 'Sauvegardes des notes pour chaque question, organisées par matière et cours. Votre savoir, toujours accessible.',
-          bilingual: 'Bilingue (EN/FR)',
-          'bilingual-desc': 'Support complet en anglais et français — car les questions de l\'LU sont dans les deux langues.'
-        },
-        subjects: {
-          label: 'Matières Couvertes',
-          title: 'Les 4 Matières Principales',
-          desc: 'Chaque cours dont vous avez besoin pour le Concours, organisé et prêt pour la pratique.'
-        },
-        pricing: {
-          label: 'Plans Tarifaires',
-          title: 'Investissez dans Votre Avenir',
-          desc: 'Moins cher qu\'une séance de tutorat privé. Accès illimité à tout.',
-          '1m': '1 Mois', '1m-desc': 'Parfait pour essayer', '1m-btn': 'Commencer',
-          '3m': '3 Mois', '3m-desc': 'Idéal pour une préparation sérieuse', '3m-btn': 'Commencer',
-          '9m': '9 Mois', '9m-desc': 'Couverture de l\'année académique complète', '9m-btn': 'Commencer',
-          popular: 'Le Plus Populaire'
-        },
-        cta: {
-          title: 'Prêt à Réussir le Concours?',
-          desc: 'Rejoignez les étudiants CSVT qui se préparent déjà plus intelligemment. Votre avenir en médecine ou pharmacie commence ici.',
-          btn: 'Créer un Compte Gratuit →'
-        },
-        footer: {
-          platform: 'Plateforme', resources: 'Ressources', legal: 'Mentions Légales', contact: 'Contact',
-          signup: 'Inscription', guide: 'Guide d\'Étude', faq: 'FAQ',
-          privacy: 'Politique de Confidentialité', terms: 'Conditions d\'Utilisation', refund: 'Politique de Remboursement',
-          email: 'admin.concours.md@gmail.com', support: 'Support', feedback: 'Avis',
-          copyright: '© 2026 Concours.md — Conçu pour les Étudiants de l\'Université Libanaise 🇱🇧'
-        }
-      }
-    };
+<script>
+  let currentLang = localStorage.getItem('concoursLandingLang') || 'en';
+  const langToggle = document.getElementById('langToggle');
+  const feedback = document.getElementById('demoFeedback');
 
-    let currentLang = 'en';
+  function applyLanguage() {
+    document.documentElement.lang = currentLang;
+    document.querySelectorAll('[data-en]').forEach(el => {
+      const value = el.dataset[currentLang];
+      if (value !== undefined) el.textContent = value;
+    });
+    document.querySelectorAll('[data-en-html]').forEach(el => {
+      const value = el.dataset[currentLang + 'Html'];
+      if (value !== undefined) el.innerHTML = value;
+    });
+    langToggle.textContent = currentLang === 'en' ? 'FR' : 'EN';
+    langToggle.setAttribute('aria-label', currentLang === 'en' ? 'Passer au français' : 'Switch to English');
+    if (feedback.classList.contains('show')) feedback.textContent = currentLang === 'en'
+      ? 'The recombinant classes are AB and ab: (14 + 16) / 200 = 15%. Every answer in the real QBank includes this kind of explanation.'
+      : 'Les classes recombinées sont AB et ab : (14 + 16) / 200 = 15 %. Chaque réponse de la vraie banque comprend ce type d’explication.';
+  }
 
-    function applyTranslations() {
-      const t = translations[currentLang];
+  langToggle.addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'fr' : 'en';
+    localStorage.setItem('concoursLandingLang', currentLang);
+    applyLanguage();
+  });
 
-      // Nav
-      document.querySelector('[data-nav="features"]').textContent = t.nav.features;
-      document.querySelector('[data-nav="subjects"]').textContent = t.nav.subjects;
-      document.querySelector('[data-nav="pricing"]').textContent = t.nav.pricing;
-      document.querySelector('[data-nav="login"]').textContent = t.nav.login;
+  const nav = document.getElementById('landNav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 20), { passive: true });
+  nav.classList.toggle('scrolled', window.scrollY > 20);
 
-      // Hero
-      document.getElementById('heroBadge').innerHTML = t.hero.badge;
-      document.getElementById('heroTitle').innerHTML = t.hero.title;
-      document.getElementById('heroSubtitle').textContent = t.hero.subtitle;
-      document.getElementById('heroCTA').textContent = t.hero.cta;
-      document.getElementById('heroPricing').textContent = t.hero.pricing;
+  const menuToggle = document.getElementById('menuToggle');
+  const links = document.getElementById('landLinks');
+  menuToggle.addEventListener('click', () => {
+    const open = links.classList.toggle('open');
+    menuToggle.setAttribute('aria-expanded', String(open));
+  });
+  links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    links.classList.remove('open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+  }));
 
-      // Stats
-      document.querySelector('[data-stat="subjects"]').textContent = t.stats.subjects;
-      document.querySelector('[data-stat="courses"]').textContent = t.stats.courses;
-      document.querySelector('[data-stat="practice"]').textContent = t.stats.practice;
-      document.querySelector('[data-stat="languages"]').textContent = t.stats.languages;
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => anchor.addEventListener('click', e => {
+    const target = document.querySelector(anchor.getAttribute('href'));
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
 
-      // Features
-      document.getElementById('featuresLabel').textContent = t.features.label;
-      document.getElementById('featuresTitle').textContent = t.features.title;
-      document.getElementById('featuresDesc').textContent = t.features.desc;
-      document.querySelector('[data-feature="qbanks"]').textContent = t.features.qbanks;
-      document.querySelector('[data-feature="qbanks-desc"]').textContent = t.features['qbanks-desc'];
-      document.querySelector('[data-feature="concours"]').textContent = t.features.concours;
-      document.querySelector('[data-feature="concours-desc"]').textContent = t.features['concours-desc'];
-      document.querySelector('[data-feature="timer"]').textContent = t.features.timer;
-      document.querySelector('[data-feature="timer-desc"]').textContent = t.features['timer-desc'];
-      document.querySelector('[data-feature="progress"]').textContent = t.features.progress;
-      document.querySelector('[data-feature="progress-desc"]').textContent = t.features['progress-desc'];
-      document.querySelector('[data-feature="notebook"]').textContent = t.features.notebook;
-      document.querySelector('[data-feature="notebook-desc"]').textContent = t.features['notebook-desc'];
-      document.querySelector('[data-feature="bilingual"]').textContent = t.features.bilingual;
-      document.querySelector('[data-feature="bilingual-desc"]').textContent = t.features['bilingual-desc'];
-
-      // Subjects
-      document.getElementById('subjectsLabel').textContent = t.subjects.label;
-      document.getElementById('subjectsTitle').textContent = t.subjects.title;
-      document.getElementById('subjectsDesc').textContent = t.subjects.desc;
-
-      // Pricing
-      document.getElementById('pricingLabel').textContent = t.pricing.label;
-      document.getElementById('pricingTitle').textContent = t.pricing.title;
-      document.getElementById('pricingDesc').textContent = t.pricing.desc;
-      document.querySelector('[data-plan="1m"]').textContent = t.pricing['1m'];
-      document.querySelector('[data-plan="1m-desc"]').textContent = t.pricing['1m-desc'];
-      document.querySelector('[data-plan="1m-btn"]').textContent = t.pricing['1m-btn'];
-      document.querySelector('[data-plan="3m"]').textContent = t.pricing['3m'];
-      document.querySelector('[data-plan="3m-desc"]').textContent = t.pricing['3m-desc'];
-      document.querySelector('[data-plan="3m-btn"]').textContent = t.pricing['3m-btn'];
-      document.querySelector('[data-plan="9m"]').textContent = t.pricing['9m'];
-      document.querySelector('[data-plan="9m-desc"]').textContent = t.pricing['9m-desc'];
-      document.querySelector('[data-plan="9m-btn"]').textContent = t.pricing['9m-btn'];
-      document.querySelector('[data-popular="badge"]').textContent = t.pricing.popular;
-
-      // CTA
-      document.getElementById('ctaTitle').textContent = t.cta.title;
-      document.getElementById('ctaDesc').textContent = t.cta.desc;
-      document.getElementById('ctaBtn').textContent = t.cta.btn;
-
-      // Footer
-      document.querySelector('[data-footer="platform"]').textContent = t.footer.platform;
-      document.querySelector('[data-footer="resources"]').textContent = t.footer.resources;
-      document.querySelector('[data-footer="legal"]').textContent = t.footer.legal;
-      document.querySelector('[data-footer="contact"]').textContent = t.footer.contact;
-      document.querySelector('[data-footer="login"]').textContent = t.footer.platform;
-      document.querySelector('[data-footer="signup"]').textContent = t.footer.signup;
-      document.querySelector('[data-footer="pricing"]').textContent = t.footer.pricing;
-      document.querySelector('[data-footer="features"]').textContent = t.footer.platform;
-      document.querySelector('[data-footer="subjects"]').textContent = t.footer.subjects;
-      document.querySelector('[data-footer="concours"]').textContent = t.footer.concours;
-      document.querySelector('[data-footer="guide"]').textContent = t.footer.guide;
-      document.querySelector('[data-footer="faq"]').textContent = t.footer.faq;
-      document.querySelector('[data-footer="privacy"]').textContent = t.footer.privacy;
-      document.querySelector('[data-footer="terms"]').textContent = t.footer.terms;
-      document.querySelector('[data-footer="refund"]').textContent = t.footer.refund;
-      document.querySelector('[data-footer="email"]').textContent = t.footer.email;
-      document.querySelector('[data-footer="support"]').textContent = t.footer.support;
-      document.querySelector('[data-footer="feedback"]').textContent = t.footer.feedback;
-      document.querySelector('[data-footer="copyright"]').textContent = t.footer.copyright;
+  document.querySelectorAll('.demo-option').forEach(option => option.addEventListener('click', () => {
+    document.querySelectorAll('.demo-option').forEach(x => x.classList.remove('correct', 'wrong'));
+    if (option.dataset.answer === 'correct') {
+      option.classList.add('correct');
+      feedback.textContent = currentLang === 'en'
+        ? 'Correct! The recombinant classes are AB and ab: (14 + 16) / 200 = 15%. Every answer in the real QBank includes this kind of explanation.'
+        : 'Correct ! Les classes recombinées sont AB et ab : (14 + 16) / 200 = 15 %. Chaque réponse de la vraie banque comprend ce type d’explication.';
+    } else {
+      option.classList.add('wrong');
+      feedback.textContent = currentLang === 'en'
+        ? 'Not quite. Look for the two least frequent classes, then divide their total by all offspring. Try again.'
+        : 'Pas tout à fait. Repérez les deux classes les moins fréquentes, puis divisez leur total par tous les descendants. Réessayez.';
     }
+    feedback.classList.add('show');
+  }));
 
-    // Language toggle
-    document.getElementById('langToggle').addEventListener('click', function() {
-      currentLang = currentLang === 'en' ? 'fr' : 'en';
-      this.textContent = currentLang === 'en' ? 'FR' : 'EN';
-      applyTranslations();
-    });
-
-    // Navbar scroll effect
-    window.addEventListener('scroll', function() {
-      const nav = document.getElementById('navbar');
-      if (window.scrollY > 50) {
-        nav.classList.add('scrolled');
-      } else {
-        nav.classList.remove('scrolled');
-      }
-    });
-
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
-      anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
-    });
-  </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1e3868339b9e30e',t:'MTc4NDU2Njg2MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+  applyLanguage();
+</script>
+</body>
 </html>

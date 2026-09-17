@@ -1,0 +1,12 @@
+Concours.md production build
+Version: v13-duolingo-rebrand
+Built: 2026-09-17 Asia/Beirut
+
+Core flow rebrand:
+- Vibrant bilingual landing page
+- Playful login and two-step signup
+- Gamified responsive dashboard with live question counts
+- Polished practice, navigator, submit, and results experience
+
+Preserves Appwrite Auth, Appwrite Database, admin tools, bilingual content,
+course/chapter filtering, timers, MathJax, figures, grouped questions, and matching tables.

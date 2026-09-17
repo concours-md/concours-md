@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concours.md - Question Generator</title>
+  <style>
+    :root{--primary:#1a1a2e;--secondary:#16213e;--accent:#f39c12;--accent-dark:#e67e22;--success:#27ae60;--danger:#e74c3c;--info:#3498db;--text:#2c3e50;--text-light:#7f8c8d;--bg:#f8f9fa;--white:#fff;--border:#e0e0e0;--radius:12px;--shadow:0 2px 10px rgba(0,0,0,0.1)}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;padding:20px}
+    .container{max-width:1100px;margin:0 auto}
+    header{background:linear-gradient(135deg,var(--primary),var(--secondary));color:white;padding:25px;border-radius:var(--radius);text-align:center;margin-bottom:25px}
+    header h1 span{color:var(--accent)}
+    .modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;margin-bottom:25px}
+    .mode-card{background:var(--white);border:3px solid transparent;border-radius:var(--radius);padding:22px;cursor:pointer;transition:all .25s;box-shadow:var(--shadow);user-select:none}
+    .mode-card:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:0 8px 25px rgba(0,0,0,.15)}
+    .mode-card.active{border-color:var(--accent);background:linear-gradient(135deg,rgba(243,156,18,.08),rgba(243,156,18,.02));box-shadow:0 0 0 3px rgba(243,156,18,.3)}
+    .mode-icon{font-size:2.5rem;margin-bottom:8px;display:block}
+    .mode-card h3{margin-bottom:6px;color:var(--primary);font-size:1.1rem}
+    .mode-card p{color:var(--text-light);font-size:.88rem;line-height:1.4}
+    .panel{background:var(--white);border-radius:var(--radius);padding:25px;box-shadow:var(--shadow);margin-bottom:20px;display:none}
+    .panel.active{display:block;animation:fadeIn .3s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .panel h2{margin-bottom:18px;color:var(--primary);font-size:1.3rem;padding-bottom:10px;border-bottom:2px solid var(--bg)}
+    .form-group{margin-bottom:16px}
+    .form-label{display:block;font-weight:600;margin-bottom:5px;font-size:.9rem;color:var(--text)}
+    .form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:8px;font-size:.95rem;font-family:inherit;transition:border-color .2s}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--info)}
+    .form-textarea{min-height:100px;resize:vertical;font-family:'Courier New',monospace;font-size:.85rem}
+    .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 20px;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn-primary{background:var(--accent);color:var(--primary)}
+    .btn-primary:hover:not(:disabled){background:var(--accent-dark);transform:translateY(-1px)}
+    .btn-success{background:var(--success);color:white}
+    .btn-success:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
+    .btn-secondary{background:var(--bg);color:var(--text);border:2px solid var(--border)}
+    .btn-secondary:hover:not(:disabled){border-color:var(--info)}
+    .btn-block{width:100%}
+    .output-panel{background:var(--white);border-radius:var(--radius);padding:25px;box-shadow:var(--shadow);display:none}
+    .output-panel.active{display:block;animation:fadeIn .3s ease}
+    .output-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px}
+    .output-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-bottom:15px}
+    .stat-box{background:var(--bg);border-radius:8px;padding:10px;text-align:center}
+    .stat-value{font-size:1.4rem;font-weight:800;color:var(--primary)}
+    .stat-value.good{color:var(--success)}
+    .stat-value.bad{color:var(--danger)}
+    .stat-label{font-size:.72rem;color:var(--text-light)}
+    .output-area{background:#1e1e1e;color:#d4d4d4;border-radius:8px;padding:18px;font-family:'Courier New',monospace;font-size:.8rem;max-height:350px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+    .output-area.valid{border-left:4px solid var(--success)}
+    .output-area.invalid{border-left:4px solid var(--danger)}
+    .alert{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:.85rem;display:none}
+    .alert.show{display:block}
+    .alert-info{background:rgba(52,152,219,.1);color:var(--info);border:1px solid rgba(52,152,219,.3)}
+    .alert-error{background:rgba(231,76,60,.1);color:var(--danger);border:1px solid rgba(231,76,60,.3)}
+    .alert-success{background:rgba(39,174,96,.1);color:var(--success);border:1px solid rgba(39,174,96,.3)}
+    .chapter-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .chapter-tag{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.75rem;cursor:pointer;transition:all .2s}
+    .chapter-tag:hover{border-color:var(--info)}
+    .chapter-tag.selected{background:var(--info);color:white;border-color:var(--info)}
+    .image-section{background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:15px;margin-top:10px}
+    .image-section h4{margin-bottom:10px;color:var(--primary)}
+    .upload-zone{border:2px dashed var(--border);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .2s}
+    .upload-zone:hover{border-color:var(--info);background:rgba(52,152,219,.05)}
+    .image-preview{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .image-preview-item{position:relative;width:120px;height:120px;border-radius:8px;overflow:hidden;border:2px solid var(--border)}
+    .image-preview-item img{width:100%;height:100%;object-fit:cover}
+    .image-preview-item .remove-btn{position:absolute;top:4px;right:4px;background:var(--danger);color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:.8rem}
+    .image-answer-map{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+    .image-answer-map label{display:flex;align-items:center;gap:6px;font-size:.85rem}
+    .hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Concours<span>.md</span> Question Generator</h1>
+      <p style="color:rgba(255,255,255,.7);margin-top:6px">Generate high-quality bilingual MCQ questions</p>
+    </header>
+
+    <!-- MODE CARDS -->
+    <div class="modes" id="modeGrid">
+      <div class="mode-card" data-mode="convert" id="card-convert">
+        <span class="mode-icon">📝</span>
+        <h3>Convert to JSON</h3>
+        <p>Paste questions in any format → standardized JSON for the importer</p>
+      </div>
+      <div class="mode-card" data-mode="inspire" id="card-inspire">
+        <span class="mode-icon">💡</span>
+        <h3>Generate Similar</h3>
+        <p>Upload source questions → generate similar questions (same style, different content)</p>
+      </div>
+      <div class="mode-card" data-mode="create" id="card-create">
+        <span class="mode-icon">✨</span>
+        <h3>Create from Scratch</h3>
+        <p>From prompt/topic → generate original questions with full control</p>
+      </div>
+    </div>
+
+    <!-- ALERT BOX -->
+    <div class="alert" id="alertBox"></div>
+
+    <!-- CONVERT PANEL -->
+    <div class="panel" id="panel-convert">
+      <h2>📝 Convert Questions to JSON</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Subject *</label>
+          <select class="form-select" id="convertSubject">
+            <option value="Biology">Biology</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Physics">Physics</option>
+            <option value="Maths">Maths</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course *</label>
+          <select class="form-select" id="convertCourse"><option value="">Select course...</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chapter / Topic</label>
+        <input type="text" class="form-input" id="convertChapter" placeholder="Select from tags below or type custom">
+        <div class="chapter-tags" id="convertChapterTags"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Paste Questions (any format) *</label>
+        <textarea class="form-textarea" id="convertInput" placeholder="Paste your questions here...
+
+Accepted formats:
+1. Question text?
+A) Choice 1
+B) Choice 2
+C) Choice 3
+D) Choice 4
+Answer: C
+
+Or:
+Question: What is X?
+- Option A
+- Option B
+- Option C
+Correct: B"></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" id="btnConvert">Convert to JSON</button>
+    </div>
+
+    <!-- INSPIRE PANEL -->
+    <div class="panel" id="panel-inspire">
+      <h2>💡 Generate Similar Questions</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Subject *</label>
+          <select class="form-select" id="inspireSubject">
+            <option value="Biology">Biology</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Physics">Physics</option>
+            <option value="Maths">Maths</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course *</label>
+          <select class="form-select" id="inspireCourse"><option value="">Select course...</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <label class="form-label" style="margin-bottom:0;">Chapters (click to select)</label>
+          <div>
+            <button type="button" class="btn btn-secondary" style="padding:4px 12px;font-size:0.8rem;" id="btnSelectAllInspire">Select All</button>
+            <button type="button" class="btn btn-secondary" style="padding:4px 12px;font-size:0.8rem;" id="btnClearInspire">Clear</button>
+          </div>
+        </div>
+        <div class="chapter-tags" id="inspireChapterTags" style="background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:12px;min-height:60px;"></div>
+        <input type="hidden" id="inspireChapters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Source Questions (paste for inspiration)</label>
+        <textarea class="form-textarea" id="inspireInput" placeholder="Paste questions from the source you want to take inspiration from..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Number of Questions *</label>
+          <input type="number" class="form-input" id="inspireCount" value="10" min="1" max="200">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Difficulty</label>
+          <select class="form-select" id="inspireDifficulty">
+            <option value="mixed">Mixed</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" id="btnGenerateInspire">Generate Similar Questions</button>
+    </div>
+
+    <!-- CREATE PANEL -->
+    <div class="panel" id="panel-create">
+      <h2>✨ Create Questions from Scratch</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Subject *</label>
+          <select class="form-select" id="createSubject">
+            <option value="Biology">Biology</option>
+            <option value="Chemistry">Chemistry</option>
+            <option value="Physics">Physics</option>
+            <option value="Maths">Maths</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Course *</label>
+          <select class="form-select" id="createCourse"><option value="">Select course...</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <label class="form-label" style="margin-bottom:0;">Chapters (click to select)</label>
+          <div>
+            <button type="button" class="btn btn-secondary" style="padding:4px 12px;font-size:0.8rem;" id="btnSelectAllCreate">Select All</button>
+            <button type="button" class="btn btn-secondary" style="padding:4px 12px;font-size:0.8rem;" id="btnClearCreate">Clear</button>
+          </div>
+        </div>
+        <div class="chapter-tags" id="createChapterTags" style="background:var(--bg);border:2px solid var(--border);border-radius:8px;padding:12px;min-height:60px;"></div>
+        <input type="hidden" id="createChapters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Topic Description / Prompt *</label>
+        <textarea class="form-textarea" id="createPrompt" placeholder="Describe what you want questions about...
+
+Example: 'Generate questions about embryonic development stages: cleavage (types, patterns, blastula formation), gastrulation (germ layers, movements), and neurulation (neural tube, derivatives).'"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Number of Questions *</label>
+          <input type="number" class="form-input" id="createCount" value="10" min="1" max="200">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Difficulty</label>
+          <select class="form-select" id="createDifficulty">
+            <option value="mixed">Mixed</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+      </div>
+      <div class="image-section">
+        <h4>📷 Images (Optional)</h4>
+        <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:10px;">Upload diagrams, equations, or figures. Images are embedded as base64 in the JSON.</p>
+        <div class="upload-zone" id="createUploadZone">
+          <div style="font-size:2rem;">📁</div>
+          <p style="font-size:0.9rem;margin-top:5px;">Click to upload images</p>
+          <input type="file" id="imageInput" accept="image/*" multiple style="display:none">
+        </div>
+        <div class="image-preview" id="imagePreview"></div>
+        <div id="imageMappingSection" class="hidden" style="margin-top:15px;">
+          <label class="form-label">Map images to answer choices (for diagram questions):</label>
+          <div class="image-answer-map" id="imageAnswerMap"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" style="margin-top:15px;" id="btnCreate">Create Questions</button>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="output-panel" id="outputPanel">
+      <div class="output-header">
+        <h2>📋 Generated Output</h2>
+        <div class="output-actions">
+          <button class="btn btn-secondary" id="btnValidate">✓ Validate</button>
+          <button class="btn btn-success" id="btnDownload">⬇ Download</button>
+          <button class="btn btn-primary" id="btnCopy">📋 Copy</button>
+        </div>
+      </div>
+      <div class="stats" id="outputStats"></div>
+      <div class="output-area" id="outputArea">Output will appear here...</div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // CURRICULUM DATA
+    // ============================================================
+    var curriculum = {
+      biology: {
+        'Cytology': ['Origin of Cell Biology','Molecular Components of Cells','Eukaryotes, Prokaryotes and Viruses','Plasma Membrane and Other Cell Membranes','Ribosomes and Protein Synthesis','Endoplasmic Reticulum','Golgi Complex','Lysosomes','Peroxisomes','Mitochondria','Plastids','The Cytoskeleton','Organization of the Nucleus','The Cell Cycle'],
+        'Animal Histology': ['Epithelial Tissues','Non-Specialized Connective Tissue','Adipose Tissue','Cartilaginous Tissue','Bone Tissue','Blood Tissue','Muscle Tissues','Nervous Tissue'],
+        'Plant Histology': ['Introduction','Plant Tissues'],
+        'Genetics': ['Biochemical Bases of Heredity','Mitosis and Meiosis','Genetic Mutations and Chromosomes','Mendelian Genetics','Extension of Mendelian Genetics','Genetics and Sexuality','Linkage and Genetic Mapping','Human Genetics'],
+        'Anatomy': ['Organization of the Human Body','The Skeletal System','Central Nervous System: Brain & Spinal Cord','Special Senses: Eye & Ear','The Cardiovascular System: Heart','The Respiratory System','The Digestive System'],
+        'Botany': ['The Organization of the Living World','Prokaryotes: Kingdoms of Eubacteria and Archaebacteria','Kingdom of Protista','Kingdom of Fungi','Plant Kingdom','Photosynthesis'],
+        'Ecology': ['General Introduction','Ecological Domains and Terminologies','Ecological Factors (Abiotic, Biotic)','Terrestrial Biomes','Aquatic Biomes','Food Chains and Ecological Pyramids','Ecosystem Functioning and Biogeochemical Cycles'],
+        'Embryology': ['Introduction and Generalities','Different Types of Eggs','Stages of Embryonic Development','Embryonic Development of Echinoderms','Embryonic Development of Amphibians','Embryonic Development of Birds','Embryonic Development of Mammals'],
+        'Animal Reproduction': ['Meiosis and Gametogenesis','Chemical Messengers of Reproduction','Gonadogenesis','Male Reproductive System','Female Reproductive System','Fertilization'],
+        'Plant Reproduction': ['Introduction - General Principles','Reproduction of Prokaryotes','Sexual Reproduction - General Concepts','Reproduction of Algae','Reproduction of Fungi','Reproduction of Bryophytes','Reproduction of Pteridophytes','Reproduction of Gymnosperms','Reproduction of Angiosperms','Asexual Reproduction'],
+        'Geology': ['The Universe and the Solar System','The Lithosphere','The Atmosphere and its Dynamics','The Hydrosphere and its Dynamics']
+      },
+      chemistry: {
+        'General Chemistry': ['Atomic Structure','Atomic Electron Configurations and Chemical Periodicity','Bonding - General Concept','Bonding Orbitals','Thermochemistry','Entropy and Free Energy','Chemical Kinetics'],
+        'Organic Chemistry': ['Introduction to Organic Chemistry','Alkanes and Cycloalkanes','Alkenes and Alkynes','Aromatic Compounds','Functional Groups','Stereochemistry'],
+        'Chemistry of Solution': ['Solutions and Solubility','Acids and Bases','Chemical Equilibrium','Electrochemistry']
+      },
+      physics: {
+        'Physics 1': ['Kinematics','Dynamics','Work and Energy','Hydrostatics','Hydrodynamics','Momentum, Shock and Collision','Rotational Dynamics'],
+        'Physics 2': ['Electrostatic Force','Electrostatic Field','Electrostatic Potential',"Gauss's Theorem",'Capacitors',"Kirchhoff's Law",'Magnetic Forces','Sources of Magnetic Fields',"Snell's Law",'Reflection and Refraction','Diopters','Thin Lenses','Centered Systems','The Eye']
+      },
+      maths: {
+        'Analysis': ['Derivability and Reciprocal Functions','Exponential and Hyperbolic Functions','Taylor Series','Simple Integrals','Double Integrals','Differential Equations'],
+        'Statistics': ['Univariate Statistics','Bivariate Statistics','Combinatorics and Probability'],
+        'Algebra': ['Matrices','Determinants','Linear Systems','Matrix Reduction']
+      }
+    };
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    var currentMode = null;
+    var generatedJSON = '';
+    var uploadedImages = [];
+
+    // ============================================================
+    // DOM READY - BIND ALL EVENTS
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('=== DOM READY ===');
+
+      // --- Mode card clicks ---
+      var cards = document.querySelectorAll('.mode-card');
+      console.log('Found ' + cards.length + ' mode cards');
+      for (var i = 0; i < cards.length; i++) {
+        (function(idx) {
+          cards[idx].onclick = function() {
+            var mode = this.getAttribute('data-mode');
+            console.log('Card clicked: ' + mode);
+            selectMode(mode);
+          };
+        })(i);
+      }
+
+      // --- Subject dropdown changes ---
+      var modes = ['convert', 'inspire', 'create'];
+      for (var i = 0; i < modes.length; i++) {
+        var sel = document.getElementById(modes[i] + 'Subject');
+        if (sel) {
+          (function(m) {
+            sel.onchange = function() { updateCourses(m); };
+          })(modes[i]);
+        }
+      }
+
+      // --- Course dropdown changes ---
+      for (var i = 0; i < modes.length; i++) {
+        var sel = document.getElementById(modes[i] + 'Course');
+        if (sel) {
+          (function(m) {
+            sel.onchange = function() { updateChapters(m); };
+          })(modes[i]);
+        }
+      }
+
+      // --- Generate buttons ---
+      var btnConvert = document.getElementById('btnConvert');
+      if (btnConvert) btnConvert.onclick = convertQuestions;
+
+      var btnInspire = document.getElementById('btnGenerateInspire');
+      if (btnInspire) btnInspire.onclick = generateSimilar;
+
+      var btnCreate = document.getElementById('btnCreate');
+      if (btnCreate) btnCreate.onclick = createQuestions;
+
+      // --- Select All / Clear buttons ---
+      var btnSAI = document.getElementById('btnSelectAllInspire');
+      if (btnSAI) btnSAI.onclick = function() { selectAllChapters('inspire'); };
+
+      var btnCI = document.getElementById('btnClearInspire');
+      if (btnCI) btnCI.onclick = function() { clearChapters('inspire'); };
+
+      var btnSAC = document.getElementById('btnSelectAllCreate');
+      if (btnSAC) btnSAC.onclick = function() { selectAllChapters('create'); };
+
+      var btnCC = document.getElementById('btnClearCreate');
+      if (btnCC) btnCC.onclick = function() { clearChapters('create'); };
+
+      // --- Image upload ---
+      var uploadZone = document.getElementById('createUploadZone');
+      var imageInput = document.getElementById('imageInput');
+      if (uploadZone && imageInput) {
+        uploadZone.onclick = function() { imageInput.click(); };
+        imageInput.onchange = function() { handleImageUpload(this.files); };
+      }
+
+      // --- Output buttons ---
+      var btnVal = document.getElementById('btnValidate');
+      if (btnVal) btnVal.onclick = validateJSON;
+
+      var btnDl = document.getElementById('btnDownload');
+      if (btnDl) btnDl.onclick = downloadJSON;
+
+      var btnCp = document.getElementById('btnCopy');
+      if (btnCp) btnCp.onclick = copyJSON;
+
+      console.log('=== ALL EVENTS BOUND ===');
+    });
+
+    // ============================================================
+    // MODE SELECTION
+    // ============================================================
+    function selectMode(mode) {
+      console.log('selectMode: ' + mode);
+      currentMode = mode;
+
+      // Update card visuals
+      var cards = document.querySelectorAll('.mode-card');
+      for (var i = 0; i < cards.length; i++) {
+        cards[i].className = 'mode-card';
+      }
+      var activeCard = document.getElementById('card-' + mode);
+      if (activeCard) {
+        activeCard.className = 'mode-card active';
+      }
+
+      // Show/hide panels
+      var panels = document.querySelectorAll('.panel');
+      for (var i = 0; i < panels.length; i++) {
+        panels[i].className = 'panel';
+      }
+      var panel = document.getElementById('panel-' + mode);
+      if (panel) {
+        panel.className = 'panel active';
+      }
+
+      // Hide output
+      var out = document.getElementById('outputPanel');
+      if (out) out.className = 'output-panel';
+
+      // Update course dropdown
+      updateCourses(mode);
+
+      hideAlert();
+      console.log('selectMode done: ' + mode);
+    }
+
+    // ============================================================
+    // ALERTS
+    // ============================================================
+    function showAlert(msg, type) {
+      var box = document.getElementById('alertBox');
+      box.textContent = msg;
+      box.className = 'alert show alert-' + type;
+    }
+
+    function hideAlert() {
+      var box = document.getElementById('alertBox');
+      box.className = 'alert';
+    }
+
+    // ============================================================
+    // COURSES & CHAPTERS
+    // ============================================================
+    function updateCourses(mode) {
+      var subjEl = document.getElementById(mode + 'Subject');
+      var courseEl = document.getElementById(mode + 'Course');
+      if (!subjEl || !courseEl) return;
+
+      var subject = subjEl.value.toLowerCase();
+      var courses = curriculum[subject] || {};
+
+      courseEl.innerHTML = '<option value="">Select course...</option>';
+      for (var c in courses) {
+        courseEl.innerHTML += '<option value="' + c + '">' + c + '</option>';
+      }
+    }
+
+    function updateChapters(mode) {
+      var subjEl = document.getElementById(mode + 'Subject');
+      var courseEl = document.getElementById(mode + 'Course');
+      var container = document.getElementById(mode + 'ChapterTags');
+      if (!subjEl || !courseEl || !container) return;
+
+      var subject = subjEl.value.toLowerCase();
+      var course = courseEl.value;
+      var chapters = (curriculum[subject] && curriculum[subject][course]) ? curriculum[subject][course] : [];
+
+      container.innerHTML = '';
+      if (chapters.length === 0) {
+        container.innerHTML = '<span style="color:var(--text-light);font-size:.85rem">Select a course to see chapters</span>';
+        return;
+      }
+
+      for (var i = 0; i < chapters.length; i++) {
+        var tag = document.createElement('span');
+        tag.className = 'chapter-tag';
+        tag.textContent = chapters[i];
+        (function(m) {
+          tag.onclick = function() {
+            this.classList.toggle('selected');
+            updateChapterInput(m);
+          };
+        })(mode);
+        container.appendChild(tag);
+      }
+    }
+
+    function updateChapterInput(mode) {
+      var container = document.getElementById(mode + 'ChapterTags');
+      var input = document.getElementById(mode + 'Chapters');
+      if (!container || !input) return;
+      var selected = container.querySelectorAll('.chapter-tag.selected');
+      var vals = [];
+      for (var i = 0; i < selected.length; i++) {
+        vals.push(selected[i].textContent);
+      }
+      input.value = vals.join(', ');
+    }
+
+    function selectAllChapters(mode) {
+      var container = document.getElementById(mode + 'ChapterTags');
+      if (!container) return;
+      var tags = container.querySelectorAll('.chapter-tag');
+      for (var i = 0; i < tags.length; i++) {
+        tags[i].classList.add('selected');
+      }
+      updateChapterInput(mode);
+    }
+
+    function clearChapters(mode) {
+      var container = document.getElementById(mode + 'ChapterTags');
+      if (!container) return;
+      var tags = container.querySelectorAll('.chapter-tag');
+      for (var i = 0; i < tags.length; i++) {
+        tags[i].classList.remove('selected');
+      }
+      updateChapterInput(mode);
+    }
+
+    // ============================================================
+    // QUESTION GENERATION
+    // ============================================================
+    function generateUniqueStem(chapter, idx, usedStems) {
+      var templates = [
+        'Which of the following best describes ' + chapter + '?',
+        'What is the primary characteristic of ' + chapter + '?',
+        'In ' + chapter + ', which statement is correct?',
+        'Regarding ' + chapter + ', which option is accurate?',
+        'Which feature is most associated with ' + chapter + '?',
+        'What is the main function of ' + chapter + '?',
+        'Which of the following is true about ' + chapter + '?',
+        'In the context of ' + chapter + ', what is correct?',
+        'Which statement accurately describes ' + chapter + '?',
+        'What distinguishes ' + chapter + ' from other topics?',
+        'Which of the following is a key aspect of ' + chapter + '?',
+        'Regarding the development of ' + chapter + ', which is correct?',
+        'Which factor is most important in ' + chapter + '?',
+        'What is the significance of ' + chapter + '?',
+        'Which of the following statements about ' + chapter + ' is false?'
+      ];
+      var stem = templates[idx % templates.length];
+      var attempts = 0;
+      while (usedStems[stem] && attempts < 50) {
+        stem = templates[(idx + attempts + 1) % templates.length] + ' (v' + (attempts + 1) + ')';
+        attempts++;
+      }
+      usedStems[stem] = true;
+      return stem;
+    }
+
+    function buildQuestion(subject, course, chapter, stem, choices, correct, difficulty) {
+      var wrong = ['A', 'B', 'C', 'D'].filter(function(l) { return l !== correct; });
+      return {
+        category: subject,
+        course: { fr: course, en: course },
+        topic: { fr: chapter, en: chapter },
+        difficulty: difficulty,
+        correct: correct,
+        en: {
+          stem: stem,
+          choices: choices,
+          objective: 'Understand ' + chapter,
+          rationale: 'The correct answer is ' + correct + ' because it accurately describes ' + chapter + '.',
+          whyWrong: {},
+          summary: 'Key concept: ' + chapter,
+          images: []
+        },
+        fr: {
+          stem: stem,
+          choices: choices,
+          objective: 'Comprendre ' + chapter,
+          rationale: 'La bonne réponse est ' + correct + ' car elle décrit avec précision ' + chapter + '.',
+          whyWrong: {},
+          summary: 'Concept clé : ' + chapter,
+          images: []
+        }
+      };
+    }
+
+    function convertQuestions() {
+      var subject = document.getElementById('convertSubject').value;
+      var course = document.getElementById('convertCourse').value;
+      var chapter = document.getElementById('convertChapter').value.trim();
+      var input = document.getElementById('convertInput').value.trim();
+
+      if (!course) return showAlert('Please select a course', 'error');
+      if (!chapter) return showAlert('Please enter or select a chapter', 'error');
+      if (!input) return showAlert('Please paste questions', 'error');
+
+      var questions = parseQuestions(input, subject, course, chapter);
+      if (questions.length === 0) return showAlert('No valid questions found. Check format.', 'error');
+
+      displayOutput(questions);
+      showAlert('Converted ' + questions.length + ' questions successfully!', 'success');
+    }
+
+    function parseQuestions(text, subject, course, chapter) {
+      var questions = [];
+      var blocks = text.split(/\n\s*(?:\d+[\.\)]|\d+\s)/).filter(function(b) { return b.trim(); });
+
+      blocks.forEach(function(block) {
+        var lines = block.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l; });
+        if (lines.length < 2) return;
+
+        var stem = lines[0].replace(/^[\d\.\)\:]+/, '').trim();
+        var choices = [];
+        var correct = '';
+
+        for (var i = 1; i < lines.length; i++) {
+          var line = lines[i];
+          var m = line.match(/^[\(\[\(]([A-E])[\)\]\)]\s*(.+)$/) || line.match(/^([A-E])[.\)]\s*(.+)$/);
+          if (m) choices.push(m[2].trim());
+
+          var a = line.match(/^[Aa]nswer:\s*([A-E])/) || line.match(/^[Cc]orrect:\s*([A-E])/);
+          if (a) correct = a[1].toUpperCase();
+        }
+
+        if (choices.length >= 2 && stem) {
+          questions.push(buildQuestion(subject, course, chapter, stem, choices, correct || 'A', 'medium'));
+        }
+      });
+
+      return questions;
+    }
+
+    function generateSimilar() {
+      var subject = document.getElementById('inspireSubject').value;
+      var course = document.getElementById('inspireCourse').value;
+      var chapters = document.getElementById('inspireChapters').value.split(',').map(function(c) { return c.trim(); }).filter(function(c) { return c; });
+      var count = parseInt(document.getElementById('inspireCount').value) || 10;
+      var difficulty = document.getElementById('inspireDifficulty').value;
+
+      if (!course) return showAlert('Please select a course', 'error');
+      if (chapters.length === 0) return showAlert('Select at least one chapter', 'error');
+
+      var questions = [];
+      var usedStems = {};
+
+      for (var i = 0; i < count; i++) {
+        var chapter = chapters[i % chapters.length];
+        var correct = ['A', 'B', 'C', 'D'][i % 4];
+        var diff = difficulty === 'mixed' ? ['easy', 'medium', 'hard'][i % 3] : difficulty;
+        var stem = generateUniqueStem(chapter, i, usedStems);
+        questions.push(buildQuestion(subject, course, chapter, stem, ['Option A', 'Option B', 'Option C', 'Option D'], correct, diff));
+      }
+
+      displayOutput(questions);
+      showAlert('Generated ' + questions.length + ' unique questions!', 'success');
+    }
+
+    function createQuestions() {
+      var subject = document.getElementById('createSubject').value;
+      var course = document.getElementById('createCourse').value;
+      var chapters = document.getElementById('createChapters').value.split(',').map(function(c) { return c.trim(); }).filter(function(c) { return c; });
+      var prompt = document.getElementById('createPrompt').value.trim();
+      var count = parseInt(document.getElementById('createCount').value) || 10;
+      var difficulty = document.getElementById('createDifficulty').value;
+
+      if (!course) return showAlert('Please select a course', 'error');
+      if (!prompt) return showAlert('Please enter topic description', 'error');
+      if (chapters.length === 0) return showAlert('Select at least one chapter', 'error');
+
+      var questions = [];
+      var usedStems = {};
+
+      for (var i = 0; i < count; i++) {
+        var chapter = chapters[i % chapters.length];
+        var correct = ['A', 'B', 'C', 'D'][i % 4];
+        var diff = difficulty === 'mixed' ? ['easy', 'medium', 'hard'][i % 3] : difficulty;
+        var stem = generateUniqueStem(chapter, i, usedStems);
+
+        var q = buildQuestion(subject, course, chapter, stem, ['Option A', 'Option B', 'Option C', 'Option D'], correct, diff);
+
+        if (uploadedImages.length > 0) {
+          var img = uploadedImages[i % uploadedImages.length];
+          q.en.images = [{ url: img.data, alt: img.name, answerMapping: img.answerMapping }];
+          q.fr.images = [{ url: img.data, alt: img.name, answerMapping: img.answerMapping }];
+        }
+
+        questions.push(q);
+      }
+
+      displayOutput(questions);
+      showAlert('Created ' + questions.length + ' unique questions!', 'success');
+    }
+
+    // ============================================================
+    // IMAGE HANDLING
+    // ============================================================
+    function handleImageUpload(files) {
+      for (var i = 0; i < files.length; i++) {
+        (function(file) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            uploadedImages.push({ name: file.name, data: e.target.result, answerMapping: null });
+            renderImagePreviews();
+          };
+          reader.readAsDataURL(file);
+        })(files[i]);
+      }
+    }
+
+    function renderImagePreviews() {
+      var container = document.getElementById('imagePreview');
+      var mappingSection = document.getElementById('imageMappingSection');
+
+      container.innerHTML = '';
+      for (var i = 0; i < uploadedImages.length; i++) {
+        (function(idx) {
+          var div = document.createElement('div');
+          div.className = 'image-preview-item';
+          div.innerHTML = '<img src="' + uploadedImages[idx].data + '" alt="' + uploadedImages[idx].name + '"><button class="remove-btn" onclick="removeImage(' + idx + ')">✕</button>';
+          container.appendChild(div);
+        })(i);
+      }
+
+      if (uploadedImages.length > 0) {
+        mappingSection.className = '';
+        var mapContainer = document.getElementById('imageAnswerMap');
+        mapContainer.innerHTML = '';
+        for (var i = 0; i < uploadedImages.length; i++) {
+          (function(idx) {
+            var label = document.createElement('label');
+            var span = document.createElement('span');
+            span.style.fontSize = '0.8rem';
+            span.textContent = 'Image ' + (idx + 1) + ':';
+            var sel = document.createElement('select');
+            sel.style.padding = '4px 8px';
+            sel.style.borderRadius = '4px';
+            sel.style.border = '1px solid var(--border)';
+            sel.innerHTML = '<option value="">No mapping</option><option value="A">Answer A</option><option value="B">Answer B</option><option value="C">Answer C</option><option value="D">Answer D</option>';
+            sel.onchange = function() {
+              uploadedImages[idx].answerMapping = this.value || null;
+            };
+            label.appendChild(span);
+            label.appendChild(sel);
+            mapContainer.appendChild(label);
+          })(i);
+        }
+      } else {
+        mappingSection.className = 'hidden';
+      }
+    }
+
+    function removeImage(idx) {
+      uploadedImages.splice(idx, 1);
+      renderImagePreviews();
+    }
+
+    // ============================================================
+    // OUTPUT
+    // ============================================================
+    function displayOutput(questions) {
+      generatedJSON = JSON.stringify(questions, null, 2);
+      var area = document.getElementById('outputArea');
+      area.textContent = generatedJSON;
+      area.className = 'output-area valid';
+      document.getElementById('outputPanel').className = 'output-panel active';
+
+      var scan = scanValidity(questions);
+      var stats = document.getElementById('outputStats');
+      stats.innerHTML =
+        '<div class="stat-box"><div class="stat-value good">' + questions.length + '</div><div class="stat-label">Questions</div></div>' +
+        '<div class="stat-box"><div class="stat-value ' + (scan.duplicates === 0 ? 'good' : 'bad') + '">' + scan.duplicates + '</div><div class="stat-label">Duplicates</div></div>' +
+        '<div class="stat-box"><div class="stat-value ' + (scan.missingFields === 0 ? 'good' : 'bad') + '">' + scan.missingFields + '</div><div class="stat-label">Missing Fields</div></div>' +
+        '<div class="stat-box"><div class="stat-value">' + scan.chapters + '</div><div class="stat-label">Chapters</div></div>' +
+        '<div class="stat-box"><div class="stat-value">' + (generatedJSON.length / 1024).toFixed(1) + 'KB</div><div class="stat-label">Size</div></div>';
+    }
+
+    function scanValidity(questions) {
+      var scan = { duplicates: 0, missingFields: 0, chapters: 0, issues: [] };
+      var seen = {};
+      var chapterSet = {};
+
+      questions.forEach(function(q, idx) {
+        var stem = (q.en && q.en.stem) || '';
+        if (seen[stem]) {
+          scan.duplicates++;
+          scan.issues.push('Q' + (idx + 1) + ': Duplicate');
+        }
+        seen[stem] = true;
+
+        if (q.topic && q.topic.en) chapterSet[q.topic.en] = true;
+        if (!q.category) scan.missingFields++;
+        if (!q.correct) scan.missingFields++;
+        if (!q.en || !q.en.stem) scan.missingFields++;
+        if (!q.fr || !q.fr.stem) scan.missingFields++;
+      });
+
+      scan.chapters = Object.keys(chapterSet).length;
+      return scan;
+    }
+
+    function validateJSON() {
+      if (!generatedJSON) return showAlert('No JSON generated yet', 'error');
+      try {
+        var p = JSON.parse(generatedJSON);
+        var s = scanValidity(p);
+        if (s.duplicates === 0 && s.missingFields === 0) {
+          showAlert('✓ JSON is valid!', 'success');
+        } else {
+          showAlert(s.duplicates + ' duplicates, ' + s.missingFields + ' missing fields', 'error');
+        }
+      } catch(e) {
+        showAlert('JSON Error: ' + e.message, 'error');
+      }
+    }
+
+    function downloadJSON() {
+      if (!generatedJSON) return showAlert('No JSON generated yet', 'error');
+      var blob = new Blob([generatedJSON], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'questions_' + Date.now() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function copyJSON() {
+      if (!generatedJSON) return showAlert('No JSON generated yet', 'error');
+      navigator.clipboard.writeText(generatedJSON).then(function() {
+        showAlert('✓ Copied to clipboard!', 'success');
+      });
+    }
+  </script>
+</body>
+</html>

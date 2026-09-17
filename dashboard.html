@@ -3,203 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concours.md - Dashboard</title>
+  <meta name="theme-color" content="#10a7aa">
+  <title>Dashboard — Concours.md</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .chapter-selector {
-      background: var(--bg-primary);
-      border-radius: 12px;
-      padding: 16px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-    .chapter-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 4px;
-    }
-    .chapter-item:hover {
-      background: rgba(52, 152, 219, 0.1);
-    }
-    .chapter-item.selected {
-      background: rgba(52, 152, 219, 0.15);
-      border: 1px solid var(--phys-blue);
-    }
-    .chapter-checkbox {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      accent-color: var(--phys-blue);
-    }
-    .chapter-label {
-      flex: 1;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-    .chapter-actions {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .chapter-action-btn {
-      padding: 6px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-      background: var(--white);
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    .chapter-action-btn:hover {
-      border-color: var(--phys-blue);
-      color: var(--phys-blue);
-    }
-    .course-count {
-      font-size: 0.8rem;
-      margin-left: 4px;
-    }
-  </style>
   <script>
-    window.MathJax = {
-      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-      svg: { fontCache: 'global' }
-    };
+    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' } };
   </script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    body{background:radial-gradient(circle at 92% 3%,rgba(86,219,197,.12),transparent 27rem),var(--canvas);overflow-x:hidden}
+    .dash-shell{min-height:100vh;display:grid;grid-template-columns:245px minmax(0,1fr)}
+    .dash-sidebar{position:fixed;inset:0 auto 0 0;width:245px;z-index:60;background:rgba(255,255,255,.97);border-right:2px solid var(--line);padding:20px 15px 17px;display:flex;flex-direction:column}
+    .dash-brand{display:flex;align-items:center;gap:10px;padding:0 9px 22px;color:var(--ink);text-decoration:none;font-weight:900;font-size:1.22rem;letter-spacing:-.5px}.dash-brand:hover{text-decoration:none}.dash-brand span span{color:var(--teal)}
+    .dash-brand-mark{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,var(--teal),var(--mint));box-shadow:0 4px 0 var(--teal-dark),0 9px 20px rgba(16,167,170,.2)}.dash-brand-mark svg{width:22px;height:22px}
+    .nav-caption{padding:0 11px;margin:4px 0 8px;color:#99a7ab;font-size:.6rem;letter-spacing:.85px;text-transform:uppercase;font-weight:900}
+    .dash-nav{display:flex;flex-direction:column;gap:5px}.dash-nav-btn{width:100%;min-height:43px;border:2px solid transparent;border-radius:14px;background:transparent;color:#64757d;padding:9px 11px;display:flex;align-items:center;gap:11px;text-align:left;font-size:.78rem;font-weight:900;cursor:pointer;transition:.15s;text-decoration:none}.dash-nav-btn svg{width:21px;height:21px;stroke-width:2.2}.dash-nav-btn:hover{background:#f2fbfa;color:var(--teal-dark);text-decoration:none}.dash-nav-btn.active{background:var(--teal-soft);border-color:#a5e6df;color:var(--teal-dark);box-shadow:0 3px 0 rgba(16,167,170,.12)}.dash-nav-btn .nav-count{margin-left:auto;min-width:22px;height:22px;border-radius:8px;background:#d6efed;display:grid;place-items:center;font-size:.6rem}
+    .sidebar-spacer{flex:1}.weekly-card{position:relative;overflow:hidden;margin:16px 2px 13px;padding:16px 14px;border-radius:20px;background:var(--navy);color:#fff;box-shadow:0 4px 0 var(--navy-dark)}.weekly-card::after{content:'';position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(86,219,197,.11);right:-45px;top:-48px}.weekly-card small{display:block;color:#8fded6;text-transform:uppercase;letter-spacing:.65px;font-size:.59rem;font-weight:900}.weekly-card strong{display:block;font-size:.88rem;line-height:1.35;margin:5px 0 10px;position:relative;z-index:1}.weekly-track{height:8px;border-radius:99px;background:rgba(255,255,255,.13);overflow:hidden}.weekly-track i{display:block;width:0;height:100%;background:var(--mint);border-radius:inherit;transition:width .5s}
+    .sidebar-user{width:100%;border:2px solid var(--line);border-radius:16px;background:#fff;padding:8px;display:flex;align-items:center;gap:9px;text-align:left;cursor:pointer;color:var(--ink)}.sidebar-user:hover{border-color:#a4dad6}.user-avatar{width:37px;height:37px;border-radius:12px;background:linear-gradient(145deg,#ffe4e9,#fb7185);color:#9f3045;display:grid;place-items:center;font-size:.67rem;font-weight:900;flex:none}.user-copy{min-width:0;flex:1}.user-copy strong{display:block;font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-copy span{display:block;color:var(--muted);font-size:.58rem;font-weight:800;margin-top:1px}.sidebar-user>svg{width:15px;height:15px;color:#91a0a4}
+
+    .dash-main{grid-column:2;min-width:0}.dash-topbar{position:sticky;top:0;z-index:50;height:73px;padding:0 30px;background:rgba(247,255,254,.88);backdrop-filter:blur(15px);border-bottom:2px solid rgba(223,233,236,.82);display:flex;align-items:center;gap:16px}.mobile-menu{display:none;width:39px;height:39px;border:0;background:transparent;color:var(--ink);cursor:pointer}.mobile-brand{display:none;align-items:center;gap:8px;font-size:.9rem;font-weight:900}.mobile-brand .dash-brand-mark{width:34px;height:34px;border-radius:11px}.mobile-brand .dash-brand-mark svg{width:19px;height:19px}.top-greeting small{display:block;color:var(--muted);font-size:.66rem;font-weight:800}.top-greeting strong{display:block;font-size:.9rem;font-weight:900;margin-top:1px}.top-spacer{flex:1}.top-rewards{display:flex;align-items:center;gap:8px}.reward-pill{height:40px;padding:0 11px;border:2px solid var(--line);border-radius:13px;background:#fff;color:var(--ink-soft);display:flex;align-items:center;gap:7px;font-size:.7rem;font-weight:900;cursor:pointer;box-shadow:0 3px 0 rgba(19,46,62,.06)}.reward-pill:hover{border-color:#a2dad7;color:var(--teal-dark)}.reward-pill svg{width:17px;height:17px}.reward-pill.bank{color:#6542bb}.reward-pill.lang{color:var(--teal-dark)}.top-logout{width:40px;padding:0;justify-content:center;color:#a44455}.top-logout:hover{border-color:#f0b4bf;background:#fff4f6;color:var(--danger)}
+
+    .dash-page{width:min(1430px,100%);margin:auto;padding:29px 30px 55px}.home-grid{display:grid;grid-template-columns:minmax(0,1fr) 305px;gap:24px;align-items:start}.home-main{min-width:0}.welcome-card{position:relative;overflow:hidden;min-height:217px;border-radius:29px;padding:30px 34px;background:linear-gradient(120deg,#0c969a 0%,#13afb1 58%,#56d9c5 100%);color:#fff;box-shadow:0 6px 0 var(--teal-dark),0 19px 40px rgba(16,167,170,.18);display:flex;align-items:center}.welcome-card::before,.welcome-card::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.09)}.welcome-card::before{width:250px;height:250px;right:-80px;top:-145px}.welcome-card::after{width:130px;height:130px;left:49%;bottom:-95px}.welcome-copy{position:relative;z-index:2;max-width:610px;padding-right:220px}.welcome-kicker{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(255,255,255,.13);font-size:.65rem;font-weight:900;margin-bottom:10px}.welcome-copy h1{font-size:clamp(1.6rem,3vw,2.35rem);line-height:1.08;letter-spacing:-.9px;font-weight:900}.welcome-copy p{font-size:.83rem;line-height:1.55;color:rgba(255,255,255,.9);font-weight:700;margin:8px 0 17px;max-width:500px}.hero-button{border:0;border-radius:14px;background:#fff;color:var(--teal-dark);padding:10px 14px;font-size:.75rem;font-weight:900;cursor:pointer;box-shadow:0 4px 0 rgba(5,101,104,.29);transition:.15s}.hero-button:hover{transform:translateY(-2px);box-shadow:0 6px 0 rgba(5,101,104,.25)}
+    .hero-mascot{position:absolute;z-index:1;right:16px;bottom:0;width:218px;height:205px;filter:drop-shadow(0 13px 11px rgba(5,87,91,.17));animation:dashBob 4.5s ease-in-out infinite}@keyframes dashBob{50%{transform:translateY(-7px) rotate(1deg)}}
+    .home-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0 27px}.home-stat{background:#fff;border:2px solid var(--line);border-radius:19px;padding:15px;box-shadow:var(--shadow);display:flex;align-items:center;gap:11px}.home-stat-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;flex:none}.home-stat-icon svg{width:21px;height:21px}.home-stat-icon.teal{background:var(--teal-soft);color:var(--teal-dark)}.home-stat-icon.purple{background:#eee8ff;color:#6d42d8}.home-stat-icon.gold{background:#fff4c7;color:#a56f00}.home-stat small{display:block;color:var(--muted);font-size:.57rem;text-transform:uppercase;letter-spacing:.45px;font-weight:900}.home-stat strong{display:block;font-size:1.05rem;line-height:1.2;margin-top:2px;font-weight:900}.home-stat span{display:block;color:var(--muted);font-size:.57rem;font-weight:800;margin-top:1px}
+    .section-row{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:14px}.section-row h2{font-size:1.13rem;font-weight:900;letter-spacing:-.25px}.section-row p{color:var(--muted);font-size:.7rem;font-weight:700;margin-top:2px}.section-link{border:0;background:transparent;color:var(--teal-dark);font-size:.68rem;font-weight:900;cursor:pointer}.section-link:hover{text-decoration:underline}
+    .subject-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.home-subject{--subject:var(--teal);--soft:var(--teal-soft);position:relative;min-height:169px!important;padding:17px!important;display:block!important;overflow:hidden}.home-subject:hover{border-color:var(--subject)!important;box-shadow:0 5px 0 var(--shadow-color),0 15px 28px rgba(19,46,62,.07)!important}.home-subject.biology{--subject:#21b96b;--soft:#def8e9;--shadow-color:rgba(33,185,107,.14)}.home-subject.chemistry{--subject:#8b5cf6;--soft:#eee8ff;--shadow-color:rgba(139,92,246,.13)}.home-subject.physics{--subject:#3b82f6;--soft:#e4efff;--shadow-color:rgba(59,130,246,.13)}.home-subject.maths{--subject:#f08c32;--soft:#fff0df;--shadow-color:rgba(240,140,50,.14)}.subject-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}.home-subject .category-icon{width:46px;height:46px;border-radius:14px;background:var(--soft);color:var(--subject)}.home-subject .category-icon svg{width:25px;height:25px}.question-count{padding:4px 8px;border-radius:99px;background:#f3f7f8;color:var(--muted);font-size:.58rem;font-weight:900}.home-subject .card-title{font-size:.96rem}.home-subject .card-desc{font-size:.67rem;margin-top:3px}.subject-action{display:flex;align-items:center;gap:6px;color:var(--subject);font-size:.63rem;font-weight:900;margin-top:12px}.subject-action svg{width:15px;height:15px}
+    .concours-home{min-height:112px!important;margin-top:15px;padding:17px 19px!important;display:flex!important;border-color:#f0d270!important;background:#fffdf5!important}.concours-home:hover{border-color:var(--yellow)!important}.concours-home .category-icon{width:49px;height:49px}.concours-home-copy{flex:1}.concours-home .card-title{font-size:.93rem}.concours-home .card-desc{font-size:.66rem}.concours-badge{padding:5px 8px;border-radius:99px;background:#fff1ae;color:#805900;font-size:.56rem;font-weight:900;white-space:nowrap}
+    .utility-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:15px}.utility-card{min-height:88px!important;padding:13px!important;gap:10px!important;border-color:var(--line)!important;box-shadow:none!important}.utility-card:hover{border-color:#a7dcd8!important;transform:translateY(-2px)!important}.utility-card .category-icon{width:36px;height:36px;border-radius:11px;background:#f1f7f7;font-size:1rem}.utility-card .card-title{font-size:.73rem}.utility-card .card-desc{font-size:.56rem;line-height:1.3}
+
+    .home-rail{display:flex;flex-direction:column;gap:16px;position:sticky;top:95px}.rail-card{background:#fff;border:2px solid var(--line);border-radius:21px;padding:17px;box-shadow:var(--shadow)}.rail-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.rail-head h3{font-size:.85rem;font-weight:900}.rail-head span{font-size:.57rem;color:var(--muted);font-weight:800}.mission-icon{width:48px;height:48px;border-radius:15px;background:#fff0d8;display:grid;place-items:center;font-size:1.35rem;margin-bottom:10px}.mission-card h4{font-size:.78rem;font-weight:900}.mission-card p{font-size:.62rem;color:var(--muted);font-weight:700;line-height:1.5;margin:4px 0 12px}.mission-track{height:9px;border-radius:99px;background:#edf2f3;overflow:hidden}.mission-track i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--teal),var(--mint))}.mission-meta{display:flex;justify-content:space-between;margin-top:6px;color:var(--muted);font-size:.55rem;font-weight:900}.rail-button{width:100%;height:39px;margin-top:12px;border:0;border-radius:12px;background:var(--teal);color:#fff;font-size:.67rem;font-weight:900;cursor:pointer;box-shadow:0 4px 0 var(--teal-dark)}.rail-button:hover{transform:translateY(-1px)}
+    .track-card{background:linear-gradient(145deg,var(--navy),#1e4554);color:#fff;border-color:#203e50;position:relative;overflow:hidden}.track-card::after{content:'';position:absolute;width:135px;height:135px;border:25px solid rgba(86,219,197,.07);border-radius:50%;right:-74px;bottom:-80px}.track-label{font-size:.56rem;color:#8fded6;text-transform:uppercase;letter-spacing:.65px;font-weight:900}.track-card h3{font-size:.87rem;line-height:1.35;margin:6px 0 5px;position:relative;z-index:1}.track-card p{font-size:.59rem;line-height:1.5;color:#b8cdd5;position:relative;z-index:1}.track-card .rail-button{background:var(--mint);color:#144344;box-shadow:0 4px 0 #2da894;position:relative;z-index:1}
+    .bank-card .bank-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #edf2f3}.bank-card .bank-row:first-of-type{border-top:0}.bank-dot{width:31px;height:31px;border-radius:10px;display:grid;place-items:center;font-size:.65rem;font-weight:900}.bank-dot.bio{background:#def8e9;color:#13814a}.bank-dot.chem{background:#eee8ff;color:#6942c8}.bank-dot.phys{background:#e4efff;color:#2865bd}.bank-dot.math{background:#fff0df;color:#b75d0b}.bank-row span:nth-child(2){flex:1;font-size:.64rem;font-weight:900}.bank-row b{font-size:.62rem;color:var(--muted)}
+
+    #contentArea{max-width:1000px;margin:0 auto}.back-dashboard{margin-bottom:16px}.content-hero{margin-bottom:18px}.content-hero h2{font-size:1.55rem;font-weight:900;letter-spacing:-.5px}.content-hero p{color:var(--muted);font-size:.78rem;font-weight:700}.content-body>.card{margin-bottom:16px}.content-body h2{font-size:1.45rem;font-weight:900;letter-spacing:-.45px;margin-bottom:16px}.content-body h3{font-size:1rem;font-weight:900}.content-body h4{font-weight:900}.content-body .category-grid{grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}.content-body .category-grid .btn{min-height:58px;justify-content:flex-start;text-align:left}.content-body ul{color:var(--ink-soft);font-weight:700}.course-count[data-loading]{display:inline-block;min-width:32px;height:11px;border-radius:6px;background:linear-gradient(90deg,var(--line) 25%,#f6fbfb 50%,var(--line) 75%);background-size:200% 100%;animation:shimmer 1.1s infinite;vertical-align:middle}@keyframes shimmer{to{background-position:-200% 0}}.course-count{font-size:.7rem;margin-left:4px}
+    .chapter-selector{background:#f6fbfa;border:2px solid var(--line);border-radius:17px;padding:10px;max-height:340px;overflow-y:auto}.chapter-item{display:flex;align-items:center;gap:10px;padding:10px 11px;border:2px solid transparent;border-radius:12px;cursor:pointer;transition:.14s;margin-bottom:4px}.chapter-item:hover{background:#fff;border-color:#c7e9e6}.chapter-item.selected{background:var(--teal-soft);border-color:#8edbd6}.chapter-checkbox{width:19px;height:19px;accent-color:var(--teal);cursor:pointer}.chapter-label{flex:1;cursor:pointer;font-size:.78rem;font-weight:800}.chapter-actions{display:flex;gap:7px;margin-bottom:9px;flex-wrap:wrap}.chapter-action-btn{padding:7px 11px;border-radius:10px;border:2px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer;font-size:.67rem;font-weight:900;box-shadow:0 2px 0 rgba(19,46,62,.06)}.chapter-action-btn:hover{border-color:#8edbd6;color:var(--teal-dark)}
+    .admin-wrap{margin-top:25px}.admin-head{display:flex;align-items:center;gap:9px;margin-bottom:12px}.admin-head h2{font-size:.9rem}.admin-head .line{height:2px;background:var(--line);flex:1}.admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.admin-grid .category-card{min-height:95px!important;padding:14px!important}.admin-grid .category-icon{width:42px;height:42px}.admin-grid .card-title{font-size:.77rem}.admin-grid .card-desc{font-size:.58rem}
+    .mobile-bottom{display:none}.dash-toast{position:fixed;z-index:120;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--navy);color:#fff;border-radius:13px;padding:10px 15px;font-size:.68rem;font-weight:900;box-shadow:0 10px 30px rgba(13,36,56,.22);transition:.2s}.dash-toast.show{opacity:1;transform:translate(-50%,0)}
+
+    @media(max-width:1150px){.home-grid{grid-template-columns:1fr}.home-rail{position:static;display:grid;grid-template-columns:repeat(3,1fr)}.welcome-copy{padding-right:190px}.hero-mascot{width:195px}}
+    @media(max-width:900px){.dash-shell{display:block}.dash-sidebar{transform:translateX(-105%);transition:.22s;box-shadow:18px 0 55px rgba(19,46,62,.15)}.dash-sidebar.open{transform:none}.dash-main{width:100%}.dash-topbar{height:67px;padding:0 18px}.mobile-menu{display:grid;place-items:center}.mobile-brand{display:flex}.top-greeting{display:none}.dash-page{padding:23px 18px 92px}.mobile-bottom{position:fixed;left:12px;right:12px;bottom:9px;z-index:55;height:65px;border:2px solid var(--line);border-radius:20px;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);box-shadow:0 10px 32px rgba(19,46,62,.13);display:grid;grid-template-columns:repeat(4,1fr);padding:5px}.mobile-bottom button{border:0;border-radius:13px;background:transparent;color:#839397;display:grid;place-items:center;gap:1px;font-size:.52rem;font-weight:900}.mobile-bottom button svg{width:20px;height:20px}.mobile-bottom button.active{background:var(--teal-soft);color:var(--teal-dark)}.admin-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:650px){.dash-topbar{padding:0 12px}.mobile-brand{font-size:.8rem}.reward-pill.bank{display:none}.dash-page{padding-left:13px;padding-right:13px}.welcome-card{min-height:325px;padding:24px;align-items:flex-start}.welcome-copy{padding:0}.welcome-copy h1{font-size:1.65rem}.welcome-copy p{max-width:92%}.hero-mascot{width:155px;height:150px;right:3px}.home-stats{grid-template-columns:1fr;gap:9px}.home-stat{padding:12px 14px}.subject-grid{grid-template-columns:1fr}.utility-grid{grid-template-columns:1fr}.utility-card{min-height:74px!important}.home-rail{display:flex}.admin-grid{grid-template-columns:1fr}.content-body .category-grid{grid-template-columns:1fr}.track-card{min-height:155px}.top-logout{display:none}}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
+  </style>
 </head>
 <body>
-  <nav class="navbar">
-    <div class="container">
-      <div class="navbar-brand">Concours<span>.md</span></div>
-      <div class="navbar-links">
-        <a href="dashboard.html">Dashboard</a>
-        <a href="import.html" id="navImport" class="hidden">Import</a>
-        <a href="manage.html" id="navManage" class="hidden">Manage</a>
-        <a href="#" id="logoutBtn">Logout</a>
-      </div>
-    </div>
-  </nav>
+<div class="dash-shell">
+  <aside class="dash-sidebar" id="dashSidebar">
+    <a href="dashboard.html" class="dash-brand"><span class="dash-brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v17H6.5A2.5 2.5 0 0 0 4 22zM20 5.5A2.5 2.5 0 0 0 17.5 3H13v17h4.5a2.5 2.5 0 0 1 2.5 2z"/></svg></span><span>Concours<span>.md</span></span></a>
+    <div class="nav-caption" id="navStudyLabel">Study</div>
+    <nav class="dash-nav">
+      <button class="dash-nav-btn active" data-dash-home><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 11 9-8 9 8M5 10v10h14V10M9 20v-6h6v6"/></svg><span id="navHome">Dashboard</span></button>
+      <button class="dash-nav-btn" data-dash-action="biology"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span id="navPractice">Practice</span></button>
+      <button class="dash-nav-btn" data-dash-action="concours"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16H6a2 2 0 0 1-2-2 2 2 0 0 1 2-2h14M8 7h8M8 11h6"/></svg><span id="navExams">Concours exams</span></button>
+      <button class="dash-nav-btn" data-dash-action="notebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 3h14v18H5zM9 3v18M12 8h4M12 12h4"/></svg><span id="navNotebook">Notebook</span></button>
+      <button class="dash-nav-btn" data-dash-action="prevtests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg><span id="navHistory">History</span></button>
+    </nav>
+    <div class="nav-caption" style="margin-top:19px" id="navAccountLabel">Account</div>
+    <nav class="dash-nav">
+      <button class="dash-nav-btn" data-dash-action="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg><span id="navSettings">Settings</span></button>
+      <a class="dash-nav-btn hidden" href="import.html" id="navImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg><span>Import</span></a>
+      <a class="dash-nav-btn hidden" href="manage.html" id="navManage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 5h16M4 12h16M4 19h16"/></svg><span>Manage</span></a>
+    </nav>
+    <div class="sidebar-spacer"></div>
+    <div class="weekly-card"><small id="weeklyLabel">Question bank</small><strong id="weeklyText">Loading your available questions…</strong><div class="weekly-track"><i id="weeklyTrack"></i></div></div>
+    <button class="sidebar-user" data-dash-action="settings"><span class="user-avatar" id="userInitials">LU</span><span class="user-copy"><strong id="sidebarUserName">Student</strong><span id="sidebarTrack">Concours track</span></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>
+  </aside>
 
-  <div class="container" style="padding-top: 30px; padding-bottom: 60px;">
-    <div class="dashboard-header">
-      <h1 id="welcomeMsg">Welcome back!</h1>
-      <p id="welcomeSub">Choose a category to start practicing</p>
-    </div>
+  <main class="dash-main">
+    <header class="dash-topbar">
+      <button class="mobile-menu" id="mobileMenu" aria-label="Open menu"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="mobile-brand"><span class="dash-brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v17H6.5A2.5 2.5 0 0 0 4 22zM20 5.5A2.5 2.5 0 0 0 17.5 3H13v17h4.5a2.5 2.5 0 0 1 2.5 2z"/></svg></span>Concours.md</div>
+      <div class="top-greeting"><small id="todayDate">Your dashboard</small><strong id="topGreeting">Let’s make this session count.</strong></div>
+      <div class="top-spacer"></div>
+      <div class="top-rewards"><button class="reward-pill bank" id="bankReward" title="Available questions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h7v16H6a2 2 0 0 1-2-2zM20 5h-7v16h5a2 2 0 0 1 2 2z"/></svg><span id="topQuestionTotal">—</span></button><button class="reward-pill lang" data-dash-action="settings" id="langBadge">EN</button><button class="reward-pill top-logout" id="logoutBtn" title="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></svg></button></div>
+    </header>
 
-    <div class="category-grid" id="categoryGrid">
-      <div class="category-card biology" data-action="biology">
-        <div class="category-icon">🧬</div>
-        <div>
-          <div class="card-title" id="cat-biology">Biology</div>
-          <div class="card-desc" id="cat-biology-desc">11 courses</div>
-        </div>
-      </div>
-
-      <div class="category-card chemistry" data-action="chemistry">
-        <div class="category-icon">⚗️</div>
-        <div>
-          <div class="card-title" id="cat-chemistry">Chemistry</div>
-          <div class="card-desc" id="cat-chemistry-desc">3 courses</div>
-        </div>
-      </div>
-
-      <div class="category-card physics" data-action="physics">
-        <div class="category-icon">⚡</div>
-        <div>
-          <div class="card-title" id="cat-physics">Physics</div>
-          <div class="card-desc" id="cat-physics-desc">2 courses</div>
-        </div>
-      </div>
-
-      <div class="category-card maths" data-action="maths">
-        <div class="category-icon">📐</div>
-        <div>
-          <div class="card-title" id="cat-maths">Maths</div>
-          <div class="card-desc" id="cat-maths-desc">3 courses</div>
-        </div>
-      </div>
-
-      <div class="category-card concours" data-action="concours">
-        <div class="category-icon">🎓</div>
-        <div>
-          <div class="card-title" id="cat-concours">Concours Exam</div>
-          <div class="card-desc" id="cat-concours-desc">Simulate the real exam</div>
-        </div>
-      </div>
-
-      <div class="category-card" data-action="notebook" style="border-color: var(--text-secondary);">
-        <div class="category-icon">📓</div>
-        <div>
-          <div class="card-title" id="cat-notebook">Notebook</div>
-          <div class="card-desc" id="cat-notebook-desc">Your saved notes</div>
-        </div>
-      </div>
-
-      <div class="category-card" data-action="prevtests" style="border-color: var(--info);">
-        <div class="category-icon">📊</div>
-        <div>
-          <div class="card-title" id="cat-prevtests">Previous Tests</div>
-          <div class="card-desc" id="cat-prevtests-desc">Review your history</div>
-        </div>
-      </div>
-
-      <div class="category-card" data-action="settings" style="border-color: var(--text-secondary);">
-        <div class="category-icon">⚙️</div>
-        <div>
-          <div class="card-title" id="cat-settings">Settings</div>
-          <div class="card-desc" id="cat-settings-desc">Preferences & language</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Admin-only tools: revealed in init() when the admin account is signed in -->
-    <div id="adminSection" class="hidden" style="margin-top: 34px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-        <h2 id="adminTitle" style="font-size:1.05rem;margin:0;">Admin Tools</h2>
-        <span class="badge badge-warning" style="font-size:.7rem;">Admin only</span>
-        <div style="flex:1;height:1px;background:var(--border-color);"></div>
-      </div>
-
-      <div class="category-grid">
-        <div class="category-card" data-action="manage" style="border-color: var(--accent);">
-          <div class="category-icon">🗂️</div>
-          <div>
-            <div class="card-title" id="cat-manage">Manage Questions</div>
-            <div class="card-desc" id="cat-manage-desc">Browse, edit, move &amp; delete</div>
+    <div class="dash-page">
+      <div class="home-grid" id="categoryGrid">
+        <section class="home-main">
+          <div class="welcome-card">
+            <div class="welcome-copy"><span class="welcome-kicker" id="welcomeKicker">⚡ Your next best move</span><h1 id="welcomeMsg">Welcome back!</h1><p id="welcomeSub">Choose a subject and turn the next few minutes into real Concours progress.</p><button class="hero-button" data-dash-action="biology" id="heroStartBtn">Start a Biology session →</button></div>
+            <svg class="hero-mascot" viewBox="0 0 230 220" aria-hidden="true"><ellipse cx="120" cy="202" rx="82" ry="12" fill="rgba(5,81,85,.20)"/><path d="M143 44c28 10 49 40 43 78-7 44-37 74-75 67-36-6-58-41-50-80 9-42 43-77 82-65Z" fill="#fff"/><path d="M143 52c20 9 37 31 34 57-5 38-31 65-63 60-29-5-47-34-41-66 7-34 38-62 70-51Z" fill="#dffaf7"/><circle cx="112" cy="102" r="5" fill="#17324d"/><circle cx="145" cy="102" r="5" fill="#17324d"/><path d="M116 120c8 8 18 8 25 0" fill="none" stroke="#17324d" stroke-width="5" stroke-linecap="round"/><path d="M90 73c19-18 54-22 76-4" fill="none" stroke="#56dbc5" stroke-width="9" stroke-linecap="round"/><path d="M92 74c11 7 22 8 34 2s23-7 36 0M94 86c11 7 22 8 34 2s22-7 34 0" fill="none" stroke="#10a7aa" stroke-width="3.5" stroke-linecap="round"/><path d="m75 139-22 15M176 138l22 14" stroke="#fff" stroke-width="11" stroke-linecap="round"/><path d="M53 154c-8 2-12 8-12 16M198 152c7 2 12 8 13 16" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/><path d="m93 181-8 19M151 180l9 19" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M76 202h22M151 202h22" stroke="#17324d" stroke-width="8" stroke-linecap="round"/><path d="m198 76 6 12 13 2-10 9 3 13-12-6-12 6 3-13-10-9 13-2Z" fill="#f7c948"/></svg>
           </div>
-        </div>
 
-        <div class="category-card" data-action="import" style="border-color: var(--success);">
-          <div class="category-icon">📥</div>
-          <div>
-            <div class="card-title" id="cat-import">Import Questions</div>
-            <div class="card-desc" id="cat-import-desc">Bulk import from JSON</div>
-          </div>
-        </div>
+          <div class="home-stats"><div class="home-stat"><span class="home-stat-icon teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 5h7v16H6a2 2 0 0 1-2-2zM20 5h-7v16h5a2 2 0 0 1 2 2z"/></svg></span><span><small id="statBankLabel">Question bank</small><strong id="questionBankTotal">—</strong><span id="statBankSub">available questions</span></span></div><div class="home-stat"><span class="home-stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19V9M10 19V5M16 19v-7M22 19V3"/></svg></span><span><small id="statCurriculumLabel">Curriculum</small><strong>19</strong><span id="statCurriculumSub">courses organized by chapter</span></span></div><div class="home-stat"><span class="home-stat-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 4h8v5a4 4 0 0 1-8 0zM12 13v4M8 21h8M9 17h6M8 6H4v2a4 4 0 0 0 4 4M16 6h4v2a4 4 0 0 1-4 4"/></svg></span><span><small id="statTrackLabel">Your track</small><strong id="trackShort">Medicine</strong><span id="statTrackSub">official Concours blueprint</span></span></div></div>
 
-        <div class="category-card" data-action="generator" style="border-color: var(--info);">
-          <div class="category-icon">⚙️</div>
-          <div>
-            <div class="card-title" id="cat-generator">Advanced Generator</div>
-            <div class="card-desc" id="cat-generator-desc">Parse PDFs &amp; build questions</div>
+          <div class="section-row"><div><h2 id="subjectsTitle">Choose your subject</h2><p id="subjectsSub">Every session can target one course or precise chapters.</p></div></div>
+          <div class="subject-grid">
+            <article class="category-card home-subject biology" data-action="biology"><div class="subject-top"><span class="category-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M8 3c0 4 8 5 8 9s-8 5-8 9M16 3c0 4-8 5-8 9s8 5 8 9M9 6h6M8 12h8M9 18h6"/></svg></span><span class="question-count" data-home-count="biology">—</span></div><div class="card-title" id="cat-biology">Biology</div><div class="card-desc" id="cat-biology-desc">11 courses</div><div class="subject-action"><span id="bioAction">Explore Biology</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 18 6-6-6-6"/></svg></div></article>
+            <article class="category-card home-subject chemistry" data-action="chemistry"><div class="subject-top"><span class="category-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M9 3h6M10 3v6l-5.5 9.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7 15h10"/></svg></span><span class="question-count" data-home-count="chemistry">—</span></div><div class="card-title" id="cat-chemistry">Chemistry</div><div class="card-desc" id="cat-chemistry-desc">3 courses</div><div class="subject-action"><span id="chemAction">Explore Chemistry</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 18 6-6-6-6"/></svg></div></article>
+            <article class="category-card home-subject physics" data-action="physics"><div class="subject-top"><span class="category-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="m13 2-8 12h7l-1 8 8-12h-7z"/></svg></span><span class="question-count" data-home-count="physics">—</span></div><div class="card-title" id="cat-physics">Physics</div><div class="card-desc" id="cat-physics-desc">2 courses</div><div class="subject-action"><span id="physAction">Explore Physics</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 18 6-6-6-6"/></svg></div></article>
+            <article class="category-card home-subject maths" data-action="maths"><div class="subject-top"><span class="category-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M4 19 19 4M5 5h6M8 2v6M14 17h7M3 14h7v7"/></svg></span><span class="question-count" data-home-count="maths">—</span></div><div class="card-title" id="cat-maths">Maths</div><div class="card-desc" id="cat-maths-desc">3 courses</div><div class="subject-action"><span id="mathAction">Explore Maths</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 18 6-6-6-6"/></svg></div></article>
           </div>
-        </div>
+
+          <article class="category-card concours concours-home" data-action="concours"><div class="category-icon">🏆</div><div class="concours-home-copy"><div class="card-title" id="cat-concours">Concours Exam</div><div class="card-desc" id="cat-concours-desc">Generate an exam from the official Medicine, Dentistry, or Pharmacy blueprint.</div></div><span class="concours-badge" id="officialBadge">OFFICIAL PACING</span></article>
+          <div class="utility-grid"><article class="category-card utility-card" data-action="notebook"><div class="category-icon">📓</div><div><div class="card-title" id="cat-notebook">Notebook</div><div class="card-desc" id="cat-notebook-desc">Your saved notes</div></div></article><article class="category-card utility-card" data-action="prevtests"><div class="category-icon">📊</div><div><div class="card-title" id="cat-prevtests">Previous Tests</div><div class="card-desc" id="cat-prevtests-desc">Review your history</div></div></article><article class="category-card utility-card" data-action="settings"><div class="category-icon">⚙️</div><div><div class="card-title" id="cat-settings">Settings</div><div class="card-desc" id="cat-settings-desc">Preferences & language</div></div></article></div>
+        </section>
+
+        <aside class="home-rail">
+          <section class="rail-card mission-card"><div class="rail-head"><h3 id="missionTitle">Today’s mission</h3><span id="missionTag">QUICK WIN</span></div><div class="mission-icon">🎯</div><h4 id="missionHeadline">Complete a 25-question set</h4><p id="missionText">Choose any Biology course and build focused momentum today.</p><div class="mission-track"><i></i></div><div class="mission-meta"><span>0 / 25</span><span id="missionProgress">Ready to start</span></div><button class="rail-button" data-dash-action="biology" id="missionButton">Start mission →</button></section>
+          <section class="rail-card track-card"><span class="track-label" id="railTrackLabel">Your Concours track</span><h3 id="railTrackName">Medicine & Dentistry</h3><p id="railTrackText">Practice with the exact subject distribution and official timing when you are ready.</p><button class="rail-button" data-dash-action="concours" id="railTrackButton">Open exam mode</button></section>
+          <section class="rail-card bank-card"><div class="rail-head"><h3 id="bankBreakdownTitle">Question bank</h3><span id="bankBreakdownTag">LIVE</span></div><div class="bank-row"><span class="bank-dot bio">BIO</span><span id="bankBioLabel">Biology</span><b data-rail-count="biology">—</b></div><div class="bank-row"><span class="bank-dot chem">CH</span><span id="bankChemLabel">Chemistry</span><b data-rail-count="chemistry">—</b></div><div class="bank-row"><span class="bank-dot phys">PHY</span><span id="bankPhysLabel">Physics</span><b data-rail-count="physics">—</b></div><div class="bank-row"><span class="bank-dot math">∑</span><span>Maths</span><b data-rail-count="maths">—</b></div></section>
+        </aside>
       </div>
-    </div>
 
-    <div id="contentArea" class="hidden" style="margin-top: 30px;">
-      <button class="btn btn-outline btn-sm mb-3" id="backBtn">← Back to Dashboard</button>
-      <div id="contentBody"></div>
-    </div>
-  </div>
+      <section id="adminSection" class="admin-wrap hidden"><div class="admin-head"><h2 id="adminTitle">Admin Tools</h2><span class="badge badge-warning">Admin only</span><span class="line"></span></div><div class="admin-grid"><article class="category-card" data-action="manage"><div class="category-icon">🗂️</div><div><div class="card-title" id="cat-manage">Manage Questions</div><div class="card-desc" id="cat-manage-desc">Browse, edit, move & delete</div></div></article><article class="category-card" data-action="import"><div class="category-icon">📥</div><div><div class="card-title" id="cat-import">Import Questions</div><div class="card-desc" id="cat-import-desc">Bulk import from JSON</div></div></article><article class="category-card" data-action="generator"><div class="category-icon">⚙️</div><div><div class="card-title" id="cat-generator">Advanced Generator</div><div class="card-desc" id="cat-generator-desc">Parse PDFs & build questions</div></div></article></div></section>
 
-  <script type="module">
+      <section id="contentArea" class="hidden"><button class="btn btn-outline btn-sm back-dashboard" id="backBtn">← Back to Dashboard</button><div class="content-body" id="contentBody"></div></section>
+    </div>
+  </main>
+</div>
+
+<nav class="mobile-bottom" aria-label="Mobile navigation"><button class="active" data-dash-home><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 11 9-8 9 8M5 10v10h14V10"/></svg><span id="mobileHome">Home</span></button><button data-dash-action="biology"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span id="mobilePractice">Practice</span></button><button data-dash-action="concours"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 3h14v18H5zM8 8h8M8 12h6"/></svg><span id="mobileExams">Exams</span></button><button data-dash-action="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span id="mobileSettings">Settings</span></button></nav>
+<div class="dash-toast" id="dashToast" role="status" aria-live="polite"></div>
+
+<script type="module">
     import { getCurrentUser, logOut, getUserPrefs, updateUserPrefs, getUserConcoursType, ADMIN_EMAIL, ADMIN_PASSWORD } from './auth.js';
     import { databases, DB_ID, COLLECTIONS, Query } from './appwrite.js';
 
@@ -269,7 +187,7 @@
           { en: 'Ecological Factors (Abiotic, Biotic)', fr: 'Les facteurs écologiques (abiotiques, biotiques)' },
           { en: 'Terrestrial Biomes', fr: 'Les biomes terrestres' },
           { en: 'Aquatic Biomes', fr: 'Les biomes aquatiques' },
-          { en: 'Food Chains and Ecological Pyramids', fr: 'Chaînes alimentaires et pyramides écologiques' },
+          { en: 'Food Chains, Trophic Networks, and Ecological Pyramids', fr: 'Chaînes alimentaires, réseaux trophiques et pyramides écologiques' },
           { en: 'Ecosystem Functioning and Biogeochemical Cycles', fr: 'Fonctionnement des écosystèmes et cycles biogéochimiques' }
         ],
         'Embryology': [
@@ -277,10 +195,10 @@
           { en: 'Different Types of Eggs', fr: 'Les différents types d\'œufs' },
           { en: 'Main Stages of Development', fr: 'Les étapes principales du développement' },
           { en: 'Development of an Insect', fr: 'Le développement d\'un insecte' },
-          { en: 'Development of an Echinoderm', fr: 'Le développement d\'un échinoderme' },
-          { en: 'Development of an Amphibian', fr: 'Le développement d\'un amphibien' },
-          { en: 'Development of a Bird', fr: 'Le développement d\'un oiseau' },
-          { en: 'Development of a Mammal', fr: 'Le développement d\'un mammifère' }
+          { en: 'Embryonic Development of Echinoderms', fr: 'Développement embryonnaire des échinodermes' },
+          { en: 'Embryonic Development of Amphibians', fr: 'Développement embryonnaire des amphibiens' },
+          { en: 'Embryonic Development of Birds', fr: 'Développement embryonnaire des oiseaux' },
+          { en: 'Embryonic Development of Mammals', fr: 'Développement embryonnaire des mammifères' }
         ],
         'Animal Reproduction': [
           { en: 'Meiosis and Gametogenesis', fr: 'Méiose et gamétogenèse' },
@@ -473,18 +391,27 @@
     let currentLang = 'en';
     let currentCategory = null;
     let selectedChapters = [];
+    let currentUserName = '';
+    let currentConcoursType = 'med';
+    let homeQuestionCounts = null;
 
     function showContent() {
       document.getElementById('categoryGrid').classList.add('hidden');
       document.getElementById('contentArea').classList.remove('hidden');
+      document.getElementById('adminSection')?.classList.add('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function goBack() {
       document.getElementById('categoryGrid').classList.remove('hidden');
       document.getElementById('contentArea').classList.add('hidden');
       document.getElementById('contentBody').innerHTML = '';
+      const admin = document.getElementById('adminSection');
+      if (admin?.dataset.authorized === '1') admin.classList.remove('hidden');
       currentCategory = null;
       selectedChapters = [];
+      setActiveDashboardNav('home');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function translateCategories() {
@@ -517,6 +444,54 @@
       setTxt('cat-import-desc', currentLang === 'fr' ? 'Import en masse depuis JSON' : 'Bulk import from JSON');
       setTxt('cat-generator', currentLang === 'fr' ? 'Générateur Avancé' : 'Advanced Generator');
       setTxt('cat-generator-desc', currentLang === 'fr' ? 'Analyser des PDF et créer des questions' : 'Parse PDFs & build questions');
+
+      // Playful dashboard shell
+      const fr = currentLang === 'fr';
+      setTxt('navStudyLabel', fr ? 'Étudier' : 'Study');
+      setTxt('navHome', fr ? 'Tableau de bord' : 'Dashboard');
+      setTxt('navPractice', fr ? 'Entraînement' : 'Practice');
+      setTxt('navExams', fr ? 'Examens Concours' : 'Concours exams');
+      setTxt('navNotebook', fr ? 'Carnet' : 'Notebook');
+      setTxt('navHistory', fr ? 'Historique' : 'History');
+      setTxt('navAccountLabel', fr ? 'Compte' : 'Account');
+      setTxt('navSettings', fr ? 'Paramètres' : 'Settings');
+      setTxt('welcomeKicker', fr ? '⚡ Votre prochaine étape' : '⚡ Your next best move');
+      setTxt('heroStartBtn', fr ? 'Commencer une session de Biologie →' : 'Start a Biology session →');
+      setTxt('statBankLabel', fr ? 'Banque de questions' : 'Question bank');
+      setTxt('statBankSub', fr ? 'questions disponibles' : 'available questions');
+      setTxt('statCurriculumLabel', fr ? 'Programme' : 'Curriculum');
+      setTxt('statCurriculumSub', fr ? 'cours organisés par chapitre' : 'courses organized by chapter');
+      setTxt('statTrackLabel', fr ? 'Votre filière' : 'Your track');
+      setTxt('statTrackSub', fr ? 'format officiel du Concours' : 'official Concours blueprint');
+      setTxt('subjectsTitle', fr ? 'Choisissez votre matière' : 'Choose your subject');
+      setTxt('subjectsSub', fr ? 'Chaque session peut cibler un cours ou des chapitres précis.' : 'Every session can target one course or precise chapters.');
+      setTxt('bioAction', fr ? 'Explorer la Biologie' : 'Explore Biology');
+      setTxt('chemAction', fr ? 'Explorer la Chimie' : 'Explore Chemistry');
+      setTxt('physAction', fr ? 'Explorer la Physique' : 'Explore Physics');
+      setTxt('mathAction', fr ? 'Explorer les Maths' : 'Explore Maths');
+      setTxt('officialBadge', fr ? 'RYTHME OFFICIEL' : 'OFFICIAL PACING');
+      setTxt('missionTitle', fr ? 'Mission du jour' : 'Today’s mission');
+      setTxt('missionTag', fr ? 'VICTOIRE RAPIDE' : 'QUICK WIN');
+      setTxt('missionHeadline', fr ? 'Terminer une série de 25 questions' : 'Complete a 25-question set');
+      setTxt('missionText', fr ? 'Choisissez un cours de Biologie et progressez de manière ciblée aujourd’hui.' : 'Choose any Biology course and build focused momentum today.');
+      setTxt('missionProgress', fr ? 'Prêt à commencer' : 'Ready to start');
+      setTxt('missionButton', fr ? 'Commencer la mission →' : 'Start mission →');
+      setTxt('railTrackLabel', fr ? 'Votre filière du Concours' : 'Your Concours track');
+      setTxt('railTrackText', fr ? 'Entraînez-vous avec la répartition exacte et le rythme officiel lorsque vous êtes prêt.' : 'Practice with the exact subject distribution and official timing when you are ready.');
+      setTxt('railTrackButton', fr ? 'Ouvrir le mode examen' : 'Open exam mode');
+      setTxt('bankBreakdownTitle', fr ? 'Banque de questions' : 'Question bank');
+      setTxt('bankBreakdownTag', fr ? 'DIRECT' : 'LIVE');
+      setTxt('bankBioLabel', fr ? 'Biologie' : 'Biology');
+      setTxt('bankChemLabel', fr ? 'Chimie' : 'Chemistry');
+      setTxt('bankPhysLabel', fr ? 'Physique' : 'Physics');
+      setTxt('backBtn', fr ? '← Retour au tableau de bord' : '← Back to Dashboard');
+      setTxt('mobileHome', fr ? 'Accueil' : 'Home');
+      setTxt('mobilePractice', fr ? 'Pratique' : 'Practice');
+      setTxt('mobileExams', fr ? 'Examens' : 'Exams');
+      setTxt('mobileSettings', fr ? 'Réglages' : 'Settings');
+      setTxt('langBadge', fr ? 'FR' : 'EN');
+      renderHomeCounts();
+      applyDashboardIdentity();
     }
 
     function openCategory(category) {
@@ -529,7 +504,7 @@
       html += '<div class="card mb-3"><h3 class="mb-2">' + (currentLang === 'fr' ? 'Sélectionner un Cours' : 'Select a Course') + '</h3><div class="category-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">';
 
       catCourses.forEach(function(course) {
-        html += '<button class="btn btn-outline" onclick="window.app.openCourse(\'' + category + '\',\'' + course.en + '\')" style="text-align:left;">' + course[currentLang] + ' <span class="course-count" data-course="' + course.en + '" style="color:var(--text-secondary);font-size:0.8rem;">...</span></button>';
+        html += '<button class="btn btn-outline" onclick="window.app.openCourse(\'' + category + '\',\'' + course.en + '\')" style="text-align:left;">' + course[currentLang] + ' <span class="course-count" data-course="' + course.en + '" style="color:var(--text-secondary);font-size:0.8rem;" data-loading="1">&nbsp;</span></button>';
       });
 
       html += '</div></div>';
@@ -550,30 +525,41 @@
       return [...new Set([raw, lower, title, raw.toUpperCase()])];
     }
 
-    async function fetchCategoryQuestions(category) {
-      const byId = new Map();
-      const PAGE = 100;
+    // Cached single sweep. Previously this queried every casing variant of the
+    // category in sequence (~12 round-trips), which is why the counts crawled in.
+    let _questionCache = null;
+    let _questionCachePromise = null;
 
-      for (const variant of categoryVariants(category)) {
-        let offset = 0;
-        while (offset < 5000) {
-          let result;
-          try {
-            result = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
-              Query.equal('category', variant),
-              Query.limit(PAGE),
-              Query.offset(offset)
-            ]);
-          } catch (e) {
-            console.warn('Category query failed for "' + variant + '":', e.message);
-            break;
+    async function fetchAllQuestions() {
+      if (_questionCache) return _questionCache;
+      if (_questionCachePromise) return _questionCachePromise;
+
+      _questionCachePromise = (async function () {
+        const byId = new Map();
+        let offset = 0, guard = 0;
+        try {
+          while (guard++ < 200) {
+            const r = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS,
+              [Query.limit(100), Query.offset(offset)]);
+            r.documents.forEach(d => byId.set(d.$id, d));
+            if (r.documents.length < 100) break;
+            offset += 100;
           }
-          result.documents.forEach(d => byId.set(d.$id, d));
-          if (result.documents.length < PAGE) break;
-          offset += PAGE;
+        } catch (e) {
+          console.warn('question sweep stopped:', e.message);
         }
-      }
-      return [...byId.values()];
+        _questionCache = [...byId.values()];
+        _questionCachePromise = null;
+        return _questionCache;
+      })();
+
+      return _questionCachePromise;
+    }
+
+    async function fetchCategoryQuestions(category) {
+      const all = await fetchAllQuestions();
+      const want = categoryVariants(category).map(v => v.toLowerCase());
+      return all.filter(d => want.includes(String(d.category || '').toLowerCase()));
     }
 
     async function loadCourseQuestionCounts(category) {
@@ -592,11 +578,16 @@
           
           const badge = document.querySelector(`.course-count[data-course="${course.en}"]`);
           if (badge) {
+            badge.removeAttribute('data-loading');
             badge.textContent = `(${count})`;
             badge.style.color = count > 0 ? 'var(--success)' : 'var(--text-secondary)';
           }
         });
       } catch (err) {
+        document.querySelectorAll('.course-count[data-loading]').forEach(function(b) {
+          b.removeAttribute('data-loading');
+          b.textContent = '';
+        });
         console.error('Failed to load course counts:', err);
       }
     }
@@ -858,14 +849,111 @@
         await updateUserPrefs({ language: newLang });
         alert(currentLang === 'fr' ? 'Langue changée avec succès' : 'Language changed successfully');
         translateCategories();
+        applyDashboardIdentity();
         openSettings();
       } catch (err) {
         alert('Error saving language: ' + err.message);
       }
     }
 
+    function setActiveDashboardNav(action) {
+      document.querySelectorAll('.dash-nav-btn, .mobile-bottom button').forEach(el => el.classList.remove('active'));
+      if (action === 'home') {
+        document.querySelectorAll('[data-dash-home]').forEach(el => el.classList.add('active'));
+      } else {
+        document.querySelectorAll('[data-dash-action="' + action + '"]').forEach(el => {
+          if (el.closest('.dash-nav') || el.closest('.mobile-bottom')) el.classList.add('active');
+        });
+      }
+    }
+
+    function runDashboardAction(action) {
+      document.getElementById('dashSidebar')?.classList.remove('open');
+      setActiveDashboardNav(action);
+      if (action === 'concours') openConcours();
+      else if (action === 'notebook') openNotebook();
+      else if (action === 'prevtests') openPreviousTests();
+      else if (action === 'settings') openSettings();
+      else if (action === 'manage') window.location.href = 'manage.html';
+      else if (action === 'import') window.location.href = 'import.html';
+      else if (action === 'generator') window.location.href = 'advanced_generator.html';
+      else openCategory(action);
+    }
+
+    function applyDashboardIdentity() {
+      const fr = currentLang === 'fr';
+      const first = (currentUserName || (fr ? 'étudiant' : 'student')).trim().split(/\s+/)[0];
+      const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+      set('welcomeMsg', fr ? 'Bon retour, ' + first + ' !' : 'Welcome back, ' + first + '!');
+      set('welcomeSub', fr
+        ? 'Choisissez une matière et transformez les prochaines minutes en progrès réel pour le Concours.'
+        : 'Choose a subject and turn the next few minutes into real Concours progress.');
+      set('topGreeting', fr ? 'Faisons compter cette session.' : 'Let’s make this session count.');
+      set('sidebarUserName', currentUserName || (fr ? 'Étudiant' : 'Student'));
+      const isPharma = currentConcoursType === 'pharma';
+      set('sidebarTrack', isPharma ? (fr ? 'Filière Pharmacie' : 'Pharmacy track') : (fr ? 'Filière Médecine' : 'Medicine track'));
+      set('trackShort', isPharma ? (fr ? 'Pharmacie' : 'Pharmacy') : (fr ? 'Médecine' : 'Medicine'));
+      set('railTrackName', isPharma ? 'Concours de Pharmacie' : (fr ? 'Médecine & Médecine Dentaire' : 'Medicine & Dentistry'));
+      const initials = (currentUserName || 'LU').trim().split(/\s+/).slice(0,2).map(x => x[0] || '').join('').toUpperCase();
+      set('userInitials', initials || 'LU');
+      try {
+        set('todayDate', new Intl.DateTimeFormat(fr ? 'fr-FR' : 'en-US', { weekday:'long', month:'long', day:'numeric' }).format(new Date()));
+      } catch (_) { set('todayDate', fr ? 'Votre tableau de bord' : 'Your dashboard'); }
+    }
+
+    function renderHomeCounts() {
+      if (!homeQuestionCounts) return;
+      const total = Object.values(homeQuestionCounts).reduce((a,b) => a + b, 0);
+      const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+      set('questionBankTotal', total.toLocaleString());
+      set('topQuestionTotal', total.toLocaleString());
+      document.querySelectorAll('[data-home-count]').forEach(el => {
+        const n = homeQuestionCounts[el.dataset.homeCount] || 0;
+        el.textContent = n.toLocaleString() + (currentLang === 'fr' ? ' questions' : ' questions');
+      });
+      document.querySelectorAll('[data-rail-count]').forEach(el => {
+        el.textContent = (homeQuestionCounts[el.dataset.railCount] || 0).toLocaleString();
+      });
+      set('weeklyLabel', currentLang === 'fr' ? 'Banque de questions' : 'Question bank');
+      set('weeklyText', currentLang === 'fr'
+        ? total.toLocaleString() + ' questions prêtes pour vos sessions'
+        : total.toLocaleString() + ' questions ready for your sessions');
+      const bar = document.getElementById('weeklyTrack');
+      if (bar) bar.style.width = total ? '100%' : '0%';
+    }
+
+    async function loadHomeCounts() {
+      try {
+        const all = await fetchAllQuestions();
+        homeQuestionCounts = { biology:0, chemistry:0, physics:0, maths:0 };
+        all.forEach(q => {
+          const key = String(q.category || '').trim().toLowerCase();
+          if (Object.prototype.hasOwnProperty.call(homeQuestionCounts, key)) homeQuestionCounts[key]++;
+        });
+        renderHomeCounts();
+      } catch (err) {
+        console.warn('Unable to load dashboard totals:', err.message);
+        const text = currentLang === 'fr' ? 'Ouvrez une matière pour voir les questions' : 'Open a subject to view its questions';
+        const el = document.getElementById('weeklyText'); if (el) el.textContent = text;
+      }
+    }
+
+    function setupDashboardShell() {
+      const sidebar = document.getElementById('dashSidebar');
+      document.getElementById('mobileMenu')?.addEventListener('click', e => { e.stopPropagation(); sidebar?.classList.toggle('open'); });
+      document.addEventListener('click', e => {
+        if (window.innerWidth <= 900 && sidebar?.classList.contains('open') && !sidebar.contains(e.target) && !document.getElementById('mobileMenu')?.contains(e.target)) sidebar.classList.remove('open');
+      });
+      document.querySelectorAll('[data-dash-home]').forEach(el => el.addEventListener('click', goBack));
+      document.querySelectorAll('[data-dash-action]').forEach(el => el.addEventListener('click', () => runDashboardAction(el.dataset.dashAction)));
+      document.getElementById('bankReward')?.addEventListener('click', () => {
+        const target = document.querySelector('.subject-grid');
+        target?.scrollIntoView({ behavior:'smooth', block:'center' });
+      });
+    }
+
     // Build stamp — lets you confirm which version the browser actually loaded.
-    const BUILD = '2026-08-02-b';
+    const BUILD = '2026-09-17-duolingo-v1';
     console.log('%cConcours.md dashboard build ' + BUILD,
       'background:#1a1a2e;color:#f39c12;padding:3px 8px;border-radius:4px;font-weight:700');
 
@@ -878,14 +966,20 @@
 
       const prefs = await getUserPrefs();
       currentLang = prefs.language || 'en';
+      currentUserName = user.name || String(user.email || '').split('@')[0] || '';
+      currentConcoursType = prefs.concoursType || 'med';
 
       if (user.email === ADMIN_EMAIL) {
         document.getElementById('navImport').classList.remove('hidden');
         document.getElementById('navManage')?.classList.remove('hidden');
-        document.getElementById('adminSection')?.classList.remove('hidden');
+        const adminSection = document.getElementById('adminSection');
+        if (adminSection) { adminSection.dataset.authorized = '1'; adminSection.classList.remove('hidden'); }
       }
 
       translateCategories();
+      applyDashboardIdentity();
+      setupDashboardShell();
+      loadHomeCounts();
 
       document.getElementById('logoutBtn').addEventListener('click', async function(e) {
         e.preventDefault();
@@ -897,15 +991,7 @@
 
       document.querySelectorAll('.category-card').forEach(function(card) {
         card.addEventListener('click', function() {
-          const action = card.dataset.action;
-          if (action === 'concours') openConcours();
-          else if (action === 'notebook') openNotebook();
-          else if (action === 'prevtests') openPreviousTests();
-          else if (action === 'settings') openSettings();
-          else if (action === 'manage') window.location.href = 'manage.html';
-          else if (action === 'import') window.location.href = 'import.html';
-          else if (action === 'generator') window.location.href = 'advanced_generator.html';
-          else openCategory(action);
+          runDashboardAction(card.dataset.action);
         });
       });
     }

@@ -184,6 +184,7 @@ justify-content:space-between;gap:8px;align-items:center}
 
 <script type="module">
 import { databases, DB_ID, COLLECTIONS, Query } from './appwrite.js';
+import { getCurrentUser } from './auth.js';
 // ---- curriculum data inlined (was ./curriculum.js) ----------------
 // Kept inline so manage.html has no extra file to deploy.
 // ============================================================
@@ -288,7 +289,7 @@ const chapters = {
           { en: 'Ecological Factors (Abiotic, Biotic)', fr: 'Les facteurs écologiques (abiotiques, biotiques)' },
           { en: 'Terrestrial Biomes', fr: 'Les biomes terrestres' },
           { en: 'Aquatic Biomes', fr: 'Les biomes aquatiques' },
-          { en: 'Food Chains and Ecological Pyramids', fr: 'Chaînes alimentaires et pyramides écologiques' },
+          { en: 'Food Chains, Trophic Networks, and Ecological Pyramids', fr: 'Chaînes alimentaires, réseaux trophiques et pyramides écologiques' },
           { en: 'Ecosystem Functioning and Biogeochemical Cycles', fr: 'Fonctionnement des écosystèmes et cycles biogéochimiques' }
         ],
         'Embryology': [
@@ -296,10 +297,10 @@ const chapters = {
           { en: 'Different Types of Eggs', fr: 'Les différents types d\'œufs' },
           { en: 'Main Stages of Development', fr: 'Les étapes principales du développement' },
           { en: 'Development of an Insect', fr: 'Le développement d\'un insecte' },
-          { en: 'Development of an Echinoderm', fr: 'Le développement d\'un échinoderme' },
-          { en: 'Development of an Amphibian', fr: 'Le développement d\'un amphibien' },
-          { en: 'Development of a Bird', fr: 'Le développement d\'un oiseau' },
-          { en: 'Development of a Mammal', fr: 'Le développement d\'un mammifère' }
+          { en: 'Embryonic Development of Echinoderms', fr: 'Développement embryonnaire des échinodermes' },
+          { en: 'Embryonic Development of Amphibians', fr: 'Développement embryonnaire des amphibiens' },
+          { en: 'Embryonic Development of Birds', fr: 'Développement embryonnaire des oiseaux' },
+          { en: 'Embryonic Development of Mammals', fr: 'Développement embryonnaire des mammifères' }
         ],
         'Animal Reproduction': [
           { en: 'Meiosis and Gametogenesis', fr: 'Méiose et gamétogenèse' },
@@ -463,41 +464,66 @@ function alertMsg(msg,type='info',ms=4000){
 
 // ---------------- load ----------------
 async function loadAll(){
-  $('list').innerHTML = '<div class="empty"><div class="spinner"></div>Loading questions…</div>';
-  const byId = new Map();
-  const cats = ['biology','chemistry','physics','maths'];
-  const seen = new Set();
+  const listEl = $('list');
+  listEl.innerHTML = '<div class="empty"><div class="spinner"></div>Connecting…</div>';
 
-  for(const c of cats){
-    for(const variant of categoryVariants(c)){
-      if(seen.has(variant)) continue;
-      seen.add(variant);
-      let offset = 0;
-      while(offset < 10000){
-        let r;
-        try{
-          r = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [
-            Query.equal('category', variant), Query.limit(100), Query.offset(offset)
-          ]);
-        }catch(e){ console.warn('query failed', variant, e.message); break; }
-        r.documents.forEach(d=>byId.set(d.$id,d));
-        if(r.documents.length < 100) break;
-        offset += 100;
-      }
-    }
+  // 1. Auth first — without a session every query 401s and the page
+  //    used to hang on "Loading questions…" forever with no explanation.
+  let user = null;
+  try{
+    user = await getCurrentUser();
+  }catch(e){
+    console.error('auth check failed', e);
+  }
+  if(!user){
+    listEl.innerHTML = '<div class="empty">'+
+      '<p style="font-size:1rem;margin-bottom:6px"><strong>Not signed in</strong></p>'+
+      '<p style="margin-bottom:14px">You need to be logged in to manage questions.</p>'+
+      '<a class="btn btn-primary" href="login.html">Go to login</a></div>';
+    alertMsg('Not signed in — redirecting to login…','warn',0);
+    setTimeout(()=>{ window.location.href='login.html'; }, 2500);
+    return;
   }
 
-  // Safety net: catch anything whose category isn't one of the four keys
+  // 2. Probe once so permission/connection errors surface immediately.
+  listEl.innerHTML = '<div class="empty"><div class="spinner"></div>Loading questions…</div>';
   try{
-    let offset=0;
-    while(offset<10000){
+    await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS, [Query.limit(1)]);
+  }catch(e){
+    console.error('probe failed', e);
+    listEl.innerHTML = '<div class="empty">'+
+      '<p style="font-size:1rem;margin-bottom:6px"><strong>Could not read the questions collection</strong></p>'+
+      '<p style="margin-bottom:10px;font-family:monospace;font-size:.8rem">'+esc(e.message||String(e))+'</p>'+
+      '<p style="font-size:.85rem">Signed in as '+esc(user.email||'?')+'.<br>'+
+      'Check the collection\'s read permission in the Appwrite console.</p></div>';
+    alertMsg('Database error: '+(e.message||e),'error',0);
+    return;
+  }
+
+  // 3. One unfiltered paged sweep — cheaper and more complete than
+  //    querying every casing variant of every category separately.
+  const byId = new Map();
+  let offset = 0, guard = 0;
+  try{
+    while(guard++ < 200){
       const r = await databases.listDocuments(DB_ID, COLLECTIONS.QUESTIONS,
         [Query.limit(100), Query.offset(offset)]);
       r.documents.forEach(d=>byId.set(d.$id,d));
-      if(r.documents.length<100) break;
-      offset+=100;
+      listEl.innerHTML = '<div class="empty"><div class="spinner"></div>Loading questions… '+byId.size+'</div>';
+      if(r.documents.length < 100) break;
+      offset += 100;
     }
-  }catch(e){ /* listing without filter may be denied; ignore */ }
+  }catch(e){
+    console.warn('paged sweep stopped:', e.message);
+    if(byId.size === 0){
+      listEl.innerHTML = '<div class="empty">'+
+        '<p style="font-size:1rem;margin-bottom:6px"><strong>Could not load questions</strong></p>'+
+        '<p style="font-family:monospace;font-size:.8rem">'+esc(e.message||String(e))+'</p></div>';
+      alertMsg('Load failed: '+(e.message||e),'error',0);
+      return;
+    }
+    alertMsg('Loaded '+byId.size+' before an error: '+(e.message||e),'warn',8000);
+  }
 
   ALL = [...byId.values()].map(d=>{
     const co = courseOf(d), tp = topicOf(d);
@@ -520,7 +546,7 @@ async function loadAll(){
   console.log('Courses present:', [...new Set(ALL.map(q=>q.courseEn))].sort());
 
   buildTree(); apply();
-  if(ALL.length===0) alertMsg('No questions found in the database.','warn',0);
+  if(ALL.length===0) alertMsg('The questions collection is empty.','warn',0);
 }
 
 // ---------------- sidebar tree ----------------

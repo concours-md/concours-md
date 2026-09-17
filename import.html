@@ -300,7 +300,28 @@
         if (!q.course?.en && !q.course?.fr) q._errors.push('Missing course');
         if (!q.en?.stem && !q.fr?.stem) q._errors.push('Missing question stem');
         if (!q.correct) q._errors.push('Missing correct answer');
-        if (!q.en?.choices?.length && !q.fr?.choices?.length) q._errors.push('Missing choices');
+        // Matching questions carry a `matching` block instead of A-D choices.
+        const isMatch = !!(q.en?.matching?.items?.length || q.fr?.matching?.items?.length);
+        if (isMatch) {
+          const mi = (q.en?.matching?.items || q.fr.matching.items).length;
+          const mo = (q.en?.matching?.options || q.fr.matching.options).length;
+          if (!mo) q._errors.push('Matching: no options');
+          // Accept either layout: matchKey, or an older file where the full
+          // key still sits in `correct` (Appwrite caps that at 5 chars, so we
+          // migrate it here rather than rejecting the file).
+          let mkey = String(q.matchKey || '');
+          if (!mkey && String(q.correct || '').length === mi) {
+            mkey = String(q.correct);
+            q.matchKey = mkey;
+            q.correct = 'MATCH';
+          }
+          if (mkey.length !== mi)
+            q._errors.push(`Matching: answer key has ${mkey.length} letters but ${mi} items`);
+          else if (String(q.correct || '').length > 5)
+            q.correct = 'MATCH';
+        } else if (!q.en?.choices?.length && !q.fr?.choices?.length) {
+          q._errors.push('Missing choices');
+        }
 
         // Check for duplicates within this batch
         const stem = (q.en?.stem || q.fr?.stem || '').toLowerCase().trim();
@@ -438,12 +459,17 @@
             correct: q.correct,
             en: JSON.stringify(q.en),
             fr: JSON.stringify(q.fr),
-            metadata: JSON.stringify({ 
-              topic: q.topic || {}, 
+            metadata: JSON.stringify(Object.assign({
+              topic: q.topic || {},
               difficulty: q.difficulty || 'medium',
-              source: "import", 
-              importedAt: new Date().toISOString() 
-            })
+              source: "import",
+              importedAt: new Date().toISOString()
+            },
+            // Keep grouping info so chained exam questions stay together
+            q.matchKey ? { matchKey: q.matchKey } : {},
+            q.group ? { group: q.group } : {},
+            typeof q.groupOrder === 'number' ? { groupOrder: q.groupOrder } : {},
+            q.source ? { origin: q.source } : {}))
           };
           await databases.createDocument(DB_ID, COLLECTIONS.QUESTIONS, q._id, doc);
           imported++;
@@ -688,5 +714,5 @@
 
     init();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a24dada70a16e30d',t:'MTc4NTY3OTk1NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
